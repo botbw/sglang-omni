@@ -35,9 +35,9 @@ from typing import Literal
 import pytest
 
 from benchmarks.dataset.prepare import DATASETS, download_dataset
-from benchmarks.eval.benchmark_tts_speed import (
-    TtsSpeedBenchmarkConfig,
-    run_tts_speed_benchmark,
+from benchmarks.eval.benchmark_tts_seedtts import (
+    TtsSeedttsBenchmarkConfig,
+    run_tts_seedtts_benchmark,
 )
 from sglang_omni.utils import find_available_port
 from tests.test_model.conftest import (
@@ -172,12 +172,8 @@ VC_STREAM_THRESHOLDS = apply_slack(
     _VC_STREAM_P95, THRESHOLD_SLACK_HIGHER, THRESHOLD_SLACK_LOWER
 )
 
-WER_SCRIPT = str(
-    Path(__file__).resolve().parents[2]
-    / "benchmarks"
-    / "eval"
-    / "voice_clone_tts_wer.py"
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+WER_MODULE = "benchmarks.eval.benchmark_tts_seedtts"
 
 
 def _validate_speed_results_keys(speed_results: dict) -> None:
@@ -198,17 +194,16 @@ def _run_benchmark(
     max_samples: int | None = None,
     stream: bool = False,
 ) -> dict:
-    benchmark_config = TtsSpeedBenchmarkConfig(
+    benchmark_config = TtsSeedttsBenchmarkConfig(
         model=S2PRO_MODEL_PATH,
         port=port,
-        testset=testset,
+        meta=testset,
         output_dir=output_dir,
         concurrency=concurrency,
         max_samples=max_samples,
-        save_audio=True,
         stream=stream,
     )
-    speed_results = asyncio.run(run_tts_speed_benchmark(benchmark_config))
+    speed_results = asyncio.run(run_tts_seedtts_benchmark(benchmark_config))
     _validate_speed_results_keys(speed_results)
     return speed_results
 
@@ -224,7 +219,8 @@ def _run_wer_transcribe(
     """Transcribe saved audio and compute WER in CI."""
     cmd = [
         sys.executable,
-        WER_SCRIPT,
+        "-m",
+        WER_MODULE,
         "--transcribe-only",
         "--meta",
         meta_path,
@@ -240,11 +236,18 @@ def _run_wer_transcribe(
     if stream:
         cmd.append("--stream")
 
+    env = no_proxy_env()
+    existing_pp = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = (
+        f"{PROJECT_ROOT}{os.pathsep}{existing_pp}" if existing_pp else str(PROJECT_ROOT)
+    )
+
     result = subprocess.run(
         cmd,
         text=True,
         timeout=WER_TIMEOUT,
-        env=no_proxy_env(),
+        env=env,
+        cwd=str(PROJECT_ROOT),
     )
     assert result.returncode == 0, f"WER transcribe failed (rc={result.returncode})"
 

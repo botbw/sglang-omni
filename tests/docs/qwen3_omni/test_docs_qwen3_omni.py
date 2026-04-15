@@ -24,7 +24,7 @@ import requests
 import torch
 from jiwer import process_words
 
-from benchmarks.tasks.voice_clone import load_asr_model, normalize_text, transcribe
+from benchmarks.tasks.tts import load_asr_model, normalize_text, transcribe
 from sglang_omni.utils import find_available_port
 from tests.utils import disable_proxy, no_proxy_env, start_server_from_cmd, stop_server
 
