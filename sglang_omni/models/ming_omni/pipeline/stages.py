@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import Any
 
 from sglang_omni.engines.ar.sglang_backend.server_args_builder import (
-    OMNI_ENCODER_MEM_FRACTION_STATIC_RESERVE,
+    apply_encoder_mem_reserve,
     build_sglang_server_args,
 )
 from sglang_omni.engines.omni import create_sglang_ar_engine, create_single_pass_engine
@@ -338,9 +338,10 @@ def create_sglang_thinker_executor_from_config(
     server_args = build_sglang_server_args(
         local_path,
         context_length=thinker_max_seq_len,
-        auto_mem_fraction_static_reserve=OMNI_ENCODER_MEM_FRACTION_STATIC_RESERVE,
         **overrides,
     )
+    if "mem_fraction_static" not in overrides:
+        apply_encoder_mem_reserve(server_args, 0.05)
     pre_load_mem = (
         f", pre_load_avail_mem={pre_load_avail_mem:.2f} GB"
         if pre_load_avail_mem is not None

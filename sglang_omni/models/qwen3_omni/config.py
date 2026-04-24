@@ -113,7 +113,7 @@ class Qwen3OmniPipelineConfig(PipelineConfig):
             and overrides["tp_size"] > 1
         ):
             raise NotImplementedError("Qwen3-Omni TP is not supported yet.")
-        remaining = _route_thinker_max_seq_len(self.stages, stage_name, overrides)
+        remaining = _route_thinker_executor_args(self.stages, stage_name, overrides)
         if remaining:
             super().apply_server_args_overrides(
                 stage_name=stage_name,
@@ -121,19 +121,34 @@ class Qwen3OmniPipelineConfig(PipelineConfig):
             )
 
 
-def _route_thinker_max_seq_len(
+def _route_thinker_executor_args(
     stages: list[StageConfig],
     stage_name: str,
     overrides: dict[str, Any],
 ) -> dict[str, Any]:
+    """Pop thinker-factory kwargs onto the thinker stage; return the rest."""
     remaining = dict(overrides)
-    thinker_max_seq_len = remaining.pop("thinker_max_seq_len", None)
-    if thinker_max_seq_len is None or stage_name != THINKER_STAGE:
+    if stage_name != THINKER_STAGE:
         return remaining
-    for stage in stages:
-        if stage.name == THINKER_STAGE:
-            stage.executor.args["thinker_max_seq_len"] = int(thinker_max_seq_len)
-            break
+
+    casted: dict[str, Any] = {}
+
+    seq_len = remaining.pop("thinker_max_seq_len", None)
+    if seq_len is not None:
+        casted["thinker_max_seq_len"] = int(seq_len)
+
+    reserve = remaining.pop("encoder_mem_reserve", None)
+    if reserve is not None:
+        reserve = float(reserve)
+        if not 0.0 <= reserve < 1.0:
+            raise ValueError(f"encoder_mem_reserve must be in [0, 1), got {reserve}")
+        casted["encoder_mem_reserve"] = reserve
+
+    if casted:
+        for stage in stages:
+            if stage.name == THINKER_STAGE:
+                stage.executor.args.update(casted)
+                break
     return remaining
 
 
@@ -302,7 +317,7 @@ class Qwen3OmniSpeechPipelineConfig(PipelineConfig):
             )
             if tp_size > 1:
                 raise NotImplementedError("Qwen3-Omni TP is not supported yet.")
-        remaining = _route_thinker_max_seq_len(self.stages, stage_name, overrides)
+        remaining = _route_thinker_executor_args(self.stages, stage_name, overrides)
         if remaining:
             super().apply_server_args_overrides(
                 stage_name=stage_name,

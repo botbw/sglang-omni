@@ -10,7 +10,7 @@ import torch
 from transformers import AutoTokenizer
 
 from sglang_omni.engines.ar.sglang_backend.server_args_builder import (
-    OMNI_ENCODER_MEM_FRACTION_STATIC_RESERVE,
+    apply_encoder_mem_reserve,
     build_sglang_server_args,
 )
 from sglang_omni.engines.omni import (
@@ -354,21 +354,20 @@ def create_sglang_thinker_executor_from_config(
     *,
     gpu_id: int = 0,
     thinker_max_seq_len: int = 8192,
+    encoder_mem_reserve: float = 0.05,
     server_args_overrides: dict[str, Any] | None = None,
     speech_enabled: bool = False,
 ) -> EngineExecutor:
-    """Create a SGLang thinker executor from JSON-serializable config args.
-
-    This keeps pipeline config args plain dict types while still constructing
-    a typed ServerArgs object internally.
-    """
+    """Create a SGLang thinker executor from JSON-serializable config args."""
     pre_load_avail_mem = avail_gpu_mem(gpu_id)
+    overrides = server_args_overrides or {}
     server_args = build_sglang_server_args(
         model_path,
         context_length=thinker_max_seq_len,
-        auto_mem_fraction_static_reserve=OMNI_ENCODER_MEM_FRACTION_STATIC_RESERVE,
-        **(server_args_overrides or {}),
+        **overrides,
     )
+    if "mem_fraction_static" not in overrides:
+        apply_encoder_mem_reserve(server_args, encoder_mem_reserve)
     pre_load_mem = (
         f" pre_load_avail_mem={pre_load_avail_mem:.2f} GB"
         if pre_load_avail_mem is not None

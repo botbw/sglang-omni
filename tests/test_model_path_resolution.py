@@ -63,8 +63,8 @@ def _install_qwen3_stages_stubs(monkeypatch) -> None:
     _stub_module(
         monkeypatch,
         "sglang_omni.engines.ar.sglang_backend.server_args_builder",
-        OMNI_ENCODER_MEM_FRACTION_STATIC_RESERVE=0.05,
         build_sglang_server_args=lambda *args, **kwargs: None,
+        apply_encoder_mem_reserve=lambda *args, **kwargs: None,
     )
     _stub_module(
         monkeypatch,
@@ -146,6 +146,9 @@ def _install_qwen3_stages_stubs(monkeypatch) -> None:
 
 def _import_qwen3_stages_for_test(monkeypatch):
     module_name = "sglang_omni.models.qwen3_omni.pipeline.stages"
+    original = sys.modules.get(module_name)
+    if original is not None:
+        monkeypatch.setitem(sys.modules, module_name, original)
     sys.modules.pop(module_name, None)
     _install_qwen3_stages_stubs(monkeypatch)
     return importlib.import_module(module_name)

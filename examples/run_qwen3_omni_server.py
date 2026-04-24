@@ -69,6 +69,28 @@ def parse_args() -> argparse.Namespace:
             "If omitted, SGLang chooses automatically."
         ),
     )
+    parser.add_argument(
+        "--encoder-mem-reserve",
+        type=float,
+        default=None,
+        help=(
+            "GPU-memory fraction kept OUT of SGLang's static pool (model weights "
+            "+ KV cache) and left free for the co-located vision/audio encoder's "
+            "weights and activations on the thinker GPU.\n"
+            "Behavior across the four flag combinations of --mem-fraction-static "
+            "and --encoder-mem-reserve:\n"
+            "  (1) neither flag passed: SGLang auto-selects mem_fraction_static "
+            "and the default reserve 0.05 is subtracted;\n"
+            "  (2) only --encoder-mem-reserve X: SGLang auto-selects "
+            "mem_fraction_static and X is subtracted;\n"
+            "  (3) only --mem-fraction-static X: X is used verbatim and the "
+            "default reserve is ignored;\n"
+            "  (4) both flags: rejected at CLI as mutually exclusive.\n"
+            "Default 0.05 is tuned for single-request / short-video workloads; "
+            "raise to 0.15-0.20 for high-concurrency long-video or long-audio "
+            "workloads."
+        ),
+    )
 
     # Server
     parser.add_argument("--host", type=str, default="0.0.0.0")
@@ -83,14 +105,32 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _check_mem_flag_mutex(
+    mem_fraction_static: float | None,
+    encoder_mem_reserve: float | None,
+) -> None:
+    """Reject passing both --mem-fraction-static and --encoder-mem-reserve."""
+    if mem_fraction_static is not None and encoder_mem_reserve is not None:
+        raise ValueError(
+            "--mem-fraction-static and --encoder-mem-reserve are mutually "
+            "exclusive: --mem-fraction-static pins the pool size directly "
+            "and the reserve only subtracts from SGLang's auto-selected "
+            "value. Pass only one."
+        )
+
+
 def main() -> None:
     args = parse_args()
+
+    _check_mem_flag_mutex(args.mem_fraction_static, args.encoder_mem_reserve)
 
     overrides = {}
     if args.thinker_max_seq_len is not None:
         overrides["thinker_max_seq_len"] = args.thinker_max_seq_len
     if args.cpu_offload_gb:
         overrides["cpu_offload_gb"] = args.cpu_offload_gb
+    if args.encoder_mem_reserve is not None:
+        overrides["encoder_mem_reserve"] = args.encoder_mem_reserve
 
     config = Qwen3OmniPipelineConfig(
         model_path=args.model_path,
