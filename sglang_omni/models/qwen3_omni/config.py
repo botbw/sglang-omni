@@ -13,6 +13,7 @@ from sglang_omni.config import (
     StageConfig,
 )
 from sglang_omni.config.schema import StreamTargetConfig
+from sglang_omni.models.qwen3_omni.pipeline.engine_io import DEFAULT_THINKER_MAX_SEQ_LEN
 from sglang_omni.models.qwen3_omni.pipeline.next_stage import (
     AGGREGATE_STAGE,
     AUDIO_STAGE,
@@ -36,8 +37,10 @@ class Qwen3OmniPipelineConfig(PipelineConfig):
             name=PREPROCESSING_STAGE,
             executor=ExecutorConfig(
                 factory="sglang_omni.models.qwen3_omni.pipeline.stages.create_preprocessing_executor",
+                args={"max_seq_len": DEFAULT_THINKER_MAX_SEQ_LEN},
             ),
             get_next="sglang_omni.models.qwen3_omni.pipeline.next_stage.preprocessing_next",
+            payload_filter="sglang_omni.models.qwen3_omni.pipeline.payload_filter.preprocessing_payload_filter",
             relay=RelayConfig(device="cpu"),
         ),
         StageConfig(
@@ -47,10 +50,12 @@ class Qwen3OmniPipelineConfig(PipelineConfig):
                 args={
                     "device": "cuda",
                     "dtype": None,
+                    "max_batch_size": 32,
                 },
             ),
             get_next="sglang_omni.models.qwen3_omni.pipeline.next_stage.encoder_next",
-            relay=RelayConfig(device="cuda"),
+            payload_filter="sglang_omni.models.qwen3_omni.pipeline.payload_filter.encoder_payload_filter",
+            relay=RelayConfig(device="cpu"),
         ),
         StageConfig(
             name=AUDIO_STAGE,
@@ -62,7 +67,8 @@ class Qwen3OmniPipelineConfig(PipelineConfig):
                 },
             ),
             get_next="sglang_omni.models.qwen3_omni.pipeline.next_stage.encoder_next",
-            relay=RelayConfig(device="cuda"),
+            payload_filter="sglang_omni.models.qwen3_omni.pipeline.payload_filter.encoder_payload_filter",
+            relay=RelayConfig(device="cpu"),
         ),
         StageConfig(
             name=AGGREGATE_STAGE,
@@ -83,7 +89,7 @@ class Qwen3OmniPipelineConfig(PipelineConfig):
             executor=ExecutorConfig(
                 factory="sglang_omni.models.qwen3_omni.pipeline.stages.create_sglang_thinker_executor_from_config",
                 args={
-                    "thinker_max_seq_len": 8192,
+                    "thinker_max_seq_len": DEFAULT_THINKER_MAX_SEQ_LEN,
                 },
             ),
             get_next="sglang_omni.models.qwen3_omni.pipeline.next_stage.thinker_next",
@@ -135,7 +141,8 @@ def _route_thinker_executor_args(
 
     seq_len = remaining.pop("thinker_max_seq_len", None)
     if seq_len is not None:
-        casted["thinker_max_seq_len"] = int(seq_len)
+        seq_len = int(seq_len)
+        casted["thinker_max_seq_len"] = seq_len
 
     reserve = remaining.pop("encoder_mem_reserve", None)
     if reserve is not None:
@@ -148,7 +155,10 @@ def _route_thinker_executor_args(
         for stage in stages:
             if stage.name == THINKER_STAGE:
                 stage.executor.args.update(casted)
-                break
+            elif seq_len is not None and stage.name == PREPROCESSING_STAGE:
+                stage.executor.args["max_seq_len"] = seq_len
+            elif seq_len is not None and stage.name == TALKER_AR_STAGE:
+                stage.executor.args["talker_max_seq_len"] = seq_len
     return remaining
 
 
@@ -190,18 +200,21 @@ class Qwen3OmniSpeechPipelineConfig(PipelineConfig):
             name=PREPROCESSING_STAGE,
             executor=ExecutorConfig(
                 factory="sglang_omni.models.qwen3_omni.pipeline.stages.create_preprocessing_executor",
+                args={"max_seq_len": DEFAULT_THINKER_MAX_SEQ_LEN},
             ),
             get_next="sglang_omni.models.qwen3_omni.pipeline.next_stage.preprocessing_next",
+            payload_filter="sglang_omni.models.qwen3_omni.pipeline.payload_filter.preprocessing_payload_filter",
             relay=RelayConfig(device="cpu"),
         ),
         StageConfig(
             name=IMAGE_STAGE,
             executor=ExecutorConfig(
                 factory="sglang_omni.models.qwen3_omni.pipeline.stages.create_image_encoder_executor",
-                args={"device": "cuda", "dtype": None},
+                args={"device": "cuda", "dtype": None, "max_batch_size": 32},
             ),
             get_next="sglang_omni.models.qwen3_omni.pipeline.next_stage.encoder_next",
-            relay=RelayConfig(device="cuda"),
+            payload_filter="sglang_omni.models.qwen3_omni.pipeline.payload_filter.encoder_payload_filter",
+            relay=RelayConfig(device="cpu"),
         ),
         StageConfig(
             name=AUDIO_STAGE,
@@ -210,7 +223,8 @@ class Qwen3OmniSpeechPipelineConfig(PipelineConfig):
                 args={"device": "cuda", "dtype": None},
             ),
             get_next="sglang_omni.models.qwen3_omni.pipeline.next_stage.encoder_next",
-            relay=RelayConfig(device="cuda"),
+            payload_filter="sglang_omni.models.qwen3_omni.pipeline.payload_filter.encoder_payload_filter",
+            relay=RelayConfig(device="cpu"),
         ),
         StageConfig(
             name=AGGREGATE_STAGE,
@@ -231,7 +245,10 @@ class Qwen3OmniSpeechPipelineConfig(PipelineConfig):
             name=THINKER_STAGE,
             executor=ExecutorConfig(
                 factory="sglang_omni.models.qwen3_omni.pipeline.stages.create_sglang_thinker_executor_from_config",
-                args={"thinker_max_seq_len": 8192, "speech_enabled": True},
+                args={
+                    "thinker_max_seq_len": DEFAULT_THINKER_MAX_SEQ_LEN,
+                    "speech_enabled": True,
+                },
             ),
             get_next="sglang_omni.models.qwen3_omni.pipeline.next_stage.thinker_next_speech",
             relay=RelayConfig(device="cuda"),

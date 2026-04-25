@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Callable
 
 import torch
 from transformers import AutoTokenizer
@@ -18,6 +18,7 @@ from sglang_omni.engines.omni import (
     create_sglang_ar_engine,
     create_single_pass_engine,
 )
+from sglang_omni.engines.omni.types import SchedulerRequest
 from sglang_omni.executors import EngineExecutor, PreprocessingExecutor
 from sglang_omni.models.qwen3_omni.components.audio_encoder import Qwen3OmniAudioEncoder
 from sglang_omni.models.qwen3_omni.components.image_encoder import Qwen3OmniImageEncoder
@@ -28,6 +29,7 @@ from sglang_omni.models.qwen3_omni.components.talker_executor import (
 from sglang_omni.models.qwen3_omni.components.thinker import Qwen3OmniSplitThinker
 from sglang_omni.models.qwen3_omni.io import OmniEvent, ThinkerOutput
 from sglang_omni.models.qwen3_omni.pipeline.engine_io import (
+    DEFAULT_THINKER_MAX_SEQ_LEN,
     apply_encoder_result,
     apply_thinker_result,
     build_encoder_request,
@@ -43,10 +45,18 @@ from sglang_omni.models.qwen3_omni.pipeline.next_stage import (
     THINKER_STAGE,
 )
 from sglang_omni.models.qwen3_omni.pipeline.state_io import load_state, store_state
+from sglang_omni.models.qwen3_omni.pipeline.visual_budget import (
+    QWEN3_IMAGE_ENCODER_BATCH_BUDGET_BYTES,
+    create_qwen3_visual_request_cost_fn,
+)
 from sglang_omni.proto import StagePayload
 from sglang_omni.utils.misc import avail_gpu_mem
 
 logger = logging.getLogger(__name__)
+
+# Keep repeated-media encoder cache useful without retaining unbounded host
+# tensors. 4096 MiB matches SGLang's disaggregated VLM encode cache default.
+QWEN3_ENCODER_CACHE_MAX_BYTES = 4 * 1024**3
 
 
 def _event_to_dict(event: OmniEvent) -> dict[str, Any]:
@@ -58,8 +68,12 @@ def _event_to_dict(event: OmniEvent) -> dict[str, Any]:
     }
 
 
-def create_preprocessing_executor(model_path: str) -> PreprocessingExecutor:
-    preprocessor = Qwen3OmniPreprocessor(model_path=model_path)
+def create_preprocessing_executor(
+    model_path: str,
+    *,
+    max_seq_len: int | None = None,
+) -> PreprocessingExecutor:
+    preprocessor = Qwen3OmniPreprocessor(model_path=model_path, max_seq_len=max_seq_len)
 
     async def _preprocess(payload: StagePayload) -> StagePayload:
         return await preprocessor(payload)
@@ -81,6 +95,9 @@ def _create_encoder_executor(
     device: str,
     use_cache: bool = True,
     cache_size: int | None = 64,
+    max_batch_size: int = 32,
+    request_cost_fn: Callable[[SchedulerRequest], int] | None = None,
+    max_batch_cost: int | None = None,
 ) -> EngineExecutor:
     def _request_builder(payload: StagePayload):
         state = load_state(payload)
@@ -96,6 +113,11 @@ def _create_encoder_executor(
         device=device,
         use_cache=use_cache,
         cache_size=cache_size,
+        cache_max_bytes=QWEN3_ENCODER_CACHE_MAX_BYTES,
+        cache_device="cpu",
+        max_batch_size=max_batch_size,
+        request_cost_fn=request_cost_fn,
+        max_batch_cost=max_batch_cost,
     )
     return EngineExecutor(
         engine=engine, request_builder=_request_builder, result_builder=_result_builder
@@ -107,9 +129,18 @@ def create_image_encoder_executor(
     *,
     device: str = "cuda",
     dtype: str | None = None,
+    max_batch_size: int = 32,
+    max_batch_cost: int = QWEN3_IMAGE_ENCODER_BATCH_BUDGET_BYTES,
 ) -> EngineExecutor:
     model = Qwen3OmniImageEncoder(model_path=model_path, device=device, dtype=dtype)
-    return _create_encoder_executor(stage_name=IMAGE_STAGE, model=model, device=device)
+    return _create_encoder_executor(
+        stage_name=IMAGE_STAGE,
+        model=model,
+        device=device,
+        max_batch_size=max_batch_size,
+        request_cost_fn=create_qwen3_visual_request_cost_fn(model),
+        max_batch_cost=max_batch_cost,
+    )
 
 
 def create_audio_encoder_executor(
@@ -117,9 +148,15 @@ def create_audio_encoder_executor(
     *,
     device: str = "cuda",
     dtype: str | None = None,
+    max_batch_size: int = 32,
 ) -> EngineExecutor:
     model = Qwen3OmniAudioEncoder(model_path=model_path, device=device, dtype=dtype)
-    return _create_encoder_executor(stage_name=AUDIO_STAGE, model=model, device=device)
+    return _create_encoder_executor(
+        stage_name=AUDIO_STAGE,
+        model=model,
+        device=device,
+        max_batch_size=max_batch_size,
+    )
 
 
 def create_thinker_executor(
@@ -127,7 +164,7 @@ def create_thinker_executor(
     *,
     device: str = "cuda",
     dtype: str | None = None,
-    max_seq_len: int = 8192,
+    max_seq_len: int = DEFAULT_THINKER_MAX_SEQ_LEN,
 ) -> EngineExecutor:
     model = Qwen3OmniSplitThinker(model_path=model_path, device=device, dtype=dtype)
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -353,7 +390,7 @@ def create_sglang_thinker_executor_from_config(
     model_path: str,
     *,
     gpu_id: int = 0,
-    thinker_max_seq_len: int = 8192,
+    thinker_max_seq_len: int = DEFAULT_THINKER_MAX_SEQ_LEN,
     encoder_mem_reserve: float = 0.05,
     server_args_overrides: dict[str, Any] | None = None,
     speech_enabled: bool = False,
@@ -537,6 +574,7 @@ def create_talker_ar_executor(
     weight_prefix: str | None = None,
     feedback_enabled: bool = False,
     feedback_mailbox=None,
+    max_seq_len: int | None = None,
 ) -> EngineExecutor:
     """Talker AR executor backed by SGLang AR engine."""
     from transformers import AutoConfig
@@ -614,6 +652,7 @@ def create_talker_ar_executor(
         ),
         speaker_map=getattr(talker_cfg, "speaker_id", None),
         enqueue_fn_holder=enqueue_fn_holder,
+        max_seq_len=max_seq_len,
         thinker_config=getattr(hf_config, "thinker_config", None),
     )
 
@@ -656,6 +695,7 @@ def create_talker_ar_executor_from_config(
         weight_prefix=weight_prefix,
         feedback_enabled=feedback_enabled,
         feedback_mailbox=feedback_mailbox,
+        max_seq_len=talker_max_seq_len,
     )
     post_load_avail_mem = avail_gpu_mem(gpu_id)
     post_load_mem = (
