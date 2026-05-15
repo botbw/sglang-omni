@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="May 14, 2026"/>
+    <meta name="docbuild:last-update" content="May 15, 2026"/>
   </head>
   
   
@@ -167,8 +167,11 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../developer_reference/architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../developer_reference/relay_design.html">Relay</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/main.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 </ul>
 
     </div>
@@ -471,7 +474,7 @@ and then start the router after all managed workers pass <code class="docutils l
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">backend:</span> <span class="pre">local</span></code> means the router process starts and manages worker
 subprocesses on the same machine. The launched workers are complete Omni V1
-servers started with <code class="docutils literal notranslate"><span class="pre">sgl-omni</span> <span class="pre">serve</span> <span class="pre">--version</span> <span class="pre">v1</span></code>; they are not partial
+servers started with <code class="docutils literal notranslate"><span class="pre">sgl-omni</span> <span class="pre">serve</span></code>; they are not partial
 pipeline stages. The router waits for every managed worker to pass <code class="docutils literal notranslate"><span class="pre">/health</span></code>
 before it starts accepting client traffic, and it stops those managed workers
 when the router exits.</p>
@@ -489,7 +492,7 @@ two-GPU machine, use <code class="docutils literal notranslate"><span class="pre
 workers for text output.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">worker_extra_args</span></code> for public Omni V1 serve options that are specific to
 the worker process, such as <code class="docutils literal notranslate"><span class="pre">--mem-fraction-static</span></code>, <code class="docutils literal notranslate"><span class="pre">--thinker-tp-size</span></code>, or
-<code class="docutils literal notranslate"><span class="pre">--text-only</span></code>. These arguments are passed to <code class="docutils literal notranslate"><span class="pre">sgl-omni</span> <span class="pre">serve</span> <span class="pre">--version</span> <span class="pre">v1</span></code>
+<code class="docutils literal notranslate"><span class="pre">--text-only</span></code>. These arguments are passed to <code class="docutils literal notranslate"><span class="pre">sgl-omni</span> <span class="pre">serve</span></code>
 after the launcher-owned flags. When no memory flags are provided, Omni V1 uses
 its normal auto-sizing path.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">worker_capabilities</span></code> when managed workers intentionally expose only part
@@ -519,7 +522,6 @@ capability set shown above.</p>
 <p>Start each Omni V1 worker separately. The example below launches two full
 Qwen3-Omni speech workers on different GPU pairs and ports:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span>,1<span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--version<span class="w"> </span>v1<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-name<span class="w"> </span>qwen3-omni<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="se">\</span>
@@ -527,7 +529,6 @@ Qwen3-Omni speech workers on different GPU pairs and ports:</p>
 </pre></div>
 </div>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">2</span>,3<span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--version<span class="w"> </span>v1<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-name<span class="w"> </span>qwen3-omni<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="se">\</span>
@@ -921,7 +922,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 14, 2026.
+  Last updated on May 15, 2026.
   <br/>
 </p>
   </div>

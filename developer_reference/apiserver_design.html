@@ -53,10 +53,12 @@
     <link rel="icon" href="https://docs.sglang.io/_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Pipeline Overview" href="pipeline.html" />
+    <link rel="prev" title="Architecture" href="main.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="May 14, 2026"/>
+    <meta name="docbuild:last-update" content="May 15, 2026"/>
   </head>
   
   
@@ -104,8 +106,6 @@
     <div class="bd-container__inner bd-page-width">
       
       
-      
-        
       
       <dialog id="pst-primary-sidebar-modal"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
@@ -166,9 +166,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../benchmarks/relay.html">Benchmark Relay</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Developer Reference</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
-<li class="toctree-l1"><a class="reference internal" href="relay_design.html">Relay</a></li>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="main.html">Architecture</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">API Server Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="communication.html">Communication</a></li>
 </ul>
 
     </div>
@@ -432,8 +435,10 @@
 <section id="role-in-the-system">
 <h2>Role in the System<a class="headerlink" href="#role-in-the-system" title="Link to this heading">#</a></h2>
 <p>The API server is the outer protocol layer on top of the <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> pipeline runtime.</p>
-<p>At a high level, the request path is:</p>
+<p>At a high level, the built-in server startup path is:</p>
 <p><code class="docutils literal notranslate"><span class="pre">CLI</span> <span class="pre">/</span> <span class="pre">Python</span> <span class="pre">entrypoint</span></code> → <code class="docutils literal notranslate"><span class="pre">PipelineConfig</span></code> → <code class="docutils literal notranslate"><span class="pre">Pipeline</span> <span class="pre">Startup</span></code> → <code class="docutils literal notranslate"><span class="pre">Coordinator</span></code> → <code class="docutils literal notranslate"><span class="pre">Client</span></code> → <code class="docutils literal notranslate"><span class="pre">FastAPI</span></code></p>
+<p>After startup, the request path is:</p>
+<p><code class="docutils literal notranslate"><span class="pre">HTTP</span> <span class="pre">request</span></code> → <code class="docutils literal notranslate"><span class="pre">FastAPI</span> <span class="pre">route</span></code> → <code class="docutils literal notranslate"><span class="pre">Client</span></code> → <code class="docutils literal notranslate"><span class="pre">Coordinator</span></code> → <code class="docutils literal notranslate"><span class="pre">Stage</span> <span class="pre">pipeline</span></code> → <code class="docutils literal notranslate"><span class="pre">Client</span> <span class="pre">aggregation</span></code> → <code class="docutils literal notranslate"><span class="pre">HTTP/SSE</span> <span class="pre">response</span></code></p>
 <p>That split keeps responsibilities clean:</p>
 <ul class="simple">
 <li><p>the pipeline runtime handles orchestration and execution</p></li>
@@ -493,10 +498,10 @@
 <p>It:</p>
 <ul class="simple">
 <li><p>compiles the pipeline config</p></li>
-<li><p>starts the runner</p></li>
+<li><p>starts the pipeline runtime</p></li>
 <li><p>creates the <code class="docutils literal notranslate"><span class="pre">Client</span></code></p></li>
 <li><p>creates the FastAPI app</p></li>
-<li><p>mounts profiling routes</p></li>
+<li><p>mounts profiling routes on the single-process path</p></li>
 <li><p>runs Uvicorn</p></li>
 <li><p>stops the runtime on shutdown</p></li>
 </ul>
@@ -528,20 +533,21 @@
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code></p></td>
-<td><p>Text-to-speech</p></td>
+<td><p>Text-to-speech, raw audio response or SSE chunks when <code class="docutils literal notranslate"><span class="pre">stream=true</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/start_profile</span></code></p></td>
-<td><p>Added by the built-in launcher</p></td>
+<td><p>Added by the single-process built-in launcher</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/stop_profile</span></code></p></td>
-<td><p>Added by the built-in launcher</p></td>
+<td><p>Added by the single-process built-in launcher</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>The profiling routes are only present when the server is started through <code class="docutils literal notranslate"><span class="pre">launch_server()</span></code>.</p>
+<p>The profiling routes are mounted by the single-process <code class="docutils literal notranslate"><span class="pre">launch_server()</span></code> path. The
+current multi-process launcher path does not mount them.</p>
 </section>
 <section id="request-mapping">
 <h2>Request Mapping<a class="headerlink" href="#request-mapping" title="Link to this heading">#</a></h2>
@@ -564,10 +570,12 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">images</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">audios</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">videos</span></code></p></li>
+<li><p>video processing overrides such as <code class="docutils literal notranslate"><span class="pre">video_fps</span></code> and frame/pixel limits</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">modalities</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">audio</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stage_sampling</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stage_params</span></code></p></li>
+<li><p>talker-specific generation overrides</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">request_id</span></code></p></li>
 </ul>
 </section>
@@ -579,10 +587,13 @@
 <li><p>builds <code class="docutils literal notranslate"><span class="pre">SamplingParams</span></code></p></li>
 <li><p>converts chat messages into internal <code class="docutils literal notranslate"><span class="pre">Message</span></code> objects</p></li>
 <li><p>maps per-stage sampling overrides</p></li>
-<li><p>stores media input and audio config in request metadata</p></li>
+<li><p>passes per-stage runtime params through <code class="docutils literal notranslate"><span class="pre">stage_params</span></code></p></li>
+<li><p>stores media input, audio config, and video processing overrides in request metadata</p></li>
+<li><p>stores talker-specific generation overrides in <code class="docutils literal notranslate"><span class="pre">extra_params</span></code></p></li>
 <li><p>copies <code class="docutils literal notranslate"><span class="pre">modalities</span></code> into <code class="docutils literal notranslate"><span class="pre">output_modalities</span></code></p></li>
 </ul>
-<p>From that point on, the runtime works with an internal <code class="docutils literal notranslate"><span class="pre">GenerateRequest</span></code>, not the original OpenAI-style payload.</p>
+<p>The route hands that <code class="docutils literal notranslate"><span class="pre">GenerateRequest</span></code> to <code class="docutils literal notranslate"><span class="pre">Client</span></code>. The client then converts it
+to an <code class="docutils literal notranslate"><span class="pre">OmniRequest</span></code> before submitting it to the coordinator.</p>
 </section>
 </section>
 <section id="response-paths">
@@ -621,7 +632,11 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">task=&quot;tts&quot;</span></code> in metadata</p></li>
 <li><p>TTS-specific parameters stored under <code class="docutils literal notranslate"><span class="pre">tts_params</span></code></p></li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">Client.speech()</span></code> then collects audio chunks, encodes them, and returns raw audio bytes to the HTTP layer.</p>
+<p>For non-streaming requests, <code class="docutils literal notranslate"><span class="pre">Client.speech()</span></code> collects audio chunks, encodes
+them, and returns raw audio bytes to the HTTP layer.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">stream=true</span></code>, the route returns SSE events. Each event carries a
+base64-encoded audio chunk and format metadata; the stream ends with a final
+chunk carrying <code class="docutils literal notranslate"><span class="pre">finish_reason</span></code> followed by <code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">[DONE]</span></code>.</p>
 </section>
 </section>
 </section>
@@ -637,6 +652,24 @@
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
+    <a class="left-prev"
+       href="main.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Architecture</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="pipeline.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Pipeline Overview</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
 </div>
                 </footer>
               
@@ -707,7 +740,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 14, 2026.
+  Last updated on May 15, 2026.
   <br/>
 </p>
   </div>
