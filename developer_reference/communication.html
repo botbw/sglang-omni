@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="May 17, 2026"/>
+    <meta name="docbuild:last-update" content="May 18, 2026"/>
   </head>
   
   
@@ -526,7 +526,7 @@ helper, <code class="docutils literal notranslate"><span class="pre">relay_io.se
 transport path.</p>
 <p>For same-GPU stream targets:</p>
 <ul class="simple">
-<li><p>the compiler/runner detects targets whose sender and receiver share the same
+<li><p>runtime prep detects targets whose sender and receiver share the same
 primary GPU</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">send_stream_chunk()</span></code> serializes the chunk with <code class="docutils literal notranslate"><span class="pre">ForkingPickler</span></code></p></li>
 <li><p>CUDA tensors are shared through CUDA IPC instead of copied through relay</p></li>
@@ -571,7 +571,7 @@ the transfer is safe to release.</p>
 <h2>Backends<a class="headerlink" href="#backends" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">PipelineConfig.relay_backend</span></code> accepts <code class="docutils literal notranslate"><span class="pre">shm</span></code>, <code class="docutils literal notranslate"><span class="pre">nccl</span></code>, <code class="docutils literal notranslate"><span class="pre">nixl</span></code>, or <code class="docutils literal notranslate"><span class="pre">mooncake</span></code>.
 <code class="docutils literal notranslate"><span class="pre">RelayConfig</span></code> can override slot size, credits, rank, world size, and device per
-stage. If no per-stage relay config is provided, the compiler infers the relay
+stage. If no per-stage relay config is provided, runtime prep infers the relay
 device from stage placement. For <code class="docutils literal notranslate"><span class="pre">shm</span></code>, it keeps relay buffers on CPU because
 the backend copies through host shared memory.</p>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -693,7 +693,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 17, 2026.
+  Last updated on May 18, 2026.
   <br/>
 </p>
   </div>
