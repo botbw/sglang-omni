@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="May 18, 2026"/>
+    <meta name="docbuild:last-update" content="May 21, 2026"/>
   </head>
   
   
@@ -515,35 +515,45 @@ belongs in stages, schedulers, model runners, and model-local payload logic.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
 <td><p>Marks a stage as terminal; terminal results are sent to the coordinator.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gpu</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">route_fn</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Dotted function path for request-aware result routing. The function receives <code class="docutils literal notranslate"><span class="pre">(request_id,</span> <span class="pre">stage_output)</span></code> and returns a downstream stage name or list of stage names.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gpu</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">list[int]</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>GPU id for the stage. <code class="docutils literal notranslate"><span class="pre">None</span></code> means CPU placement. A list is used for tensor parallel ranks.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tp_size</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tp_size</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
 <td><p>Number of tensor-parallel ranks. Must match <code class="docutils literal notranslate"><span class="pre">len(gpu)</span></code> when <code class="docutils literal notranslate"><span class="pre">gpu</span></code> is a list.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">process</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">process</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>OS process group identifier. Non-TP stages with the same <code class="docutils literal notranslate"><span class="pre">process</span></code> value share a single OS process; today every non-TP stage must declare one explicitly (see also <code class="docutils literal notranslate"><span class="pre">_validate_general</span></code>). For TP stages, <code class="docutils literal notranslate"><span class="pre">process</span></code> is optional and acts as a prefix for the derived rank-process names (<code class="docutils literal notranslate"><span class="pre">{process}_tp{rank}</span></code>); if unset, the stage name is used as the prefix.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wait_for</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">wait_for</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">list[str]</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Upstream stages required before this stage can execute a request.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">merge_fn</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">merge_fn</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Dotted import path to the fan-in merge function. Required when <code class="docutils literal notranslate"><span class="pre">wait_for</span></code> is set.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stream_to</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stream_to</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">list[str]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">[]</span></code></p></td>
-<td><p>Streaming targets for chunks such as hidden states or codec codes. This is parallel to normal result routing.</p></td>
+<td><p>Static superset of streaming targets for chunks such as hidden states or codec codes. This is parallel to normal result routing.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stream_done_to_fn</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Dotted function path for request-aware stream-completion targets. The function receives <code class="docutils literal notranslate"><span class="pre">(request_id,</span> <span class="pre">stage_output)</span></code> and returns the active subset of <code class="docutils literal notranslate"><span class="pre">stream_to</span></code> targets that should receive the final done signal.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">project_payload</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">str]</span></code></p></td>
@@ -558,11 +568,12 @@ belongs in stages, schedulers, model runners, and model-local payload logic.</p>
 </tbody>
 </table>
 </div>
-<p>Routing rule: in current code, use <code class="docutils literal notranslate"><span class="pre">next</span></code> for static downstream routing or
-<code class="docutils literal notranslate"><span class="pre">terminal=True</span></code> for a terminal stage. Validation requires at least one of those;
-use exactly one by convention because terminal stages do not route downstream.
-The refactor tracking draft includes a <code class="docutils literal notranslate"><span class="pre">route_fn</span></code> field for future data-driven
-routing, but the current <code class="docutils literal notranslate"><span class="pre">StageConfig</span></code> schema does not accept <code class="docutils literal notranslate"><span class="pre">route_fn</span></code>.</p>
+<p>Routing rule: set exactly one of <code class="docutils literal notranslate"><span class="pre">next</span></code> or <code class="docutils literal notranslate"><span class="pre">terminal=True</span></code>. <code class="docutils literal notranslate"><span class="pre">route_fn</span></code> is an
+optional request-aware override for stages that already declare <code class="docutils literal notranslate"><span class="pre">next</span></code>; keep
+<code class="docutils literal notranslate"><span class="pre">next</span></code> as the static topology declaration for validation. <code class="docutils literal notranslate"><span class="pre">route_fn</span></code> is not
+valid on terminal stages and must return downstream stage targets, not <code class="docutils literal notranslate"><span class="pre">None</span></code>.
+When using <code class="docutils literal notranslate"><span class="pre">stream_done_to_fn</span></code>, keep <code class="docutils literal notranslate"><span class="pre">stream_to</span></code> as the static superset because
+runtime prep derives stream receivers and same-GPU stream paths from it.</p>
 <p>Derived from stages:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">entry_stage</span></code>: defaults to the first stage unless explicitly set on
@@ -634,7 +645,12 @@ inferred by runtime prep from <code class="docutils literal notranslate"><span c
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Optional explicit coordinator abort broadcast endpoint.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">config_cls</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">terminal_stages_fn</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Dotted function path for request-aware terminal-stage resolution. The function receives the normalized <code class="docutils literal notranslate"><span class="pre">OmniRequest</span></code> and returns terminal stage names for that request, or <code class="docutils literal notranslate"><span class="pre">None</span></code> to use static terminals.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">config_cls</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>class name</p></td>
 <td><p>Stored automatically and used when loading a saved config file.</p></td>
@@ -808,7 +824,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 18, 2026.
+  Last updated on May 21, 2026.
   <br/>
 </p>
   </div>

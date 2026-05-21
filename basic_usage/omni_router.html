@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="May 18, 2026"/>
+    <meta name="docbuild:last-update" content="May 21, 2026"/>
   </head>
   
   
@@ -466,9 +466,10 @@ and then start the router after all managed workers pass <code class="docutils l
 <span class="w">  </span><span class="nt">model_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Qwen/Qwen3-Omni-30B-A3B-Instruct</span>
 <span class="w">  </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">qwen3-omni</span>
 <span class="w">  </span><span class="nt">num_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<span class="w">  </span><span class="nt">num_gpus_per_worker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">  </span><span class="nt">num_gpus_per_worker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">  </span><span class="nt">worker_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
 <span class="w">  </span><span class="nt">worker_base_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8011</span>
+<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--config</span><span class="nv"> </span><span class="s">examples/configs/qwen3_omni_colocated.yaml</span><span class="nv"> </span><span class="s">--colocate&quot;</span>
 <span class="w">  </span><span class="nt">wait_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span>
 </pre></div>
 </div>
@@ -478,18 +479,17 @@ servers started with <code class="docutils literal notranslate"><span class="pre
 pipeline stages. The router waits for every managed worker to pass <code class="docutils literal notranslate"><span class="pre">/health</span></code>
 before it starts accepting client traffic, and it stops those managed workers
 when the router exits.</p>
-<p><code class="docutils literal notranslate"><span class="pre">num_gpus_per_worker</span></code> controls automatic GPU grouping. The full Qwen3-Omni
-speech topology uses two logical GPUs per worker by default: thinker, image
-encoder, and audio encoder run on logical GPU 0, while talker and code2wav run
-on logical GPU 1. With <code class="docutils literal notranslate"><span class="pre">num_workers:</span> <span class="pre">2</span></code> and <code class="docutils literal notranslate"><span class="pre">num_gpus_per_worker:</span> <span class="pre">2</span></code>, the
-launcher assigns <code class="docutils literal notranslate"><span class="pre">0,1</span></code> to the first worker and <code class="docutils literal notranslate"><span class="pre">2,3</span></code> to the second worker when
-four CUDA devices are visible.</p>
+<p><code class="docutils literal notranslate"><span class="pre">num_gpus_per_worker</span></code> controls automatic GPU grouping. The default Qwen3-Omni
+router example uses colocated workers: each complete speech worker runs on one
+GPU through <code class="docutils literal notranslate"><span class="pre">examples/configs/qwen3_omni_colocated.yaml</span></code>. With
+<code class="docutils literal notranslate"><span class="pre">num_workers:</span> <span class="pre">2</span></code> and <code class="docutils literal notranslate"><span class="pre">num_gpus_per_worker:</span> <span class="pre">1</span></code>, the launcher assigns GPU <code class="docutils literal notranslate"><span class="pre">0</span></code> to
+the first worker and GPU <code class="docutils literal notranslate"><span class="pre">1</span></code> to the second worker when two CUDA devices are
+visible.</p>
 <p>Set <code class="docutils literal notranslate"><span class="pre">worker_gpu_ids</span></code> only when you need explicit placement. Each entry maps one
 <code class="docutils literal notranslate"><span class="pre">CUDA_VISIBLE_DEVICES</span></code> value to one worker, for example
-<code class="docutils literal notranslate"><span class="pre">worker_gpu_ids:</span> <span class="pre">[&quot;0,1&quot;,</span> <span class="pre">&quot;2,3&quot;]</span></code> for two full Qwen3-Omni speech workers. On a
-two-GPU machine, use <code class="docutils literal notranslate"><span class="pre">num_workers:</span> <span class="pre">1</span></code> for the full speech topology, or add
-<code class="docutils literal notranslate"><span class="pre">worker_extra_args:</span> <span class="pre">&quot;--text-only&quot;</span></code> if you intentionally want two one-GPU
-workers for text output.</p>
+<code class="docutils literal notranslate"><span class="pre">worker_gpu_ids:</span> <span class="pre">[&quot;0&quot;,</span> <span class="pre">&quot;1&quot;]</span></code> for two one-GPU colocated Qwen3-Omni workers. Use
+<code class="docutils literal notranslate"><span class="pre">worker_extra_args:</span> <span class="pre">&quot;--text-only&quot;</span></code> only if you intentionally want text-output
+workers instead of speech-output workers.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">worker_extra_args</span></code> for public Omni V1 serve options that are specific to
 the worker process, such as <code class="docutils literal notranslate"><span class="pre">--mem-fraction-static</span></code>, <code class="docutils literal notranslate"><span class="pre">--thinker-tp-size</span></code>, or
 <code class="docutils literal notranslate"><span class="pre">--text-only</span></code>. These arguments are passed to <code class="docutils literal notranslate"><span class="pre">sgl-omni</span> <span class="pre">serve</span></code>
@@ -519,18 +519,22 @@ capability set shown above.</p>
 </section>
 <section id="launch-worker-servers-manually">
 <h2>Launch Worker Servers Manually<a class="headerlink" href="#launch-worker-servers-manually" title="Link to this heading">#</a></h2>
-<p>Start each Omni V1 worker separately. The example below launches two full
-Qwen3-Omni speech workers on different GPU pairs and ports:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span>,1<span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<p>Start each Omni V1 worker separately. The example below launches two colocated
+Qwen3-Omni speech workers on different GPUs and ports:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-name<span class="w"> </span>qwen3-omni<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_omni_colocated.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--colocate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8011</span>
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">2</span>,3<span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-name<span class="w"> </span>qwen3-omni<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_omni_colocated.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--colocate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8012</span>
 </pre></div>
@@ -922,7 +926,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 18, 2026.
+  Last updated on May 21, 2026.
   <br/>
 </p>
   </div>
