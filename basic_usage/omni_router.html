@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="May 21, 2026"/>
+    <meta name="docbuild:last-update" content="May 22, 2026"/>
   </head>
   
   
@@ -469,7 +469,7 @@ and then start the router after all managed workers pass <code class="docutils l
 <span class="w">  </span><span class="nt">num_gpus_per_worker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">  </span><span class="nt">worker_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
 <span class="w">  </span><span class="nt">worker_base_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8011</span>
-<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--config</span><span class="nv"> </span><span class="s">examples/configs/qwen3_omni_colocated.yaml</span><span class="nv"> </span><span class="s">--colocate&quot;</span>
+<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--config</span><span class="nv"> </span><span class="s">examples/configs/qwen3_omni_colocated_h20.yaml</span><span class="nv"> </span><span class="s">--colocate&quot;</span>
 <span class="w">  </span><span class="nt">wait_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span>
 </pre></div>
 </div>
@@ -481,10 +481,12 @@ before it starts accepting client traffic, and it stops those managed workers
 when the router exits.</p>
 <p><code class="docutils literal notranslate"><span class="pre">num_gpus_per_worker</span></code> controls automatic GPU grouping. The default Qwen3-Omni
 router example uses colocated workers: each complete speech worker runs on one
-GPU through <code class="docutils literal notranslate"><span class="pre">examples/configs/qwen3_omni_colocated.yaml</span></code>. With
+GPU through <code class="docutils literal notranslate"><span class="pre">examples/configs/qwen3_omni_colocated_h20.yaml</span></code>. With
 <code class="docutils literal notranslate"><span class="pre">num_workers:</span> <span class="pre">2</span></code> and <code class="docutils literal notranslate"><span class="pre">num_gpus_per_worker:</span> <span class="pre">1</span></code>, the launcher assigns GPU <code class="docutils literal notranslate"><span class="pre">0</span></code> to
 the first worker and GPU <code class="docutils literal notranslate"><span class="pre">1</span></code> to the second worker when two CUDA devices are
 visible.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">examples/configs/qwen3_omni_colocated_h200.yaml</span></code> instead for single-H200
+workers.</p>
 <p>Set <code class="docutils literal notranslate"><span class="pre">worker_gpu_ids</span></code> only when you need explicit placement. Each entry maps one
 <code class="docutils literal notranslate"><span class="pre">CUDA_VISIBLE_DEVICES</span></code> value to one worker, for example
 <code class="docutils literal notranslate"><span class="pre">worker_gpu_ids:</span> <span class="pre">[&quot;0&quot;,</span> <span class="pre">&quot;1&quot;]</span></code> for two one-GPU colocated Qwen3-Omni workers. Use
@@ -516,6 +518,19 @@ speech or audio-output support:</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">worker_capabilities</span></code> is omitted and <code class="docutils literal notranslate"><span class="pre">worker_extra_args</span></code> contains
 <code class="docutils literal notranslate"><span class="pre">--text-only</span></code>, the router registers the managed workers with the same text-only
 capability set shown above.</p>
+<p>For short audio-input / text-output MMSU-style workloads, use the fused
+text-path Qwen3-Omni config instead of the default speech-colocated worker:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">launcher</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local</span>
+<span class="w">  </span><span class="nt">model_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Qwen/Qwen3-Omni-30B-A3B-Instruct</span>
+<span class="w">  </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">qwen3-omni</span>
+<span class="w">  </span><span class="nt">num_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">  </span><span class="nt">num_gpus_per_worker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--config</span><span class="nv"> </span><span class="s">examples/configs/qwen3_omni_mmsu.yaml</span><span class="nv"> </span><span class="s">--text-only&quot;</span>
+</pre></div>
+</div>
+<p>This keeps preprocessing, encoders, aggregation, thinker, and decode in one
+worker process while leaving the general speech-colocated topology unchanged.</p>
 </section>
 <section id="launch-worker-servers-manually">
 <h2>Launch Worker Servers Manually<a class="headerlink" href="#launch-worker-servers-manually" title="Link to this heading">#</a></h2>
@@ -524,7 +539,7 @@ Qwen3-Omni speech workers on different GPUs and ports:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-name<span class="w"> </span>qwen3-omni<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_omni_colocated.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_omni_colocated_h20.yaml<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--colocate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8011</span>
@@ -533,7 +548,7 @@ Qwen3-Omni speech workers on different GPUs and ports:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-name<span class="w"> </span>qwen3-omni<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_omni_colocated.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_omni_colocated_h20.yaml<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--colocate<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8012</span>
@@ -926,7 +941,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 21, 2026.
+  Last updated on May 22, 2026.
   <br/>
 </p>
   </div>

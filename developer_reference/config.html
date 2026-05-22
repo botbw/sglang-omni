@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="May 21, 2026"/>
+    <meta name="docbuild:last-update" content="May 22, 2026"/>
   </head>
   
   
@@ -540,27 +540,32 @@ belongs in stages, schedulers, model runners, and model-local payload logic.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Upstream stages required before this stage can execute a request.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">merge_fn</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">wait_for_fn</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Dotted function path for request-aware fan-in source selection. The function receives <code class="docutils literal notranslate"><span class="pre">(request_id,</span> <span class="pre">from_stage,</span> <span class="pre">payload)</span></code> and returns the active subset of <code class="docutils literal notranslate"><span class="pre">wait_for</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when the payload does not determine the subset yet.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">merge_fn</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Dotted import path to the fan-in merge function. Required when <code class="docutils literal notranslate"><span class="pre">wait_for</span></code> is set.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stream_to</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stream_to</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">list[str]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">[]</span></code></p></td>
 <td><p>Static superset of streaming targets for chunks such as hidden states or codec codes. This is parallel to normal result routing.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stream_done_to_fn</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stream_done_to_fn</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Dotted function path for request-aware stream-completion targets. The function receives <code class="docutils literal notranslate"><span class="pre">(request_id,</span> <span class="pre">stage_output)</span></code> and returns the active subset of <code class="docutils literal notranslate"><span class="pre">stream_to</span></code> targets that should receive the final done signal.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">project_payload</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">project_payload</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">str]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">{}</span></code></p></td>
 <td><p>Optional target-stage to dotted projection function mapping used before writing a downstream payload.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">relay</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">relay</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">RelayConfig</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Per-stage relay override. If unset, relay device and defaults are inferred from stage placement and <code class="docutils literal notranslate"><span class="pre">PipelineConfig.relay_backend</span></code>.</p></td>
@@ -572,6 +577,11 @@ belongs in stages, schedulers, model runners, and model-local payload logic.</p>
 optional request-aware override for stages that already declare <code class="docutils literal notranslate"><span class="pre">next</span></code>; keep
 <code class="docutils literal notranslate"><span class="pre">next</span></code> as the static topology declaration for validation. <code class="docutils literal notranslate"><span class="pre">route_fn</span></code> is not
 valid on terminal stages and must return downstream stage targets, not <code class="docutils literal notranslate"><span class="pre">None</span></code>.
+Fan-in follows the same static-superset pattern: keep <code class="docutils literal notranslate"><span class="pre">wait_for</span></code> as the full set
+of possible upstream stages, and use <code class="docutils literal notranslate"><span class="pre">wait_for_fn</span></code> only to select the active
+per-request subset. The returned subset must be non-empty and contained in
+<code class="docutils literal notranslate"><span class="pre">wait_for</span></code>; returning <code class="docutils literal notranslate"><span class="pre">None</span></code> keeps the request pending until another upstream
+payload can resolve the active set.
 When using <code class="docutils literal notranslate"><span class="pre">stream_done_to_fn</span></code>, keep <code class="docutils literal notranslate"><span class="pre">stream_to</span></code> as the static superset because
 runtime prep derives stream receivers and same-GPU stream paths from it.</p>
 <p>Derived from stages:</p>
@@ -633,17 +643,7 @@ inferred by runtime prep from <code class="docutils literal notranslate"><span c
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">endpoints</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">EndpointsConfig</span></code></p></td>
 <td><p>IPC defaults</p></td>
-<td><p>Endpoint allocation settings: <code class="docutils literal notranslate"><span class="pre">scheme</span></code>, <code class="docutils literal notranslate"><span class="pre">base_path</span></code>, and <code class="docutils literal notranslate"><span class="pre">base_port</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">completion_endpoint</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p>Optional explicit coordinator completion endpoint.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">abort_endpoint</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p>Optional explicit coordinator abort broadcast endpoint.</p></td>
+<td><p>Endpoint allocation settings. <code class="docutils literal notranslate"><span class="pre">base_path</span></code> controls where Unix-domain sockets are created.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">terminal_stages_fn</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
@@ -824,7 +824,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 21, 2026.
+  Last updated on May 22, 2026.
   <br/>
 </p>
   </div>
