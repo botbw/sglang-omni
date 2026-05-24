@@ -172,6 +172,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
 </ul>
 
     </div>
@@ -730,7 +731,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 </div>
 <p>Run EN and ZH after launching the target server on port 8000. Do not add benchmark results to docs until the full H200 runs complete.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_tts_seedtts<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--meta<span class="w"> </span>seedtts_testset/en/meta.lst<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--meta<span class="w"> </span>zhaochenyang20/seed-tts-eval-arrow<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model<span class="w"> </span>Qwen/Qwen3-TTS-12Hz-0.6B-Base<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-dir<span class="w"> </span>results/qwen3_tts_0_6b_en<span class="w"> </span><span class="se">\</span>
@@ -738,7 +739,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <span class="w">  </span>--max-concurrency<span class="w"> </span><span class="m">16</span>
 
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_tts_seedtts<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--meta<span class="w"> </span>seedtts_testset/zh/meta.lst<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--meta<span class="w"> </span>zhaochenyang20/seed-tts-eval-arrow<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model<span class="w"> </span>Qwen/Qwen3-TTS-12Hz-0.6B-Base<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-dir<span class="w"> </span>results/qwen3_tts_0_6b_zh<span class="w"> </span><span class="se">\</span>
@@ -746,7 +747,7 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <span class="w">  </span>--max-concurrency<span class="w"> </span><span class="m">16</span>
 
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_tts_seedtts<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--meta<span class="w"> </span>seedtts_testset/en/meta.lst<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--meta<span class="w"> </span>zhaochenyang20/seed-tts-eval-arrow<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model<span class="w"> </span>Qwen/Qwen3-TTS-12Hz-1.7B-Base<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-dir<span class="w"> </span>results/qwen3_tts_1_7b_en<span class="w"> </span><span class="se">\</span>
@@ -754,7 +755,7 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <span class="w">  </span>--max-concurrency<span class="w"> </span><span class="m">16</span>
 
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_tts_seedtts<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--meta<span class="w"> </span>seedtts_testset/zh/meta.lst<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--meta<span class="w"> </span>zhaochenyang20/seed-tts-eval-arrow<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model<span class="w"> </span>Qwen/Qwen3-TTS-12Hz-1.7B-Base<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-dir<span class="w"> </span>results/qwen3_tts_1_7b_zh<span class="w"> </span><span class="se">\</span>
@@ -762,7 +763,7 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <span class="w">  </span>--max-concurrency<span class="w"> </span><span class="m">16</span>
 
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_tts_seedtts<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--meta<span class="w"> </span>seedtts_testset/en/meta.lst<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--meta<span class="w"> </span>zhaochenyang20/seed-tts-eval-arrow<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model<span class="w"> </span>mistralai/Voxtral-4B-TTS-2603<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-dir<span class="w"> </span>results/voxtral_en<span class="w"> </span><span class="se">\</span>
@@ -773,7 +774,7 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <span class="w">  </span>--voice<span class="w"> </span>cheerful_female
 
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_tts_seedtts<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--meta<span class="w"> </span>seedtts_testset/zh/meta.lst<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--meta<span class="w"> </span>zhaochenyang20/seed-tts-eval-arrow<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model<span class="w"> </span>mistralai/Voxtral-4B-TTS-2603<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-dir<span class="w"> </span>results/voxtral_zh<span class="w"> </span><span class="se">\</span>

@@ -172,6 +172,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config.html">Config</a></li>
 <li class="toctree-l1"><a class="reference internal" href="communication.html">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="profiler.html">Request-level profiler</a></li>
 </ul>
 
     </div>
@@ -537,17 +538,40 @@
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/start_profile</span></code></p></td>
-<td><p>Added by the single-process built-in launcher</p></td>
+<td><p>Torch trace + (optional) request-level events. Added by the built-in launcher</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/stop_profile</span></code></p></td>
-<td><p>Added by the single-process built-in launcher</p></td>
+<td><p>Stops both torch trace and request-level events</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/start_request_profile</span></code></p></td>
+<td><p>Request-level event recorder only (no torch trace)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/stop_request_profile</span></code></p></td>
+<td><p>Stops the request-level event recorder</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p>The profiling routes are mounted by the single-process <code class="docutils literal notranslate"><span class="pre">launch_server()</span></code> path. The
 current multi-process launcher path does not mount them.</p>
+<p><code class="docutils literal notranslate"><span class="pre">/start_profile</span></code> accepts:</p>
+<div class="highlight-jsonc notranslate"><div class="highlight"><pre><span></span>{
+  &quot;run_id&quot;: &quot;demo-run&quot;,
+  &quot;trace_path_template&quot;: &quot;/tmp/profiles/demo-run/trace&quot;,  // torch trace template
+  &quot;event_dir&quot;: &quot;/tmp/profiles/demo-run/events&quot;,            // request-event JSONL dir (optional)
+  &quot;enable_torch&quot;: true                                     // set false to skip torch trace
+}
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">/stop_profile</span></code> and <code class="docutils literal notranslate"><span class="pre">/stop_request_profile</span></code> both accept an optional
+<code class="docutils literal notranslate"><span class="pre">run_id</span></code>. Omitting it is a wildcard: every stage stops whatever profiler
+session is currently active.</p>
+<p>Request-level events are emitted as JSON lines under
+<code class="docutils literal notranslate"><span class="pre">&lt;event_dir&gt;/events_&lt;stage&gt;_&lt;pid&gt;.jsonl</span></code>. Use <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">sglang_omni.profiler</span> <span class="pre">&lt;event_dir&gt;</span></code> to derive the timeline / stage / hop reports described in
+<code class="docutils literal notranslate"><span class="pre">docs/developer_reference/profiler.md</span></code>.</p>
 </section>
 <section id="request-mapping">
 <h2>Request Mapping<a class="headerlink" href="#request-mapping" title="Link to this heading">#</a></h2>
