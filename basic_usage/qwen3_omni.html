@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="May 24, 2026"/>
+    <meta name="docbuild:last-update" content="May 25, 2026"/>
   </head>
   
   
@@ -409,6 +409,9 @@
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-mode">Speech Mode</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Launch the Server</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-gpu-fp8-on-h100-h20">Single-GPU FP8 on H100/H20</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Image and Text Input</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Audio and Image Input</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Video and Audio Input</a></li>
@@ -640,6 +643,36 @@ the value globally or per AR stage:</p>
 the global value for that stage. Values must be greater than <code class="docutils literal notranslate"><span class="pre">0</span></code> and less than
 <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </section>
+</section>
+<section id="single-gpu-fp8-on-h100-h20">
+<h2>Single-GPU FP8 on H100/H20<a class="headerlink" href="#single-gpu-fp8-on-h100-h20" title="Link to this heading">#</a></h2>
+<p>SGLang-Omni can also serve native FP8 Qwen3-Omni checkpoints. Native FP8 uses
+the checkpoint quantization config when loading the thinker and talker AR stages,
+while keeping the same Qwen3-Omni request format shown below.</p>
+<p>For one-GPU H100/H20 colocated launch, use the FP8 colocated config:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_omni_fp8_colocated.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--colocate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-name<span class="w"> </span>qwen3-omni<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8008</span>
+</pre></div>
+</div>
+<p>The config file contains the FP8 checkpoint path:
+<code class="docutils literal notranslate"><span class="pre">marksverdhei/Qwen3-Omni-30B-A3B-FP8</span></code>. You can still pass <code class="docutils literal notranslate"><span class="pre">--model-path</span></code> to
+override the config value.</p>
+<p>The FP8 path keeps dense FP8 GEMM on SGLang <code class="docutils literal notranslate"><span class="pre">auto</span></code> and defaults native FP8 MoE
+to CUTLASS when supported. For Qwen3-Omni pipeline launches,
+<code class="docutils literal notranslate"><span class="pre">SGLANG_JIT_DEEPGEMM_PRECOMPILE=0</span></code> is set as a default unless the operator has
+already set that environment variable. This disables SGLang’s all-M DeepGEMM
+precompile session while keeping DeepGEMM available for dense FP8 GEMMs.</p>
+<p>To opt back into SGLang’s all-M DeepGEMM precompile behavior:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SGLANG_JIT_DEEPGEMM_PRECOMPILE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_omni_fp8_colocated.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--colocate<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-name<span class="w"> </span>qwen3-omni<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8008</span>
+</pre></div>
+</div>
 <section id="id2">
 <h3>Image and Text Input<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <p>Send an image with a text question to get both text and audio responses. Set <code class="docutils literal notranslate"><span class="pre">&quot;modalities&quot;:</span> <span class="pre">[&quot;text&quot;,</span> <span class="pre">&quot;audio&quot;]</span></code> to enable audio output.</p>
@@ -918,6 +951,9 @@ the global value for that stage. Values must be greater than <code class="docuti
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-mode">Speech Mode</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Launch the Server</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-gpu-fp8-on-h100-h20">Single-GPU FP8 on H100/H20</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Image and Text Input</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Audio and Image Input</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Video and Audio Input</a></li>
@@ -957,7 +993,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on May 24, 2026.
+  Last updated on May 25, 2026.
   <br/>
 </p>
   </div>
