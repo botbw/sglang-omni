@@ -498,14 +498,25 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 </section>
 <section id="use-curl">
 <h2>Use Curl<a class="headerlink" href="#use-curl" title="Link to this heading">#</a></h2>
-<p>Generate speech from text without any reference audio:</p>
+<p>For Fish Speech S2-Pro and Voxtral TTS, generate speech from text without any reference audio:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;input&quot;: &quot;Hello, how are you?&quot;}&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
-<p>Note that without reference audio, the generated voice will sound robotic. For natural-sounding results, use Voice Cloning with a reference audio clip.</p>
+<p>Qwen3-TTS Base requires reference audio:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
+<span class="s1">    &quot;ref_audio&quot;: &quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;,</span>
+<span class="s1">    &quot;ref_text&quot;: &quot;We asked over twenty different people, and they all said it was his.&quot;</span>
+<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>output.wav
+</pre></div>
+</div>
+<p>For natural-sounding Fish Speech S2-Pro results, use Voice Cloning with a reference audio clip.</p>
 <section id="voice-cloning">
 <h3>Voice Cloning<a class="headerlink" href="#voice-cloning" title="Link to this heading">#</a></h3>
 <p>The examples below use a sample clip from <a class="reference external" href="https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini"><code class="docutils literal notranslate"><span class="pre">seed-tts-eval-mini</span></code></a>. The <code class="docutils literal notranslate"><span class="pre">references</span></code> field accepts <code class="docutils literal notranslate"><span class="pre">audio_path</span></code> (a local path or HTTP URL) and <code class="docutils literal notranslate"><span class="pre">text</span></code> (transcript of that audio).</p>
@@ -547,6 +558,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <h2>Use Python<a class="headerlink" href="#use-python" title="Link to this heading">#</a></h2>
 <section id="basic-tts">
 <h3>Basic TTS<a class="headerlink" href="#basic-tts" title="Link to this heading">#</a></h3>
+<p>This no-reference request applies to Fish Speech S2-Pro and Voxtral TTS.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
@@ -716,7 +728,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
 <td><p>int</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
-<td><p>Random seed for reproducibility</p></td>
+<td><p>Model-specific; Qwen3-TTS Base accepts request-scoped seed, Voxtral TTS currently rejects seed</p></td>
 </tr>
 </tbody>
 </table>
