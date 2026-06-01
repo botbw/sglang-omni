@@ -731,8 +731,7 @@ opt into the declarative multi-stage-per-process layout;</p></li>
 process groups may share the same GPU only when GPU-stage memory budgets are
 explicit and fit the configured placement limit.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>pipeline/
-|-- stage_process.py    # StageProcessSpec and subprocess entrypoint
-|-- stage_group.py      # StageGroup lifecycle for topology process groups
+|-- stage_workers.py    # StageLaunchConfig, subprocess entrypoint, StageGroup
 |-- runtime_config.py   # endpoint/runtime-dir/placement prep
 `-- mp_runner.py        # Cross-stage orchestration and coordinator ownership
 </pre></div>
