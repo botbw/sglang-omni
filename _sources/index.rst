@@ -62,6 +62,7 @@ Supported Models
    cookbook/higgs_tts.md
    cookbook/voxtral_tts.md
    cookbook/qwen3_tts.md
+   cookbook/moss_tts.md
    cookbook/qwen3_omni.md
    cookbook/llada2_uni.md
 
