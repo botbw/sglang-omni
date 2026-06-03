@@ -161,6 +161,22 @@ curl -N -X POST http://localhost:8000/v1/audio/speech \
 
 The server returns a stream of SSE events. Each event contains an `audio.speech.chunk` object with a base64-encoded audio chunk. The stream ends with `data: [DONE]`.
 
+For clients that want a continuous byte stream instead of SSE framing, request raw PCM explicitly:
+
+```bash
+curl -N -X POST http://localhost:8000/v1/audio/speech \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "Get the trust fund to the bank early.",
+    "stream": true,
+    "stream_format": "audio",
+    "response_format": "pcm"
+  }' \
+  --output output.pcm
+```
+
+Raw audio streaming returns 16-bit mono PCM bytes (`audio/pcm`) with sample-rate metadata in response headers. It does not include in-band SSE events, final usage, or a `[DONE]` sentinel. When the client does not set `initial_codec_chunk_frames`, raw PCM requests default to a 1-frame first vocoder chunk for lower first-audio latency; set `initial_codec_chunk_frames` to `0` to use the model's steady chunk size from the start.
+
 ## Use Python
 
 ### Basic TTS
@@ -261,6 +277,8 @@ The table below lists all parameters accepted by the `/v1/audio/speech` endpoint
 | `response_format` | string | `"wav"` | Output audio format |
 | `speed` | float | `1.0` | Playback speed multiplier |
 | `stream` | bool | `false` | Enable streaming via SSE |
+| `stream_format` | string | `"sse"` | Streaming transport. Use `"audio"` with `stream=true` and `response_format="pcm"` for raw PCM bytes; the response headers declare the stream sample rate, channel count, and bit depth |
+| `initial_codec_chunk_frames` | int | `null` | Optional first codec chunk size for streaming TTFA tuning. Higgs TTS currently consumes this parameter first; raw PCM speech requests default this to `1` unless the client sets a value, including `0` |
 | `references` | list | `null` | Reference audio for voice cloning; each item has `audio_path` (local path / remote url) and `text` |
 | `ref_audio` | string | `null` | Reference audio path / URL / base64 string; equivalent to `references[0].audio_path` |
 | `ref_text` | string | `null` | Transcript for `ref_audio`; equivalent to `references[0].text` |

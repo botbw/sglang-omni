@@ -601,6 +601,19 @@ Qwen3-TTS CustomVoice, Voxtral, and S2-Pro. It is not valid for Qwen3-TTS Base.<
 </pre></div>
 </div>
 <p>The server returns a stream of SSE events. Each event contains an <code class="docutils literal notranslate"><span class="pre">audio.speech.chunk</span></code> object with a base64-encoded audio chunk. The stream ends with <code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">[DONE]</span></code>.</p>
+<p>For clients that want a continuous byte stream instead of SSE framing, request raw PCM explicitly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
+<span class="s1">    &quot;stream&quot;: true,</span>
+<span class="s1">    &quot;stream_format&quot;: &quot;audio&quot;,</span>
+<span class="s1">    &quot;response_format&quot;: &quot;pcm&quot;</span>
+<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>output.pcm
+</pre></div>
+</div>
+<p>Raw audio streaming returns 16-bit mono PCM bytes (<code class="docutils literal notranslate"><span class="pre">audio/pcm</span></code>) with sample-rate metadata in response headers. It does not include in-band SSE events, final usage, or a <code class="docutils literal notranslate"><span class="pre">[DONE]</span></code> sentinel. When the client does not set <code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code>, raw PCM requests default to a 1-frame first vocoder chunk for lower first-audio latency; set <code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code> to <code class="docutils literal notranslate"><span class="pre">0</span></code> to use the model’s steady chunk size from the start.</p>
 </section>
 </section>
 <section id="use-python">
@@ -728,6 +741,16 @@ Qwen3-TTS CustomVoice, Voxtral, and S2-Pro. It is not valid for Qwen3-TTS Base.<
 <td><p>bool</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
 <td><p>Enable streaming via SSE</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stream_format</span></code></p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;sse&quot;</span></code></p></td>
+<td><p>Streaming transport. Use <code class="docutils literal notranslate"><span class="pre">&quot;audio&quot;</span></code> with <code class="docutils literal notranslate"><span class="pre">stream=true</span></code> and <code class="docutils literal notranslate"><span class="pre">response_format=&quot;pcm&quot;</span></code> for raw PCM bytes; the response headers declare the stream sample rate, channel count, and bit depth</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code></p></td>
+<td><p>int</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
+<td><p>Optional first codec chunk size for streaming TTFA tuning. Higgs TTS currently consumes this parameter first; raw PCM speech requests default this to <code class="docutils literal notranslate"><span class="pre">1</span></code> unless the client sets a value, including <code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">references</span></code></p></td>
 <td><p>list</p></td>

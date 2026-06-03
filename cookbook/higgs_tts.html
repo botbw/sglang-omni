@@ -598,7 +598,7 @@ hf<span class="w"> </span>download<span class="w"> </span>bosonai/higgs-audio-v2
 <section id="streaming">
 <h3>Streaming<a class="headerlink" href="#streaming" title="Link to this heading">#</a></h3>
 <p>Unlike a standard request where you wait for the full audio to be generated before receiving anything, streaming lets you start receiving and playing audio <strong>while generation is still in progress</strong>. This significantly reduces time-to-first-audio, which matters for real-time or interactive use cases.</p>
-<p>Higgs TTS implements streaming via <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events">Server-Sent Events (SSE)</a>. Each SSE event carries a base64-encoded WAV chunk. Your client can decode and play each chunk as it arrives, rather than buffering the entire response.</p>
+<p>Higgs TTS implements streaming via <a class="reference external" href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events">Server-Sent Events (SSE)</a> by default. Each SSE event carries a base64-encoded audio chunk. Your client can decode and play each chunk as it arrives, rather than buffering the entire response.</p>
 <p>Enable streaming by setting <code class="docutils literal notranslate"><span class="pre">&quot;stream&quot;:</span> <span class="pre">true</span></code> in the request body. During generation, the vocoder emits incremental audio chunks; the terminal event is intentionally slim and carries metadata such as <code class="docutils literal notranslate"><span class="pre">sample_rate</span></code> and <code class="docutils literal notranslate"><span class="pre">usage</span></code> instead of repeating the full waveform. Inside the pipeline, audio chunks use the compact <code class="docutils literal notranslate"><span class="pre">audio_waveform</span></code> payload (<code class="docutils literal notranslate"><span class="pre">bytes</span></code> plus <code class="docutils literal notranslate"><span class="pre">audio_waveform_shape</span></code>, <code class="docutils literal notranslate"><span class="pre">audio_waveform_dtype</span></code>, and <code class="docutils literal notranslate"><span class="pre">sample_rate</span></code>), which the HTTP layer encodes into the SSE <code class="docutils literal notranslate"><span class="pre">audio.data</span></code> field.</p>
 <ol class="arabic simple">
 <li><p>Use curl</p></li>
@@ -617,6 +617,24 @@ hf<span class="w"> </span>download<span class="w"> </span>bosonai/higgs-audio-v2
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">-N</span></code> flag disables curl’s output buffering so SSE events are printed as they arrive.</p>
+<p>For lowest-friction playback pipelines, request raw PCM bytes instead of SSE:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
+<span class="s1">    &quot;references&quot;: [{</span>
+<span class="s1">      &quot;audio_path&quot;: &quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;,</span>
+<span class="s1">      &quot;text&quot;: &quot;We asked over twenty different people, and they all said it was his.&quot;</span>
+<span class="s1">    }],</span>
+<span class="s1">    &quot;stream&quot;: true,</span>
+<span class="s1">    &quot;stream_format&quot;: &quot;audio&quot;,</span>
+<span class="s1">    &quot;response_format&quot;: &quot;pcm&quot;,</span>
+<span class="s1">    &quot;initial_codec_chunk_frames&quot;: 1</span>
+<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>output.pcm
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">stream_format=&quot;audio&quot;</span></code> is only valid with <code class="docutils literal notranslate"><span class="pre">response_format=&quot;pcm&quot;</span></code> and returns <code class="docutils literal notranslate"><span class="pre">audio/pcm</span></code> 16-bit mono PCM bytes. This mode has no SSE JSON events, no final usage event, and no <code class="docutils literal notranslate"><span class="pre">[DONE]</span></code> sentinel. The response headers report the actual stream sample rate, channel count, and bit depth. Raw PCM speech requests default <code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code> to <code class="docutils literal notranslate"><span class="pre">1</span></code> for lower first-audio latency; clients can still set another value, including <code class="docutils literal notranslate"><span class="pre">0</span></code>. The setting controls only the first vocoder chunk for TTFA tuning; follow-up chunks return to the normal Higgs streaming window.</p>
 <ol class="arabic simple" start="2">
 <li><p>Use Python</p></li>
 </ol>
@@ -664,7 +682,7 @@ hf<span class="w"> </span>download<span class="w"> </span>bosonai/higgs-audio-v2
 </audio>
 <section id="what-the-sse-response-looks-like">
 <h4>What the SSE response looks like<a class="headerlink" href="#what-the-sse-response-looks-like" title="Link to this heading">#</a></h4>
-<p>Each event follows the standard SSE format:</p>
+<p>Each default stream event follows the standard SSE format:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;speech-...&quot;</span><span class="p">,</span> <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;audio.speech.chunk&quot;</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;audio&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;base64-encoded WAV bytes&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;wav&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">},</span> <span class="s2">&quot;finish_reason&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">}</span>
 <span class="n">data</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;speech-...&quot;</span><span class="p">,</span> <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;audio.speech.chunk&quot;</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;audio&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span> <span class="s2">&quot;finish_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;stop&quot;</span><span class="p">,</span> <span class="s2">&quot;usage&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}}</span>
 <span class="n">data</span><span class="p">:</span> <span class="p">[</span><span class="n">DONE</span><span class="p">]</span>
