@@ -54,12 +54,12 @@
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Qwen3-Omni" href="qwen3_omni.html" />
+    <link rel="next" title="Qwen3-ASR" href="qwen3_asr.html" />
     <link rel="prev" title="Qwen3 TTS" href="qwen3_tts.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Jun 03, 2026"/>
+    <meta name="docbuild:last-update" content="Jun 04, 2026"/>
   </head>
   
   
@@ -160,12 +160,15 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="higgs_tts.html">Higgs TTS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="voxtral_tts.html">Voxtral TTS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fishaudio_s2_pro.html">Fish Audio S2-Pro</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qwen3_tts.html">Qwen3 TTS</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">MOSS-TTS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qwen3_asr.html">Qwen3-ASR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="whisper_asr.html">Whisper ASR</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qwen3_omni.html">Qwen3-Omni</a></li>
 <li class="toctree-l1"><a class="reference internal" href="llada2_uni.html">LLaDA2.0-Uni</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Usage</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">General Usage</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/qwen3_omni.html">Omni Model Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts.html">TTS Model Usage</a></li>
@@ -412,11 +415,13 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthesizing-speech">Synthesizing Speech</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-speech">Basic Speech</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#voice-cloning">Voice Cloning</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#python">Python</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reference-audio-sources">Reference Audio Sources</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming">Streaming</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#duration-control">Duration Control</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#text-markup-style-and-language">Text Markup, Style, and Language</a></li>
 </ul>
@@ -443,9 +448,10 @@
 multi-codebook text-to-speech model from the OpenMOSS team. It pairs a Qwen3 language-model
 backbone with 32 residual-vector-quantization (RVQ) audio codebooks scheduled in a <strong>delay
 pattern</strong> (one text channel plus 32 audio channels, advanced one codebook per frame). It clones
-a voice from a short reference clip, supports inline duration control, and the vocoder
-reconstructs 24 kHz speech. In SGLang-Omni it runs as a <code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">→</span> <span class="pre">tts_engine</span> <span class="pre">→</span> <span class="pre">vocoder</span></code>
-pipeline and is served through the OpenAI-compatible <code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code> endpoint.</p>
+a voice from a short reference clip, can synthesize without a reference, supports inline
+duration control, and the vocoder reconstructs 24 kHz speech. In SGLang-Omni it runs as a
+<code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">→</span> <span class="pre">tts_engine</span> <span class="pre">→</span> <span class="pre">vocoder</span></code> pipeline and is served through the OpenAI-compatible
+<code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code> endpoint.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
 <p>Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> by following <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a>, then
@@ -468,11 +474,21 @@ download the model (public, no token required):</p>
 </section>
 <section id="synthesizing-speech">
 <h2>Synthesizing Speech<a class="headerlink" href="#synthesizing-speech" title="Link to this heading">#</a></h2>
+<section id="basic-speech">
+<h3>Basic Speech<a class="headerlink" href="#basic-speech" title="Link to this heading">#</a></h3>
+<p>MOSS-TTS can synthesize speech without a reference clip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;input&quot;: &quot;SGLang-Omni is a great project!&quot;}&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>output.wav
+</pre></div>
+</div>
+</section>
 <section id="voice-cloning">
 <h3>Voice Cloning<a class="headerlink" href="#voice-cloning" title="Link to this heading">#</a></h3>
-<p>MOSS-TTS is a cloning model: it needs a reference clip. The <code class="docutils literal notranslate"><span class="pre">references</span></code> field accepts
-<code class="docutils literal notranslate"><span class="pre">audio_path</span></code> (a local path, HTTP URL, or base64 data URI) and <code class="docutils literal notranslate"><span class="pre">text</span></code> (the transcript of that
-clip). Supplying the transcript materially improves cloning quality.</p>
+<p>Provide a reference clip when you want voice cloning. The <code class="docutils literal notranslate"><span class="pre">references</span></code> field accepts <code class="docutils literal notranslate"><span class="pre">audio_path</span></code>
+(a local path, HTTP URL, or base64 data URI) and <code class="docutils literal notranslate"><span class="pre">text</span></code> (the transcript of that clip). Supplying
+the transcript materially improves cloning quality.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
@@ -511,6 +527,21 @@ clip). Supplying the transcript materially improves cloning quality.</p>
 <p><code class="docutils literal notranslate"><span class="pre">audio_path</span></code> / <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> may be a local filesystem path readable by the server, an HTTP(S)
 URL, or a base64 <strong>data URI</strong> (<code class="docutils literal notranslate"><span class="pre">data:audio/wav;base64,&lt;...&gt;</span></code>, decoded with <code class="docutils literal notranslate"><span class="pre">soundfile</span></code>):</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;ref_audio&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data:audio/wav;base64,UklGR.....&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ref_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Transcript of the clip.&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="streaming">
+<h3>Streaming<a class="headerlink" href="#streaming" title="Link to this heading">#</a></h3>
+<p>Set <code class="docutils literal notranslate"><span class="pre">&quot;stream&quot;:</span> <span class="pre">true</span></code> to receive Server-Sent Events (SSE). Audio events carry base64-encoded WAV
+bytes in <code class="docutils literal notranslate"><span class="pre">audio.data</span></code>; the final metadata event has <code class="docutils literal notranslate"><span class="pre">audio:</span> <span class="pre">null</span></code>, followed by <code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">[DONE]</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
+<span class="s1">    &quot;ref_audio&quot;: &quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;,</span>
+<span class="s1">    &quot;ref_text&quot;: &quot;We asked over twenty different people, and they all said it was his.&quot;,</span>
+<span class="s1">    &quot;stream&quot;: true</span>
+<span class="s1">  }&#39;</span>
 </pre></div>
 </div>
 </section>
@@ -564,39 +595,43 @@ to let the model infer from the text):</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Shorthand for <code class="docutils literal notranslate"><span class="pre">references[0].audio_path</span></code> / <code class="docutils literal notranslate"><span class="pre">references[0].text</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">language</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stream</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
+<td><p>Enable SSE streaming</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">language</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Optional target-language hint; omit to let the model infer</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">instructions</span></code> / <code class="docutils literal notranslate"><span class="pre">instruct</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">instructions</span></code> / <code class="docutils literal notranslate"><span class="pre">instruct</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Optional free-text style directive</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">token_count</span></code> / <code class="docutils literal notranslate"><span class="pre">duration_tokens</span></code> / <code class="docutils literal notranslate"><span class="pre">tokens</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">token_count</span></code> / <code class="docutils literal notranslate"><span class="pre">duration_tokens</span></code> / <code class="docutils literal notranslate"><span class="pre">tokens</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Target duration in codec frames; must be <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">0</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">4096</span></code></p></td>
 <td><p>Maximum generated frames; an explicit value must be <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">0</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1.5</span></code> text / <code class="docutils literal notranslate"><span class="pre">1.7</span></code> audio</p></td>
 <td><p>Sampling temperature; a single <code class="docutils literal notranslate"><span class="pre">temperature</span></code> overrides both channels</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">top_p</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">top_p</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1.0</span></code> text / <code class="docutils literal notranslate"><span class="pre">0.8</span></code> audio</p></td>
 <td><p>Top-p sampling; a single <code class="docutils literal notranslate"><span class="pre">top_p</span></code> overrides both channels</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">top_k</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">top_k</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">50</span></code> text / <code class="docutils literal notranslate"><span class="pre">25</span></code> audio</p></td>
 <td><p>Top-k sampling; a single <code class="docutils literal notranslate"><span class="pre">top_k</span></code> overrides both channels</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">repetition_penalty</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">repetition_penalty</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1.0</span></code></p></td>
 <td><p>Audio repetition penalty</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Non-negative integer; see <a class="reference internal" href="#seed-reproducibility"><span class="std std-ref">Seed Reproducibility</span></a></p></td>
 </tr>
@@ -634,8 +669,7 @@ with <code class="docutils literal notranslate"><span class="pre">--token-count<
 <span class="w">  </span>--output-dir<span class="w"> </span>results/moss_tts_en<span class="w"> </span>--lang<span class="w"> </span>en<span class="w"> </span>--max-concurrency<span class="w"> </span><span class="m">8</span>
 </pre></div>
 </div>
-<p>Use <code class="docutils literal notranslate"><span class="pre">--lang</span> <span class="pre">zh</span></code> for the Chinese split. See the <span class="xref myst">SeedTTS benchmark</span>
-for the full workflow.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">--lang</span> <span class="pre">zh</span></code> for the Chinese split. See <code class="docutils literal notranslate"><span class="pre">benchmarks/README.md</span></code> for the full workflow.</p>
 </section>
 <section id="benchmark-results">
 <h2>Benchmark Results<a class="headerlink" href="#benchmark-results" title="Link to this heading">#</a></h2>
@@ -678,8 +712,8 @@ is 0.00%.</p>
 <section id="known-limitations">
 <h2>Known Limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><strong>Reference audio required.</strong> As a cloning model, MOSS-TTS needs a reference clip; provide its
-transcript (<code class="docutils literal notranslate"><span class="pre">text</span></code> / <code class="docutils literal notranslate"><span class="pre">ref_text</span></code>) for the best speaker similarity.</p></li>
+<li><p><strong>Voice cloning depends on the reference.</strong> Omit the reference for non-cloned speech; provide
+the transcript (<code class="docutils literal notranslate"><span class="pre">text</span></code> / <code class="docutils literal notranslate"><span class="pre">ref_text</span></code>) for the best speaker similarity when cloning.</p></li>
 <li><p><strong>Concurrency vs. WER.</strong> Quality is best around <code class="docutils literal notranslate"><span class="pre">--max-concurrency</span> <span class="pre">8</span></code>; higher concurrency
 regresses WER.</p></li>
 <li><p><strong>Rare runaway generation.</strong> A small fraction of utterances can loop and generate up to
@@ -711,11 +745,11 @@ duration.</p></li>
       </div>
     </a>
     <a class="right-next"
-       href="qwen3_omni.html"
+       href="qwen3_asr.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Qwen3-Omni</p>
+        <p class="prev-next-title">Qwen3-ASR</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -740,11 +774,13 @@ duration.</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthesizing-speech">Synthesizing Speech</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-speech">Basic Speech</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#voice-cloning">Voice Cloning</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#python">Python</a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reference-audio-sources">Reference Audio Sources</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming">Streaming</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#duration-control">Duration Control</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#text-markup-style-and-language">Text Markup, Style, and Language</a></li>
 </ul>
@@ -787,7 +823,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 03, 2026.
+  Last updated on Jun 04, 2026.
   <br/>
 </p>
   </div>

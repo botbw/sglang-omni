@@ -54,12 +54,12 @@
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Qwen3 TTS" href="qwen3_tts.html" />
+    <link rel="next" title="Fish Audio S2-Pro" href="fishaudio_s2_pro.html" />
     <link rel="prev" title="Higgs TTS" href="higgs_tts.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Jun 03, 2026"/>
+    <meta name="docbuild:last-update" content="Jun 04, 2026"/>
   </head>
   
   
@@ -160,12 +160,15 @@
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="higgs_tts.html">Higgs TTS</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Voxtral TTS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fishaudio_s2_pro.html">Fish Audio S2-Pro</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qwen3_tts.html">Qwen3 TTS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="moss_tts.html">MOSS-TTS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="qwen3_asr.html">Qwen3-ASR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="whisper_asr.html">Whisper ASR</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qwen3_omni.html">Qwen3-Omni</a></li>
 <li class="toctree-l1"><a class="reference internal" href="llada2_uni.html">LLaDA2.0-Uni</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Basic Usage</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">General Usage</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/qwen3_omni.html">Omni Model Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts.html">TTS Model Usage</a></li>
@@ -454,7 +457,8 @@ hf<span class="w"> </span>download<span class="w"> </span>mistralai/Voxtral-4B-T
 </section>
 <section id="server-configuration">
 <h2>Server Configuration<a class="headerlink" href="#server-configuration" title="Link to this heading">#</a></h2>
-<p>The pipeline is <code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">→</span> <span class="pre">tts_generation</span> <span class="pre">→</span> <span class="pre">vocoder</span></code>.</p>
+<p>The pipeline is <code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">→</span> <span class="pre">tts_generation</span> <span class="pre">→</span> <span class="pre">vocoder</span></code>.
+First startup can take several minutes while the <code class="docutils literal notranslate"><span class="pre">tts_generation</span></code> stage captures CUDA graphs.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>mistralai/Voxtral-4B-TTS-2603<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--config<span class="w"> </span>examples/configs/voxtral_tts.yaml<span class="w"> </span><span class="se">\</span>
@@ -552,7 +556,7 @@ from your downloaded snapshot:</p>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">wav</span></code></p></td>
-<td><p>Output container</p></td>
+<td><p>Output container (<code class="docutils literal notranslate"><span class="pre">wav</span></code>, <code class="docutils literal notranslate"><span class="pre">mp3</span></code>, <code class="docutils literal notranslate"><span class="pre">flac</span></code>, <code class="docutils literal notranslate"><span class="pre">opus</span></code>, <code class="docutils literal notranslate"><span class="pre">aac</span></code>, <code class="docutils literal notranslate"><span class="pre">pcm</span></code>)</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stream</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
@@ -612,10 +616,10 @@ Whisper-large-v3. Hardware: 1× H200 SXM.</p>
 </tbody>
 </table>
 </div>
-<p>Reproduce with the SeedTTS command in our <span class="xref myst">seedTTS benchmark</span>. The Voxtral
-model card also quotes ~70 ms first-audio latency at concurrency 1; the table above is a
-throughput-oriented run at concurrency 16, so its RTF reflects batched load rather than the
-latency-optimized single-stream figure. Output is 24 kHz.</p>
+<p>Reproduce with the SeedTTS command documented in <code class="docutils literal notranslate"><span class="pre">benchmarks/README.md</span></code>. The Voxtral model card
+also quotes ~70 ms first-audio latency at concurrency 1; the table above is a throughput-oriented
+run at concurrency 16, so its RTF reflects batched load rather than the latency-optimized
+single-stream figure. Output is 24 kHz.</p>
 </section>
 <section id="known-limitations">
 <h2>Known Limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">#</a></h2>
@@ -652,11 +656,11 @@ Spanish, German, Italian, Portuguese, Dutch, Arabic, Hindi).</p></li>
       </div>
     </a>
     <a class="right-next"
-       href="qwen3_tts.html"
+       href="fishaudio_s2_pro.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Qwen3 TTS</p>
+        <p class="prev-next-title">Fish Audio S2-Pro</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -725,7 +729,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 03, 2026.
+  Last updated on Jun 04, 2026.
   <br/>
 </p>
   </div>
