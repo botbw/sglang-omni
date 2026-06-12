@@ -453,17 +453,17 @@ endpoint.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
 <p>Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> by following <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a>.</p>
-<p>Qwen3-TTS Base uses the upstream <code class="docutils literal notranslate"><span class="pre">qwen-tts</span></code> package, which currently pins Transformers 4.57.3.
-Install it only in environments that serve Qwen3-TTS:</p>
+<p>Qwen3-TTS Base uses the upstream <code class="docutils literal notranslate"><span class="pre">qwen-tts</span></code> package. Install it without
+dependencies so the SGLang-Omni Transformers 5.6 / SGLang 0.5.12.post1 stack remains
+in place:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>apt-get<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>sox
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">transformers</span><span class="o">==</span><span class="m">4</span>.57.3<span class="w"> </span><span class="nv">accelerate</span><span class="o">==</span><span class="m">1</span>.12.0<span class="w"> </span>sox<span class="w"> </span>einops<span class="w"> </span>onnxruntime
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>sox<span class="w"> </span>einops<span class="w"> </span>onnxruntime
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span>qwen-tts<span class="o">==</span><span class="m">0</span>.1.1
 </pre></div>
 </div>
 <blockquote>
-<div><p>Do <strong>not</strong> add <code class="docutils literal notranslate"><span class="pre">--upgrade</span></code> here. It pulls a newer <code class="docutils literal notranslate"><span class="pre">torch</span></code>/<code class="docutils literal notranslate"><span class="pre">numpy</span></code>/CUDA stack and breaks
-inference (mismatched cuDNN, <code class="docutils literal notranslate"><span class="pre">numba</span></code> requires NumPy ≤ 2.3). Pin only what is listed above so
-the image’s existing <code class="docutils literal notranslate"><span class="pre">torch</span></code> build is left untouched.</p>
+<div><p>Do <strong>not</strong> install <code class="docutils literal notranslate"><span class="pre">qwen-tts</span></code> with dependencies here. Its declared dependency
+set can pull a different Transformers/Torch stack than the SGLang-Omni runtime.</p>
 </div></blockquote>
 <p>The Python <code class="docutils literal notranslate"><span class="pre">sox</span></code> package shells out to the system <code class="docutils literal notranslate"><span class="pre">sox</span></code> binary on some paths, so install both.</p>
 <p>Download a checkpoint (both repositories are public, no token required):</p>

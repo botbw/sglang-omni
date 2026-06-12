@@ -449,9 +449,9 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hf<span class="w"> </span>download<span class="w"> </span>fishaudio/s2-pro
 </pre></div>
 </div>
-<p>Qwen3-TTS uses the upstream <code class="docutils literal notranslate"><span class="pre">qwen-tts</span></code> package, which currently requires
-Transformers 4.57.3. Install it only in environments that serve Qwen3-TTS:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span><span class="nv">transformers</span><span class="o">==</span><span class="m">4</span>.57.3<span class="w"> </span><span class="nv">accelerate</span><span class="o">==</span><span class="m">1</span>.12.0<span class="w"> </span>sox<span class="w"> </span>einops
+<p>Qwen3-TTS uses the upstream <code class="docutils literal notranslate"><span class="pre">qwen-tts</span></code> package. Install it without dependencies
+so the SGLang-Omni Transformers 5.6 / SGLang 0.5.12.post1 stack remains in place:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>sox<span class="w"> </span>einops
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span>qwen-tts<span class="o">==</span><span class="m">0</span>.1.1
 </pre></div>
 </div>
