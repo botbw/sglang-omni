@@ -23,11 +23,11 @@ uv pip install --no-deps qwen-tts==0.1.1
 | Model family | Example config | Request notes |
 |---|---|---|
 | [Fish Speech S2-Pro](../cookbook/fishaudio_s2_pro.md) | `examples/configs/s2pro_tts.yaml` | Supports plain TTS and voice cloning with `references` |
-| [Voxtral TTS](../cookbook/voxtral_tts.md) | `examples/configs/voxtral_tts.yaml` | Uses `input`, `voice`, `response_format`, and `max_new_tokens`; use `--no-ref-audio` for SeedTTS benchmarking |
-| [Qwen3-TTS Base](../cookbook/qwen3_tts.md) | `examples/configs/qwen3_tts_0_6b.yaml`, `examples/configs/qwen3_tts_1_7b.yaml` | Requires reference audio through `ref_audio` or `references[0].audio_path`; `language` defaults to `auto` |
-| [Qwen3-TTS CustomVoice](../cookbook/qwen3_tts.md) | `examples/configs/qwen3_tts_0_6b_customvoice.yaml` | Text-only requests use the checkpoint speaker table; missing `voice` defaults to `Vivian` |
-| [Qwen3-TTS VoiceDesign](../cookbook/qwen3_tts.md) | `examples/configs/qwen3_tts_1_7b_voicedesign.yaml` | Requires `task_type="VoiceDesign"` and non-empty `instructions`; no reference audio is required |
-| [MOSS-TTS](../cookbook/moss_tts.md) | `examples/configs/moss_tts.yaml` | Voice cloning via `ref_audio` or `references[0].audio_path` (+ `text`); duration via `${token:N}` or `token_count`; benchmark at `--max-concurrency 8` |
+| [Voxtral TTS](../cookbook/voxtral_tts.md) | `examples/configs/voxtral_tts.yaml` | Uses `input`, `voice`, `response_format`, and `max_new_tokens`. Use `--no-ref-audio` for SeedTTS benchmarking |
+| [Qwen3-TTS Base](../cookbook/qwen3_tts.md) | `examples/configs/qwen3_tts_0_6b.yaml`, `examples/configs/qwen3_tts_1_7b.yaml` | Requires reference audio through `ref_audio` or `references[0].audio_path`. `language` defaults to `auto` |
+| [Qwen3-TTS CustomVoice](../cookbook/qwen3_tts.md) | `examples/configs/qwen3_tts_0_6b_customvoice.yaml` | Text-only requests use the checkpoint speaker table. Missing `voice` defaults to `Vivian` |
+| [Qwen3-TTS VoiceDesign](../cookbook/qwen3_tts.md) | `examples/configs/qwen3_tts_1_7b_voicedesign.yaml` | Requires `task_type="VoiceDesign"` and non-empty `instructions`. No reference audio is required |
+| [MOSS-TTS](../cookbook/moss_tts.md) | `examples/configs/moss_tts.yaml` | Voice cloning via `ref_audio` or `references[0].audio_path` (+ `text`). Duration via `${token:N}` or `token_count`. Benchmark at `--max-concurrency 8` |
 
 ## Launch the Server
 
@@ -125,7 +125,7 @@ For natural-sounding Fish Speech S2-Pro results, use Voice Cloning with a refere
 
 ### Fish Speech Voice Cloning
 
-The examples below use a sample clip from [`seed-tts-eval-mini`](https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini). The `references` field accepts `audio_path` (a local path or HTTP URL) and `text` (transcript of that audio).
+The examples below use a sample clip from [`seed-tts-eval-mini`](https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini). The `references` field accepts `audio_path` (a local path, file URL, data URL, or HTTP URL) and `text` (transcript of that audio).
 
 1. Non-streaming request
 
@@ -144,7 +144,8 @@ curl -X POST http://localhost:8000/v1/audio/speech \
 
 2. Streaming
 
-Enable streaming to receive audio chunks in real time via Server-Sent Events (SSE). Set `"stream": true`:
+Enable streaming to receive raw PCM audio chunks in real time. HTTP streaming
+requires both `"stream": true` and `"response_format": "pcm"`:
 
 ```bash
 curl -N -X POST http://localhost:8000/v1/audio/speech \
@@ -155,27 +156,18 @@ curl -N -X POST http://localhost:8000/v1/audio/speech \
       "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",
       "text": "We asked over twenty different people, and they all said it was his."
     }],
-    "stream": true
-  }'
-```
-
-The server returns a stream of SSE events. Each event contains an `audio.speech.chunk` object with a base64-encoded audio chunk. The stream ends with `data: [DONE]`.
-
-For clients that want a continuous byte stream instead of SSE framing, request raw PCM explicitly:
-
-```bash
-curl -N -X POST http://localhost:8000/v1/audio/speech \
-  -H "Content-Type: application/json" \
-  -d '{
-    "input": "Get the trust fund to the bank early.",
     "stream": true,
-    "stream_format": "audio",
     "response_format": "pcm"
   }' \
   --output output.pcm
 ```
 
-Raw audio streaming returns 16-bit mono PCM bytes (`audio/pcm`) with sample-rate metadata in response headers. It does not include in-band SSE events, final usage, or a `[DONE]` sentinel. When the client does not set `initial_codec_chunk_frames`, raw PCM requests default to a 1-frame first vocoder chunk for lower first-audio latency; set `initial_codec_chunk_frames` to `0` to use the model's steady chunk size from the start.
+Streaming returns 16-bit mono PCM bytes (`audio/pcm`) with sample-rate metadata
+in response headers. It does not include in-band JSON events, final usage, or a
+terminal sentinel. When the client does not set `initial_codec_chunk_frames`,
+streaming requests default to a 1-frame first vocoder chunk for lower
+first-audio latency. Set `initial_codec_chunk_frames` to `0` to use the model's
+steady chunk size from the start.
 
 ## Use Python
 
@@ -193,6 +185,28 @@ resp = requests.post(
 resp.raise_for_status()
 with open("output.wav", "wb") as f:
     f.write(resp.content)
+```
+
+### OpenAI Python SDK
+
+The endpoint is compatible with the OpenAI Python SDK when the client points to
+the SGLang-Omni server:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:8000/v1",
+    api_key="EMPTY",
+)
+
+response = client.audio.speech.create(
+    model="fishaudio/s2-pro",
+    voice="default",
+    input="Hello, how are you?",
+    response_format="wav",
+)
+response.stream_to_file("output.wav")
 ```
 
 ### Voice Cloning
@@ -223,7 +237,7 @@ with open("output.wav", "wb") as f:
 2. Streaming Request
 
 ```python
-import base64, io, json, wave
+import wave
 
 import requests
 
@@ -231,11 +245,10 @@ payload = {
     "input": SPEECH_INPUT,
     "references": [{"audio_path": REFERENCE_AUDIO, "text": REFERENCE_TEXT}],
     "stream": True,
-    "response_format": "wav",
+    "response_format": "pcm",
 }
 
 chunks = []
-fmt = None
 with requests.post(
     "http://localhost:8000/v1/audio/speech",
     json=payload,
@@ -243,26 +256,15 @@ with requests.post(
     timeout=600,
 ) as stream:
     stream.raise_for_status()
-    for line in stream.iter_lines(decode_unicode=True):
-        if not line or not line.startswith("data: "):
-            continue
-        data = line[len("data:"):].lstrip()
-        if data == "[DONE]":
-            break
-        b64 = (json.loads(data).get("audio") or {}).get("data")
-        if not b64:
-            continue
-        with wave.open(io.BytesIO(base64.b64decode(b64)), "rb") as w:
-            if fmt is None:
-                fmt = w.getnchannels(), w.getsampwidth(), w.getframerate()
-            chunks.append(w.readframes(w.getnframes()))
+    sample_rate = int(stream.headers.get("x-sample-rate", 24000))
+    for chunk in stream.iter_content(chunk_size=None):
+        if chunk:
+            chunks.append(chunk)
 
-assert fmt
-nc, sw, fr = fmt
 with wave.open("output_stream.wav", "wb") as w:
-    w.setnchannels(nc)
-    w.setsampwidth(sw)
-    w.setframerate(fr)
+    w.setnchannels(1)
+    w.setsampwidth(2)
+    w.setframerate(sample_rate or 24000)
     w.writeframes(b"".join(chunks))
 ```
 
@@ -274,23 +276,38 @@ The table below lists all parameters accepted by the `/v1/audio/speech` endpoint
 |---|---|---|---|
 | `input` | string | (required) | Text to synthesize |
 | `voice` | string | `"default"` | Voice identifier |
-| `response_format` | string | `"wav"` | Output audio format (`wav`, `mp3`, `flac`, `opus`, `aac`, `pcm`) |
-| `speed` | float | `1.0` | Playback speed multiplier |
-| `stream` | bool | `false` | Enable streaming via SSE |
-| `stream_format` | string | `"sse"` | Streaming transport. Use `"audio"` with `stream=true` and `response_format="pcm"` for raw PCM bytes; the response headers declare the stream sample rate, channel count, and bit depth |
-| `initial_codec_chunk_frames` | int | `null` | Optional first codec chunk size for streaming TTFA tuning. Higgs TTS currently consumes this parameter first; raw PCM speech requests default this to `1` unless the client sets a value, including `0` |
-| `references` | list | `null` | Reference audio for voice cloning; each item has `audio_path` (local path / remote url) and `text` |
-| `ref_audio` | string | `null` | Reference audio path / URL / base64 string; equivalent to `references[0].audio_path` |
-| `ref_text` | string | `null` | Transcript for `ref_audio`; equivalent to `references[0].text` |
-| `language` | string | `null` | Model-specific language hint; Qwen3-TTS Base defaults to `auto` |
-| `task_type` | string | `null` | Qwen3-TTS task type: `Base`, `CustomVoice`, or `VoiceDesign`; inferred as `Base` when reference audio/text is present, otherwise `CustomVoice` |
+| `response_format` | string | `"wav"` | Output audio format: `wav`, `mp3`, `flac`, `pcm`, `aac`, or `opus` |
+| `speed` | float | `1.0` | Playback speed multiplier from `0.25` to `4.0` |
+| `stream` | bool | `false` | Enable raw PCM streaming. When true, `response_format` must be `pcm` |
+| `initial_codec_chunk_frames` | int | `null` | Optional first codec chunk size for streaming TTFA tuning. Higgs TTS currently consumes this parameter first. Raw PCM speech requests default this to `1` unless the client sets a value, including `0` |
+| `references` | list | `null` | Reference audio for voice cloning. Each item has `audio_path` (local path / file URL / data URL / remote URL) and `text` |
+| `ref_audio` | string | `null` | Reference audio path / URL / base64 string. Equivalent to `references[0].audio_path` |
+| `ref_text` | string | `null` | Transcript for `ref_audio`. Equivalent to `references[0].text` |
+| `language` | string | `null` | Language hint: `Auto`, `Chinese`, `English`, `Japanese`, `Korean`, `German`, `French`, `Russian`, `Portuguese`, `Spanish`, or `Italian` |
+| `task_type` | string | `null` | Qwen3-TTS task type: `Base`, `CustomVoice`, or `VoiceDesign`. Inferred as `Base` when reference audio/text is present, otherwise `CustomVoice` |
 | `instructions` | string | `null` | Qwen3-TTS style or VoiceDesign instructions |
 | `max_new_tokens` | int | `null` | Maximum number of generated tokens |
+| `token_count` | int | `null` | Model-specific duration token target |
+| `duration_tokens` | int | `null` | Alias-style duration token target for models that expose duration control |
+| `x_vector_only_mode` | bool | `null` | Qwen3-TTS Base speaker-embedding mode |
 | `temperature` | float | `null` | Sampling temperature |
 | `top_p` | float | `null` | Top-p sampling |
 | `top_k` | int | `null` | Top-k sampling |
 | `repetition_penalty` | float | `null` | Repetition penalty |
-| `seed` | int | `null` | Model-specific; Qwen3-TTS Base accepts request-scoped seed, Voxtral TTS currently rejects seed |
+| `seed` | int | `null` | Model-specific. Qwen3-TTS Base accepts request-scoped seed, Voxtral TTS currently rejects seed |
+
+Invalid speech requests return an OpenAI-style error envelope:
+
+```json
+{
+  "error": {
+    "message": "stream=true requires response_format='pcm'",
+    "type": "BadRequestError",
+    "param": "response_format",
+    "code": 400
+  }
+}
+```
 
 ## H200 SeedTTS Benchmark Commands
 
@@ -369,7 +386,7 @@ SGLang-Omni ships with a Gradio-based playground for interactive TTS experimenta
 The playground now exposes two demo modes against the same S2 Pro backend:
 
 - `Non-Streaming` starts a standard request and shows the final WAV after generation finishes.
-- `Streaming` consumes the `/v1/audio/speech` SSE stream, starts playback from incremental WAV chunks, and also writes a final combined WAV artifact for inspection.
+- `Streaming` consumes the `/v1/audio/speech` raw PCM stream, converts incremental chunks for playback, and also writes a final combined WAV artifact for inspection.
 
 The launcher starts the backend first, waits for `/health`, then starts the Gradio UI with:
 
