@@ -462,6 +462,8 @@ layers.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/continue_generation</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/update_weights_from_disk</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/update_weights_from_tensor</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/init_weights_update_group</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/destroy_weights_update_group</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/update_weights_from_distributed</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">GET|POST</span> <span class="pre">/weights_checker</span></code></p></li>
 </ul>
@@ -471,9 +473,19 @@ SGLang model runner update method, optionally flushes cache, and resumes unless
 <code class="docutils literal notranslate"><span class="pre">keep_pause=true</span></code>. From-disk updates run on the scheduler thread. If active
 requests are present, the update is rejected unless the request sets
 <code class="docutils literal notranslate"><span class="pre">abort_all_requests=true</span></code> or generation was already paused with <code class="docutils literal notranslate"><span class="pre">mode=retract</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">/update_weights_from_tensor</span></code> and <code class="docutils literal notranslate"><span class="pre">/update_weights_from_distributed</span></code> are
-reserved for future data-plane integrations and currently return HTTP 501 from
-the worker and router HTTP APIs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">/init_weights_update_group</span></code> and <code class="docutils literal notranslate"><span class="pre">/destroy_weights_update_group</span></code> manage the
+SGLang/Miles distributed update process group. <code class="docutils literal notranslate"><span class="pre">/update_weights_from_distributed</span></code>
+then sends metadata (<code class="docutils literal notranslate"><span class="pre">names</span></code>, <code class="docutils literal notranslate"><span class="pre">dtypes</span></code>, <code class="docutils literal notranslate"><span class="pre">shapes</span></code>, <code class="docutils literal notranslate"><span class="pre">group_name</span></code>, and optional
+<code class="docutils literal notranslate"><span class="pre">load_format</span></code> / <code class="docutils literal notranslate"><span class="pre">weight_version</span></code>) through the admin control plane while the
+actual tensors move over the distributed group. The distributed update path uses
+the same scheduler-thread lifecycle as disk updates: active requests must be
+aborted or safely retracted, cache is flushed by default, and the visible
+<code class="docutils literal notranslate"><span class="pre">weight_version</span></code> is updated after a successful runner update. If the distributed
+update fails, the scheduler remains paused because SGLang may have partially
+updated the model weights; recover by reloading or otherwise repairing the
+worker before calling <code class="docutils literal notranslate"><span class="pre">continue_generation</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">/update_weights_from_tensor</span></code> is still reserved for a future tensor data-plane
+integration and returns HTTP 501 from the worker and router HTTP APIs.</p>
 </section>
 <section id="stage-and-tp-behavior">
 <h2>Stage and TP Behavior<a class="headerlink" href="#stage-and-tp-behavior" title="Link to this heading">#</a></h2>
@@ -491,9 +503,12 @@ pre/post-processing stages.</p>
 and pause routes temporarily disable target workers from normal request routing
 while the broadcast is in flight, then restore each worker’s previous disabled
 state.</p>
-<p>The router serializes pause and disk-update broadcasts with an admin update
-lock. If another update holds the lock for too long, the router returns HTTP 503
-instead of blocking subsequent admin callers indefinitely.</p>
+<p>The router serializes pause, distributed group lifecycle, and weight-update
+broadcasts with an admin update lock. If another update holds the lock for too
+long, the router returns HTTP 503 instead of blocking subsequent admin callers
+indefinitely. If distributed group initialization fails or times out, the target
+worker remains disabled until an operator explicitly re-enables it after
+recovery.</p>
 </section>
 <section id="weight-checker">
 <h2>Weight Checker<a class="headerlink" href="#weight-checker" title="Link to this heading">#</a></h2>

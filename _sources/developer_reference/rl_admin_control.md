@@ -33,6 +33,8 @@ The worker server supports:
 - `POST /continue_generation`
 - `POST /update_weights_from_disk`
 - `POST /update_weights_from_tensor`
+- `POST /init_weights_update_group`
+- `POST /destroy_weights_update_group`
 - `POST /update_weights_from_distributed`
 - `GET|POST /weights_checker`
 
@@ -43,9 +45,20 @@ SGLang model runner update method, optionally flushes cache, and resumes unless
 requests are present, the update is rejected unless the request sets
 `abort_all_requests=true` or generation was already paused with `mode=retract`.
 
-`/update_weights_from_tensor` and `/update_weights_from_distributed` are
-reserved for future data-plane integrations and currently return HTTP 501 from
-the worker and router HTTP APIs.
+`/init_weights_update_group` and `/destroy_weights_update_group` manage the
+SGLang/Miles distributed update process group. `/update_weights_from_distributed`
+then sends metadata (`names`, `dtypes`, `shapes`, `group_name`, and optional
+`load_format` / `weight_version`) through the admin control plane while the
+actual tensors move over the distributed group. The distributed update path uses
+the same scheduler-thread lifecycle as disk updates: active requests must be
+aborted or safely retracted, cache is flushed by default, and the visible
+`weight_version` is updated after a successful runner update. If the distributed
+update fails, the scheduler remains paused because SGLang may have partially
+updated the model weights; recover by reloading or otherwise repairing the
+worker before calling `continue_generation`.
+
+`/update_weights_from_tensor` is still reserved for a future tensor data-plane
+integration and returns HTTP 501 from the worker and router HTTP APIs.
 
 ## Stage and TP Behavior
 
@@ -65,9 +78,12 @@ and pause routes temporarily disable target workers from normal request routing
 while the broadcast is in flight, then restore each worker's previous disabled
 state.
 
-The router serializes pause and disk-update broadcasts with an admin update
-lock. If another update holds the lock for too long, the router returns HTTP 503
-instead of blocking subsequent admin callers indefinitely.
+The router serializes pause, distributed group lifecycle, and weight-update
+broadcasts with an admin update lock. If another update holds the lock for too
+long, the router returns HTTP 503 instead of blocking subsequent admin callers
+indefinitely. If distributed group initialization fails or times out, the target
+worker remains disabled until an operator explicitly re-enables it after
+recovery.
 
 ## Weight Checker
 
