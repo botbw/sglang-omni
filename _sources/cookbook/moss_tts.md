@@ -1,13 +1,19 @@
 # MOSS-TTS
 
-[MOSS-TTS-v1.5](https://huggingface.co/OpenMOSS-Team/MOSS-TTS-v1.5) is a discrete
-multi-codebook text-to-speech model from the OpenMOSS team. It pairs a Qwen3 language-model
-backbone with 32 residual-vector-quantization (RVQ) audio codebooks scheduled in a **delay
-pattern** (one text channel plus 32 audio channels, advanced one codebook per frame). It clones
-a voice from a short reference clip, can synthesize without a reference, supports inline
-duration control, and the vocoder reconstructs 24 kHz speech. In SGLang-Omni it runs as a
-`preprocessing → tts_engine → vocoder` pipeline and is served through the OpenAI-compatible
-`/v1/audio/speech` endpoint.
+[MOSS-TTS-v1.5](https://huggingface.co/OpenMOSS-Team/MOSS-TTS-v1.5) is a delay-pattern text-to-speech model from MOSI.AI and the OpenMOSS team. It reconstructs **24 kHz** speech and supports zero-shot voice cloning from reference audio, reference-less synthesis, long-form speech generation, streaming, token-level duration control, Pinyin/IPA pronunciation control, multilingual synthesis, and code-switching. The model supports **31 languages**, accepts language tags to guide multilingual generation, and supports inline pause markers such as `[pause 3.2s]` for explicit prosody control.
+
+![MOSS-TTS delay-pattern architecture](../_static/image/moss-tts-arch-delay.png)
+
+Architecturally, MOSS-TTS-v1.5 is the `delay-pattern` counterpart to [MOSS-TTS-Local-Transformer-v1.5](moss_tts_local.md). The Qwen3-8B backbone predicts one text stream plus 32 residual-vector-quantization (RVQ) audio codebooks with delay-pattern scheduling; the generated codes are de-delayed and reconstructed into waveform by the vocoder. In SGLang-Omni it runs as a `preprocessing → tts_engine → vocoder` pipeline served through the OpenAI-compatible `/v1/audio/speech` endpoint.
+
+| Component | Spec |
+|---|---|
+| Architecture | `MossTTSDelayModel` (`moss_tts_delay`) |
+| Backbone | Qwen3-8B autoregressive decoder (36 L, hidden=4096, GQA 32/8) |
+| Audio tokens | 32-codebook RVQ depth with delay-pattern scheduling |
+| Output audio | 24 kHz |
+| Languages | 31 languages with optional language tags |
+| Controls | Voice reference, target duration tokens, Pinyin/IPA, pause markers, style instructions |
 
 ## Prerequisites
 
@@ -138,7 +144,6 @@ to let the model infer from the text):
   "input": "今天天气不错 [pause 0.5s] 就该出去晒晒太阳。",
   "ref_audio": "...", "ref_text": "...",
   "language": "Chinese",
-  "instructions": "Speak slowly and warmly."
 }
 ```
 
