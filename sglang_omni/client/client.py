@@ -92,6 +92,10 @@ class Client:
         sample_rate: int | None = None
         last_chunk: GenerateChunk | None = None
         finish_reason: str | None = None
+        logprobs_parts: list[Any] = []
+        saw_output_token_logprobs = False
+        omni_rollout: dict[str, Any] | None = None
+        weight_version: str | None = None
 
         async for chunk in self.generate(request, request_id=request_id):
             last_chunk = chunk
@@ -103,6 +107,13 @@ class Client:
                 sample_rate = chunk.sample_rate
             if chunk.finish_reason is not None:
                 finish_reason = chunk.finish_reason
+            if chunk.output_token_logprobs is not None:
+                saw_output_token_logprobs = True
+                logprobs_parts.extend(chunk.output_token_logprobs)
+            if chunk.omni_rollout is not None:
+                omni_rollout = chunk.omni_rollout
+            if chunk.weight_version is not None:
+                weight_version = chunk.weight_version
 
         if last_chunk is None:
             raise ClientError("No response from pipeline")
@@ -134,6 +145,11 @@ class Client:
             audio=audio,
             finish_reason=finish_reason or "stop",
             usage=last_chunk.usage,
+            output_token_logprobs=(
+                logprobs_parts if saw_output_token_logprobs else None
+            ),
+            omni_rollout=omni_rollout,
+            weight_version=weight_version,
         )
 
     # ------------------------------------------------------------------
@@ -455,6 +471,15 @@ class Client:
                 finish_reason = decode_result.get("finish_reason")
                 if finish_reason is not None:
                     chunk.finish_reason = finish_reason
+                output_token_logprobs = decode_result.get("output_token_logprobs")
+                if output_token_logprobs is not None:
+                    chunk.output_token_logprobs = output_token_logprobs
+                omni_rollout = decode_result.get("omni_rollout")
+                if omni_rollout is not None:
+                    chunk.omni_rollout = omni_rollout
+                weight_version = decode_result.get("weight_version")
+                if weight_version is not None:
+                    chunk.weight_version = weight_version
                 Client._set_audio_data(chunk, audio_result)
                 chunk.usage = Client._build_usage_info(
                     decode_result
@@ -471,6 +496,15 @@ class Client:
             logprobs = result.get("logprobs")
             if logprobs is not None:
                 chunk.logprobs = logprobs
+            output_token_logprobs = result.get("output_token_logprobs")
+            if output_token_logprobs is not None:
+                chunk.output_token_logprobs = output_token_logprobs
+            omni_rollout = result.get("omni_rollout")
+            if omni_rollout is not None:
+                chunk.omni_rollout = omni_rollout
+            weight_version = result.get("weight_version")
+            if weight_version is not None:
+                chunk.weight_version = weight_version
             finish_reason = result.get("finish_reason")
             if finish_reason is not None:
                 chunk.finish_reason = finish_reason
@@ -518,6 +552,15 @@ class Client:
             logprobs = data.get("logprobs")
             if logprobs is not None:
                 chunk.logprobs = logprobs
+            output_token_logprobs = data.get("output_token_logprobs")
+            if output_token_logprobs is not None:
+                chunk.output_token_logprobs = output_token_logprobs
+            omni_rollout = data.get("omni_rollout")
+            if omni_rollout is not None:
+                chunk.omni_rollout = omni_rollout
+            weight_version = data.get("weight_version")
+            if weight_version is not None:
+                chunk.weight_version = weight_version
             finish_reason = data.get("finish_reason")
             if finish_reason is not None:
                 chunk.finish_reason = finish_reason

@@ -146,6 +146,95 @@ class ChatCompletionStreamResponse(BaseModel):
     usage: UsageResponse | None = None
 
 
+class RolloutSamplingParams(BaseModel):
+    """Typed sampling params for ``POST /generate``."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    temperature: float | None = Field(default=None, ge=0.0)
+    top_p: float | None = Field(default=None, gt=0.0, le=1.0)
+    top_k: int | None = None
+    min_p: float | None = Field(default=None, ge=0.0, le=1.0)
+    repetition_penalty: float | None = Field(default=None, gt=0.0)
+    stop: str | list[str] | None = None
+    stop_token_ids: list[int] | None = None
+    seed: int | None = None
+    max_new_tokens: int | None = Field(default=None, ge=1)
+    max_tokens: int | None = Field(default=None, ge=1)
+
+
+class RolloutMessage(BaseModel):
+    """Chat message for ``POST /generate`` (role and content required)."""
+
+    role: str = Field(min_length=1)
+    content: str | list[Any]
+
+
+class RolloutGenerateRequest(BaseModel):
+    """Rollout request for ``POST /generate``; set exactly one of
+    ``input_ids``, ``prompt``, ``messages``."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    model: str | None = None
+
+    input_ids: list[int] | None = None
+    prompt: str | None = None
+    messages: list[RolloutMessage] | None = None
+
+    sampling_params: RolloutSamplingParams = Field(
+        default_factory=RolloutSamplingParams
+    )
+    stream: bool = False
+    stage_sampling: dict[str, RolloutSamplingParams] | None = None
+    stage_params: dict[str, dict[str, Any]] | None = None
+    output_modalities: list[str] | None = None
+
+    metadata: dict[str, Any] | None = None
+
+    return_logprob: bool = True
+    return_omni_rollout: bool = False
+    return_routed_experts: bool = False
+    return_indexer_topk: bool = False
+
+
+class GenerateFinishReason(BaseModel):
+    """Finish status for a rollout generation."""
+
+    type: str
+    length: int | None = None
+
+
+class GenerateAudio(BaseModel):
+    """Audio payload for a rollout generation."""
+
+    data: str | None = None
+    path: str | None = None
+    format: str | None = None
+    sample_rate: int | None = None
+
+
+class GenerateMetaInfo(BaseModel):
+    """Rollout meta_info block."""
+
+    finish_reason: GenerateFinishReason
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    cached_tokens: int = 0
+    weight_version: str | None = None
+    request_metadata: dict[str, Any] | None = None
+    output_token_logprobs: list[Any] | None = None
+    omni_rollout: dict[str, Any] | None = None
+
+
+class GenerateResponse(BaseModel):
+    """Response body for ``POST /generate``."""
+
+    text: str = ""
+    audio: GenerateAudio | None = None
+    meta_info: GenerateMetaInfo
+
+
 SUPPORTED_TTS_RESPONSE_FORMATS = frozenset({"wav", "mp3", "flac", "pcm", "aac", "opus"})
 SUPPORTED_TTS_LANGUAGES = frozenset(
     {
@@ -281,11 +370,6 @@ class ModelList(BaseModel):
 
     object: str = "list"
     data: list[ModelCard] = Field(default_factory=list)
-
-
-# ---------------------------------------------------------------------------
-# Administrative APIs
-# ---------------------------------------------------------------------------
 
 
 class AdminRequestBase(BaseModel):

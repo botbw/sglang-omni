@@ -369,6 +369,10 @@ def register_routes(
     async def weights_checker(request: Request) -> JSONResponse:
         return await _broadcast_admin_request(app, request, "/weights_checker")
 
+    @app.post("/generate")
+    async def generate(request: Request) -> Response:
+        return await proxy.forward_model_request(request, "/generate")
+
     @app.post("/v1/chat/completions")
     async def chat_completions(request: Request) -> Response:
         return await proxy.forward_model_request(request, "/v1/chat/completions")

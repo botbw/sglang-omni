@@ -12,7 +12,11 @@ from typing import Any
 
 import torch
 
-from sglang_omni.scheduling.types import ModelRunnerOutput, RequestOutput
+from sglang_omni.scheduling.types import (
+    ModelRunnerOutput,
+    RequestOutput,
+    sampled_logprobs_to_list,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -206,8 +210,7 @@ class ModelRunner:
         skip_rids = {
             req.request_id
             for req in pending.scheduler_output.requests
-            if req.data.req.finished()
-            or bool(getattr(req.data.req, "is_retracted", False))
+            if req.data.req.finished() or self._req_is_retracted(req.data.req)
         }
         self.post_decode_resolve(
             pending.launch_buf,
@@ -542,7 +545,88 @@ class ModelRunner:
     ) -> Any:
         self._apply_repetition_penalty(logits_output, requests)
         self._apply_codec_suppress_tokens(logits_output, requests)
-        return self.tp_worker.model_runner.sample(logits_output, forward_batch)
+        wants_rollout_logprob = any(sr.data.return_logprob for sr in requests)
+        if wants_rollout_logprob:
+            self._enable_sampler_logprobs(forward_batch, len(requests))
+        next_token_ids = self.tp_worker.model_runner.sample(
+            logits_output, forward_batch
+        )
+        if wants_rollout_logprob:
+            try:
+                next_token_logprobs = logits_output.next_token_logprobs
+            except AttributeError as exc:
+                raise RuntimeError(
+                    "Sampler did not populate next_token_logprobs when "
+                    "return_logprob is enabled"
+                ) from exc
+            if next_token_logprobs is None:
+                raise RuntimeError(
+                    "Sampler did not populate next_token_logprobs when "
+                    "return_logprob is enabled"
+                )
+            self._record_rollout_logprobs(
+                next_token_logprobs,
+                next_token_ids,
+                requests,
+            )
+        return next_token_ids
+
+    @staticmethod
+    def _enable_sampler_logprobs(forward_batch: Any, batch_size: int) -> None:
+        forward_batch.return_logprob = True
+        try:
+            top_logprobs_nums = forward_batch.top_logprobs_nums
+        except AttributeError:
+            top_logprobs_nums = None
+        if top_logprobs_nums is None:
+            forward_batch.top_logprobs_nums = [0] * batch_size
+        try:
+            token_ids_logprobs = forward_batch.token_ids_logprobs
+        except AttributeError:
+            token_ids_logprobs = None
+        if token_ids_logprobs is None:
+            forward_batch.token_ids_logprobs = [None] * batch_size
+
+    def _record_rollout_logprobs(
+        self, next_token_logprobs, next_token_ids, requests
+    ) -> None:
+        """Append each rollout request's sampled-token logprob (one per step)."""
+        logprobs = sampled_logprobs_to_list(next_token_logprobs)
+        if logprobs is None:
+            try:
+                shape = next_token_logprobs.shape
+            except AttributeError:
+                shape = None
+            raise RuntimeError(
+                "Failed to convert sampler next_token_logprobs "
+                f"type={type(next_token_logprobs).__name__} shape={shape}"
+            )
+        if next_token_ids is None:
+            raise RuntimeError("Sampler did not return next_token_ids")
+        try:
+            token_id_values = next_token_ids.tolist()
+        except AttributeError:
+            token_id_values = next_token_ids
+        token_ids = [int(t) for t in token_id_values]
+        if len(logprobs) != len(token_ids) or len(logprobs) != len(requests):
+            raise RuntimeError(
+                "rollout logprob batch-size mismatch: "
+                f"logprobs={len(logprobs)} token_ids={len(token_ids)} "
+                f"requests={len(requests)}"
+            )
+        for row_idx, sched_req in enumerate(requests):
+            data = sched_req.data
+            if data.return_logprob:
+                data.output_token_logprobs.append(
+                    [logprobs[row_idx], token_ids[row_idx]]
+                )
+
+    @staticmethod
+    def _req_is_retracted(req: Any) -> bool:
+        try:
+            return bool(req.is_retracted)
+        except AttributeError:
+            return False
 
     def _apply_repetition_penalty(self, logits_output: Any, requests: list) -> None:
         logits = logits_output.next_token_logits
@@ -590,7 +674,10 @@ class ModelRunner:
             suppress_tokens = data.suppress_tokens
             if not suppress_tokens:
                 req = data.req
-                suppress_tokens = getattr(req, "_codec_suppress_tokens", None)
+                try:
+                    suppress_tokens = req._codec_suppress_tokens
+                except AttributeError:
+                    suppress_tokens = None
             if not suppress_tokens:
                 continue
             for token_id in suppress_tokens:

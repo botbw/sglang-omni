@@ -849,6 +849,7 @@ def test_omni_scheduler_result_adapter_failure_emits_error_without_raise() -> No
     scheduler = object.__new__(OmniScheduler)
     scheduler.outbox = Queue()
     scheduler.is_entry_rank = True
+    scheduler.server_args = SimpleNamespace(weight_version=None)
     scheduler._first_emit_done = {"req-adapter"}
     scheduler._prefill_start_done = {"req-adapter"}
 

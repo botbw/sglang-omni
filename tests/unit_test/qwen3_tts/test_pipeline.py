@@ -1388,6 +1388,7 @@ def test_qwen3_tts_sampling_installs_semantic_seed_tensor(
                     output_ids=[],
                 ),
                 suppress_tokens=[],
+                return_logprob=False,
             )
         ),
         SimpleNamespace(
@@ -1397,6 +1398,7 @@ def test_qwen3_tts_sampling_installs_semantic_seed_tensor(
                     output_ids=[],
                 ),
                 suppress_tokens=[],
+                return_logprob=False,
             )
         ),
     ]
