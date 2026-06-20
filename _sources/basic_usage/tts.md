@@ -31,10 +31,30 @@ uv pip install --no-deps qwen-tts==0.1.1
 
 ## Launch the Server
 
+The reference-audio examples below fetch clips from Hugging Face, so the
+commands include the Hugging Face host and its current download redirect host.
+Omit those flags when your requests use only text, uploaded voices, local/file
+references, or data URLs.
+
 ```bash
 sgl-omni serve \
   --model-path fishaudio/s2-pro \
   --config examples/configs/s2pro_tts.yaml \
+  --allowed-media-domain huggingface.co \
+  --allowed-media-domain cas-bridge.xethub.hf.co \
+  --port 8000
+```
+
+Batch speech requests accept up to 32 items by default. Use
+`--tts-batch-max-items` to change the server-side request envelope limit:
+
+```bash
+sgl-omni serve \
+  --model-path fishaudio/s2-pro \
+  --config examples/configs/s2pro_tts.yaml \
+  --tts-batch-max-items 32 \
+  --allowed-media-domain huggingface.co \
+  --allowed-media-domain cas-bridge.xethub.hf.co \
   --port 8000
 ```
 
@@ -44,6 +64,8 @@ For Voxtral:
 sgl-omni serve \
   --model-path mistralai/Voxtral-4B-TTS-2603 \
   --config examples/configs/voxtral_tts.yaml \
+  --allowed-media-domain huggingface.co \
+  --allowed-media-domain cas-bridge.xethub.hf.co \
   --port 8000
 ```
 
@@ -53,6 +75,8 @@ For Qwen3-TTS Base:
 sgl-omni serve \
   --model-path Qwen/Qwen3-TTS-12Hz-0.6B-Base \
   --config examples/configs/qwen3_tts_0_6b.yaml \
+  --allowed-media-domain huggingface.co \
+  --allowed-media-domain cas-bridge.xethub.hf.co \
   --port 8000
 ```
 
@@ -62,6 +86,8 @@ For Qwen3-TTS CustomVoice:
 sgl-omni serve \
   --model-path Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice \
   --config examples/configs/qwen3_tts_0_6b_customvoice.yaml \
+  --allowed-media-domain huggingface.co \
+  --allowed-media-domain cas-bridge.xethub.hf.co \
   --port 8000
 ```
 
@@ -71,6 +97,8 @@ For Qwen3-TTS VoiceDesign:
 sgl-omni serve \
   --model-path Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign \
   --config examples/configs/qwen3_tts_1_7b_voicedesign.yaml \
+  --allowed-media-domain huggingface.co \
+  --allowed-media-domain cas-bridge.xethub.hf.co \
   --port 8000
 ```
 
@@ -80,6 +108,8 @@ For MOSS-TTS:
 sgl-omni serve \
   --model-path OpenMOSS-Team/MOSS-TTS-v1.5 \
   --config examples/configs/moss_tts.yaml \
+  --allowed-media-domain huggingface.co \
+  --allowed-media-domain cas-bridge.xethub.hf.co \
   --port 8000
 ```
 
@@ -168,6 +198,97 @@ terminal sentinel. When the client does not set `initial_codec_chunk_frames`,
 streaming requests default to a 1-frame first vocoder chunk for lower
 first-audio latency. Set `initial_codec_chunk_frames` to `0` to use the model's
 steady chunk size from the start.
+
+### Batch Speech
+
+Use `/v1/audio/speech/batch` when one request should synthesize several
+independent utterances. Batch defaults are merged with each item. Item fields
+override the defaults, and each item runs through the normal `/v1/audio/speech`
+path.
+
+```bash
+curl -X POST http://localhost:8000/v1/audio/speech/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "response_format": "wav",
+    "items": [
+      {"input": "First sentence."},
+      {"input": "Second sentence.", "speed": 1.1},
+      {
+        "input": "Use a reference clip for this item.",
+        "ref_audio": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",
+        "ref_text": "We asked over twenty different people, and they all said it was his."
+      }
+    ]
+  }'
+```
+
+The response preserves item order. Successful items contain base64-encoded
+audio bytes and the selected media type. Failed items contain an OpenAI-style
+error object at the item level. Invalid batch envelopes, such as too many
+items, fail the HTTP request.
+
+### WebSocket Speech Streaming
+
+Use `/v1/audio/speech/stream` for stateful text input over a persistent
+WebSocket. The first message must be `session.config`. Then send `input.text`
+messages and finish with `input.done`. The server acknowledges the initial
+configuration with `session.configured`.
+
+`stream_audio` defaults to `false`. With the default, each completed text
+segment returns one binary audio frame between `audio.start` and `audio.done`.
+For `stream_audio=true`, `response_format` must be `pcm`, and the server sends
+incremental binary PCM frames between `audio.start` and `audio.done`.
+
+```python
+import asyncio
+import json
+
+import websockets
+
+
+async def main():
+    async with websockets.connect(
+        "ws://localhost:8000/v1/audio/speech/stream"
+    ) as ws:
+        await ws.send(json.dumps({
+            "type": "session.config",
+            "session": {
+                "voice": "default",
+                "response_format": "pcm",
+                "stream_audio": True,
+                "split_granularity": "sentence",
+            },
+        }))
+        print(await ws.recv())
+
+        await ws.send(json.dumps({
+            "type": "input.text",
+            "text": "Hello from the speech WebSocket. This is the second sentence.",
+        }))
+        await ws.send(json.dumps({"type": "input.done"}))
+
+        pcm_chunks = []
+        while True:
+            message = await ws.recv()
+            if isinstance(message, bytes):
+                pcm_chunks.append(message)
+                continue
+            event = json.loads(message)
+            print(event)
+            if event["type"] == "session.done":
+                break
+
+        with open("websocket_output.pcm", "wb") as f:
+            f.write(b"".join(pcm_chunks))
+
+
+asyncio.run(main())
+```
+
+`split_granularity` can be `sentence` or `clause`. Unknown message types and
+malformed JSON return a WebSocket `error` event. Missing or invalid initial
+configuration returns an error and closes the session.
 
 ### Uploaded Voices
 
