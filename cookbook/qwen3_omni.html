@@ -50,7 +50,7 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'cookbook/qwen3_omni';</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=621ec60e"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=94f3a115"></script>
     <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -487,16 +487,28 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <td><p>FP8</p></td>
 <td><p>✅</p></td>
 </tr>
-<tr class="row-even"><td><p>Thinker-Talker</p></td>
-<td><p>Disaggregated</p></td>
-<td><p>TP=1</p></td>
-<td><p>BF16</p></td>
+<tr class="row-even"><td><p>Thinker-only</p></td>
+<td><p>—</p></td>
+<td><p>—</p></td>
+<td><p>AutoRound INT4</p></td>
 <td><p>✅</p></td>
 </tr>
 <tr class="row-odd"><td><p>Thinker-Talker</p></td>
 <td><p>Disaggregated</p></td>
 <td><p>TP=1</p></td>
+<td><p>BF16</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-even"><td><p>Thinker-Talker</p></td>
+<td><p>Disaggregated</p></td>
+<td><p>TP=1</p></td>
 <td><p>FP8</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-odd"><td><p>Thinker-Talker</p></td>
+<td><p>Disaggregated</p></td>
+<td><p>TP=1</p></td>
+<td><p>AutoRound INT4 thinker + BF16 talker/code2wav</p></td>
 <td><p>✅</p></td>
 </tr>
 <tr class="row-even"><td><p>Thinker-Talker</p></td>
@@ -512,15 +524,27 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <td><p>✅</p></td>
 </tr>
 <tr class="row-even"><td><p>Thinker-Talker</p></td>
-<td><p>Colocated</p></td>
-<td><p>TP=1</p></td>
-<td><p>BF16</p></td>
+<td><p>Disaggregated</p></td>
+<td><p>TP=2</p></td>
+<td><p>AutoRound INT4 thinker + BF16 talker/code2wav</p></td>
 <td><p>✅</p></td>
 </tr>
 <tr class="row-odd"><td><p>Thinker-Talker</p></td>
 <td><p>Colocated</p></td>
 <td><p>TP=1</p></td>
+<td><p>BF16</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-even"><td><p>Thinker-Talker</p></td>
+<td><p>Colocated</p></td>
+<td><p>TP=1</p></td>
 <td><p>FP8</p></td>
+<td><p>✅</p></td>
+</tr>
+<tr class="row-odd"><td><p>Thinker-Talker</p></td>
+<td><p>Colocated</p></td>
+<td><p>TP=1</p></td>
+<td><p>AutoRound INT4 thinker + BF16 talker/code2wav</p></td>
 <td><p>✅</p></td>
 </tr>
 </tbody>
