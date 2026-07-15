@@ -578,7 +578,11 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\<
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;input&quot;: &quot;Hello, how are you?&quot;}&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
+<span class="s1">    &quot;input&quot;: &quot;Hello, how are you?&quot;</span>
+<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -589,7 +593,11 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\<
 
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
     <span class="s2">&quot;http://localhost:8000/v1/audio/speech&quot;</span><span class="p">,</span>
-    <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, how are you?&quot;</span><span class="p">},</span>
+    <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;bosonai/higgs-audio-v3-tts-4b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;voice&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, how are you?&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
 <span class="p">)</span>
 <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;output.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -610,6 +618,8 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\<
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;Have a nice day and enjoy south california sunshine.&quot;,</span>
 <span class="s1">    &quot;references&quot;: [{</span>
 <span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/male-voice.wav&quot;,</span>
@@ -630,6 +640,8 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\<
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
     <span class="s2">&quot;http://localhost:8000/v1/audio/speech&quot;</span><span class="p">,</span>
     <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;bosonai/higgs-audio-v3-tts-4b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;voice&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
         <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;Have a nice day and enjoy south california sunshine.&quot;</span><span class="p">,</span>
         <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[{</span>
             <span class="s2">&quot;audio_path&quot;</span><span class="p">:</span> <span class="s2">&quot;docs/_static/audio/male-voice.wav&quot;</span><span class="p">,</span>
@@ -670,6 +682,8 @@ headers.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
 <span class="s1">    &quot;references&quot;: [{</span>
 <span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/male-voice.wav&quot;,</span>
@@ -706,6 +720,8 @@ would pipe the chunks directly to an audio player (e.g., via <code class="docuti
 <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
     <span class="s2">&quot;http://localhost:8000/v1/audio/speech&quot;</span><span class="p">,</span>
     <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;bosonai/higgs-audio-v3-tts-4b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;voice&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
         <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="n">SPEECH_INPUT</span><span class="p">,</span>
         <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;audio_path&quot;</span><span class="p">:</span> <span class="n">REFERENCE_AUDIO</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">REFERENCE_TEXT</span><span class="p">}],</span>
         <span class="s2">&quot;stream&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
@@ -771,6 +787,8 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:amusement|&gt;&lt;|prosody:expressive_high|&gt;Wait, wait, that was kind of hilarious. &lt;|sfx:laughter|&gt;Hehe, no, seriously, I was not ready for that.&quot;,</span>
 <span class="s1">    &quot;temperature&quot;: 0.8,</span>
 <span class="s1">    &quot;top_k&quot;: 50,</span>
@@ -789,6 +807,8 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:anger|&gt;&lt;|style:shouting|&gt;No, that is not okay! We cannot ship something that sounds broken, delayed, and unnatural.&quot;,</span>
 <span class="s1">    &quot;temperature&quot;: 0.8,</span>
 <span class="s1">    &quot;top_k&quot;: 50,</span>
@@ -807,6 +827,8 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:sadness|&gt;&lt;|sfx:crying|&gt;I... I’m sorry. &lt;|sfx:sniff|&gt;Sff, We really tried. after all those late nights, I thought the whole thing had failed.&quot;,</span>
 <span class="s1">    &quot;references&quot;: [{</span>
 <span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/ref_voice.wav&quot;,</span>
@@ -829,6 +851,8 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:confusion|&gt;&lt;|sfx:humming|&gt;Hmm... wait. &lt;|sfx:sigh|&gt;Uh, I’m not sure I understand. Do you mean the voice should speak faster, or the system should respond earlier?&quot;,</span>
 <span class="s1">    &quot;references&quot;: [{</span>
 <span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/ref_voice.wav&quot;,</span>
@@ -851,6 +875,8 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:surprise|&gt;&lt;|prosody:pitch_high|&gt;&lt;|sfx:screaming|&gt;Ah! Wait, I almost forgot! Higgs Audio v3 also supports over one hundred languages.&quot;,</span>
 <span class="s1">    &quot;references&quot;: [{</span>
 <span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/ref_voice.wav&quot;,</span>
@@ -877,6 +903,8 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:contemplation|&gt;Hi David, I missed the biology class today because I caught a cold. &lt;|sfx:cough|&gt;Ahem! Sorry, Could you tell me what the teacher covered?&quot;,</span>
 <span class="s1">    &quot;references&quot;: [{</span>
 <span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/female-voice.wav&quot;,</span>
@@ -893,6 +921,8 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:enthusiasm|&gt;Sure, no problem! We learned how plants make food through photosynthesis, and &lt;|prosody:long_pause|&gt; there will be a quiz this Friday.&quot;,</span>
 <span class="s1">    &quot;references&quot;: [{</span>
 <span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/male-voice.wav&quot;,</span>
@@ -909,6 +939,8 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:relief|&gt;Oh, that is really helpful. Thank you!&quot;,</span>
 <span class="s1">    &quot;references&quot;: [{</span>
 <span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/female-voice.wav&quot;,</span>
@@ -1139,67 +1171,72 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">input</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">model</span></code></p></td>
+<td><p>string</p></td>
+<td><p>served model</p></td>
+<td><p>Served Higgs TTS model identifier</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">input</span></code></p></td>
 <td><p>string</p></td>
 <td><p>(required)</p></td>
 <td><p>Text to synthesize</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">voice</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">voice</span></code></p></td>
 <td><p>string</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code></p></td>
-<td><p>Voice identifier (ignored when <code class="docutils literal notranslate"><span class="pre">references</span></code> is set)</p></td>
+<td><p>Voice identifier</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
 <td><p>string</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">&quot;wav&quot;</span></code></p></td>
 <td><p>Output audio format (<code class="docutils literal notranslate"><span class="pre">wav</span></code>, <code class="docutils literal notranslate"><span class="pre">mp3</span></code>, <code class="docutils literal notranslate"><span class="pre">flac</span></code>, <code class="docutils literal notranslate"><span class="pre">opus</span></code>, <code class="docutils literal notranslate"><span class="pre">aac</span></code>, <code class="docutils literal notranslate"><span class="pre">pcm</span></code>)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stream</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stream</span></code></p></td>
 <td><p>bool</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
 <td><p>Enable raw PCM streaming</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">references</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">references</span></code></p></td>
 <td><p>list</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Reference audio for voice cloning. Each item has <code class="docutils literal notranslate"><span class="pre">audio_path</span></code> (local path, file URL, data URL, or HTTP URL) and <code class="docutils literal notranslate"><span class="pre">text</span></code> (transcript)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> / <code class="docutils literal notranslate"><span class="pre">ref_text</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> / <code class="docutils literal notranslate"><span class="pre">ref_text</span></code></p></td>
 <td><p>string</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Shorthand for <code class="docutils literal notranslate"><span class="pre">references[0].audio_path</span></code> / <code class="docutils literal notranslate"><span class="pre">references[0].text</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">reference_codes</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reference_codes</span></code></p></td>
 <td><p>list[list[int]]</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Pre-encoded discrete codes, shape <code class="docutils literal notranslate"><span class="pre">[T,</span> <span class="pre">8]</span></code> — alternative to <code class="docutils literal notranslate"><span class="pre">references[0].audio_path</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reference_text</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">reference_text</span></code></p></td>
 <td><p>string</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Transcript of reference audio when supplying <code class="docutils literal notranslate"><span class="pre">reference_codes</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
 <td><p>int</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">2048</span></code></p></td>
 <td><p>Maximum number of generated multi-codebook steps</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p>float</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1.0</span></code></p></td>
 <td><p>Sampling temperature</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">top_p</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">top_p</span></code></p></td>
 <td><p>float</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Top-p sampling</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">top_k</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">top_k</span></code></p></td>
 <td><p>int</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Top-k sampling</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
 <td><p>int</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
 <td><p>Random seed for reproducibility</p></td>

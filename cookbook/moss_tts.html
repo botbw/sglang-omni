@@ -509,7 +509,11 @@ download the model (public, no token required):</p>
 <p>MOSS-TTS can synthesize speech without a reference clip:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;input&quot;: &quot;SGLang-Omni is a great project!&quot;}&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;OpenMOSS-Team/MOSS-TTS-v1.5&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
+<span class="s1">    &quot;input&quot;: &quot;SGLang-Omni is a great project!&quot;</span>
+<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -522,6 +526,8 @@ the transcript materially improves cloning quality.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;OpenMOSS-Team/MOSS-TTS-v1.5&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;SGLang-Omni is a great project!&quot;,</span>
 <span class="s1">    &quot;references&quot;: [{</span>
 <span class="s1">      &quot;audio_path&quot;: &quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;,</span>
@@ -540,6 +546,8 @@ the transcript materially improves cloning quality.</p>
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
     <span class="s2">&quot;http://localhost:8000/v1/audio/speech&quot;</span><span class="p">,</span>
     <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenMOSS-Team/MOSS-TTS-v1.5&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;voice&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
         <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;Get the trust fund to the bank early.&quot;</span><span class="p">,</span>
         <span class="s2">&quot;ref_audio&quot;</span><span class="p">:</span> <span class="s2">&quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;</span><span class="p">,</span>
         <span class="s2">&quot;ref_text&quot;</span><span class="p">:</span> <span class="s2">&quot;We asked over twenty different people, and they all said it was his.&quot;</span><span class="p">,</span>
@@ -567,6 +575,8 @@ chunks in real time.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">    &quot;model&quot;: &quot;OpenMOSS-Team/MOSS-TTS-v1.5&quot;,</span>
+<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
 <span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
 <span class="s1">    &quot;ref_audio&quot;: &quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;,</span>
 <span class="s1">    &quot;ref_text&quot;: &quot;We asked over twenty different people, and they all said it was his.&quot;,</span>
@@ -583,7 +593,12 @@ chunks in real time.</p>
 longer audio). Set it with an inline <code class="docutils literal notranslate"><span class="pre">${token:N}</span></code> prefix on <code class="docutils literal notranslate"><span class="pre">input</span></code> (stripped before synthesis),
 or with a <code class="docutils literal notranslate"><span class="pre">token_count</span></code> (alias <code class="docutils literal notranslate"><span class="pre">duration_tokens</span></code> / <code class="docutils literal notranslate"><span class="pre">tokens</span></code>) parameter. The count must be a
 positive integer.</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;input&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${token:150}A sentence with an explicit duration target.&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ref_audio&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">}</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OpenMOSS-Team/MOSS-TTS-v1.5&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;voice&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;input&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;${token:150}A sentence with an explicit duration target.&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;ref_audio&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>If omitted, the model picks a duration on its own; the SeedTTS benchmark estimates one per
@@ -596,6 +611,8 @@ passed through unchanged. An optional <code class="docutils literal notranslate"
 free-text style directive, and an optional <code class="docutils literal notranslate"><span class="pre">language</span></code> hint biases the target language (omit it
 to let the model infer from the text):</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OpenMOSS-Team/MOSS-TTS-v1.5&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;voice&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;input&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;今天天气不错 [pause 0.5s] 就该出去晒晒太阳。&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;ref_audio&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ref_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Chinese&quot;</span><span class="p">,</span>
@@ -614,13 +631,21 @@ to let the model infer from the text):</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">input</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">model</span></code></p></td>
+<td><p>served model</p></td>
+<td><p>Served model identifier</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">input</span></code></p></td>
 <td><p>(required)</p></td>
-<td><p>Text to synthesize; may carry a <code class="docutils literal notranslate"><span class="pre">${token:N}</span></code> duration prefix and inline markup</p></td>
+<td><p>Text to synthesize. It may carry a <code class="docutils literal notranslate"><span class="pre">${token:N}</span></code> duration prefix and inline markup</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">voice</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">default</span></code></p></td>
+<td><p>Voice identifier</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">references</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
-<td><p>Reference clip for cloning; each item has <code class="docutils literal notranslate"><span class="pre">audio_path</span></code> and <code class="docutils literal notranslate"><span class="pre">text</span></code></p></td>
+<td><p>Reference clip for cloning. Each item has <code class="docutils literal notranslate"><span class="pre">audio_path</span></code> and <code class="docutils literal notranslate"><span class="pre">text</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> / <code class="docutils literal notranslate"><span class="pre">ref_text</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
@@ -632,7 +657,7 @@ to let the model infer from the text):</p>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">language</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
-<td><p>Optional target-language hint; omit to let the model infer</p></td>
+<td><p>Optional target-language hint. Omit to let the model infer</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">instructions</span></code> / <code class="docutils literal notranslate"><span class="pre">instruct</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
@@ -640,23 +665,23 @@ to let the model infer from the text):</p>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">token_count</span></code> / <code class="docutils literal notranslate"><span class="pre">duration_tokens</span></code> / <code class="docutils literal notranslate"><span class="pre">tokens</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
-<td><p>Target duration in codec frames; must be <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">0</span></code></p></td>
+<td><p>Target duration in codec frames. It must be <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">0</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">4096</span></code></p></td>
-<td><p>Maximum generated frames; an explicit value must be <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">0</span></code></p></td>
+<td><p>Maximum generated frames. An explicit value must be <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">0</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1.5</span></code> text / <code class="docutils literal notranslate"><span class="pre">1.7</span></code> audio</p></td>
-<td><p>Sampling temperature; a single <code class="docutils literal notranslate"><span class="pre">temperature</span></code> overrides both channels</p></td>
+<td><p>Sampling temperature. A single <code class="docutils literal notranslate"><span class="pre">temperature</span></code> overrides both channels</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">top_p</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1.0</span></code> text / <code class="docutils literal notranslate"><span class="pre">0.8</span></code> audio</p></td>
-<td><p>Top-p sampling; a single <code class="docutils literal notranslate"><span class="pre">top_p</span></code> overrides both channels</p></td>
+<td><p>Top-p sampling. A single <code class="docutils literal notranslate"><span class="pre">top_p</span></code> overrides both channels</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">top_k</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">50</span></code> text / <code class="docutils literal notranslate"><span class="pre">25</span></code> audio</p></td>
-<td><p>Top-k sampling; a single <code class="docutils literal notranslate"><span class="pre">top_k</span></code> overrides both channels</p></td>
+<td><p>Top-k sampling. A single <code class="docutils literal notranslate"><span class="pre">top_k</span></code> overrides both channels</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">repetition_penalty</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1.0</span></code></p></td>
@@ -664,7 +689,7 @@ to let the model infer from the text):</p>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">seed</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
-<td><p>Non-negative integer; see <a class="reference internal" href="#seed-reproducibility"><span class="std std-ref">Seed Reproducibility</span></a></p></td>
+<td><p>Non-negative integer. See <a class="reference internal" href="#seed-reproducibility"><span class="std std-ref">Seed Reproducibility</span></a></p></td>
 </tr>
 </tbody>
 </table>
