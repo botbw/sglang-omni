@@ -55,7 +55,7 @@
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="MOSS-Transcribe-Diarize" href="moss_transcribe_diarize.html" />
+    <link rel="next" title="Fun-ASR-Nano" href="fun_asr.html" />
     <link rel="prev" title="MOSS-TTS-Local" href="moss_tts_local.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -166,6 +166,7 @@
 <li class="toctree-l1"><a class="reference internal" href="moss_tts.html">MOSS-TTS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="moss_tts_local.html">MOSS-TTS-Local</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Qwen3-ASR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fun_asr.html">Fun-ASR-Nano</a></li>
 <li class="toctree-l1"><a class="reference internal" href="moss_transcribe_diarize.html">MOSS-Transcribe-Diarize</a></li>
 <li class="toctree-l1"><a class="reference internal" href="whisper_asr.html">Whisper ASR</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qwen3_omni.html">Qwen3-Omni</a></li>
@@ -529,10 +530,19 @@
 <section id="benchmarking">
 <h2>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">#</a></h2>
 <p>Use <code class="docutils literal notranslate"><span class="pre">benchmarks/eval/benchmark_asr_seedtts.py</span></code> to sweep ASR concurrency on
-SeedTTS reference audio through <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>. ASR CI reuses
-the same single-pass benchmark entry point in <code class="docutils literal notranslate"><span class="pre">tests/test_model/test_asr_ci.py</span></code>
-and applies WER, throughput, latency, and RTF thresholds.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">QWEN3_ASR_CI_CONCURRENCY</span><span class="o">=</span><span class="m">32</span><span class="w"> </span>pytest<span class="w"> </span>tests/test_model/test_asr_ci.py<span class="w"> </span>-s
+SeedTTS reference audio through <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>. It defaults to
+<code class="docutils literal notranslate"><span class="pre">--model-path</span> <span class="pre">Qwen/Qwen3-ASR-1.7B</span></code>; the shared request and metric logic lives in
+<code class="docutils literal notranslate"><span class="pre">benchmarks.tasks.asr</span></code> and also supports Fun-ASR through <code class="docutils literal notranslate"><span class="pre">--model-path</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+
+<span class="c1"># Sweep the full SeedTTS EN set (1088 clips) at 1..64 concurrency, 3 repeats:</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--concurrencies<span class="w"> </span><span class="m">1</span>,2,4,8,16,32,64<span class="w"> </span>--repeats<span class="w"> </span><span class="m">3</span><span class="w"> </span>--warmup
+</pre></div>
+</div>
+<p>ASR CI reuses the same single-pass benchmark entry point and applies WER,
+throughput, latency, and RTF thresholds.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">QWEN3_ASR_CI_CONCURRENCY</span><span class="o">=</span><span class="m">32</span><span class="w"> </span>pytest<span class="w"> </span>tests/test_model/test_asr_ci_seedtts.py<span class="w"> </span>-s
 </pre></div>
 </div>
 </section>
@@ -567,11 +577,11 @@ and applies WER, throughput, latency, and RTF thresholds.</p>
       </div>
     </a>
     <a class="right-next"
-       href="moss_transcribe_diarize.html"
+       href="fun_asr.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">MOSS-Transcribe-Diarize</p>
+        <p class="prev-next-title">Fun-ASR-Nano</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

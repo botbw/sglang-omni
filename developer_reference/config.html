@@ -166,6 +166,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/moss_tts.html">MOSS-TTS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/moss_tts_local.html">MOSS-TTS-Local</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/qwen3_asr.html">Qwen3-ASR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cookbook/fun_asr.html">Fun-ASR-Nano</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/moss_transcribe_diarize.html">MOSS-Transcribe-Diarize</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/whisper_asr.html">Whisper ASR</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/qwen3_omni.html">Qwen3-Omni</a></li>
@@ -589,10 +590,10 @@ belongs in stages, schedulers, model runners, and model-local payload logic.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">{}</span></code></p></td>
 <td><p>Optional target-stage to dotted projection function mapping used before writing a downstream payload.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">relay</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">RelayConfig</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">comm</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CommConfig</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p>Per-stage relay override. If unset, relay device and defaults are inferred from stage placement and <code class="docutils literal notranslate"><span class="pre">PipelineConfig.relay_backend</span></code>.</p></td>
+<td><p>Per-stage communication pool and Mooncake options. Transport selection is derived by <code class="docutils literal notranslate"><span class="pre">CommRouter</span></code> from locality and placement.</p></td>
 </tr>
 </tbody>
 </table>
@@ -614,8 +615,8 @@ runtime prep derives stream receivers and same-GPU stream paths from it.</p>
 <code class="docutils literal notranslate"><span class="pre">PipelineConfig</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">terminal_stages</span></code>: computed from stages with <code class="docutils literal notranslate"><span class="pre">terminal=True</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">gpu_placement</span></code>: computed from stages with <code class="docutils literal notranslate"><span class="pre">gpu</span></code> set</p></li>
-<li><p>relay device: explicit <code class="docutils literal notranslate"><span class="pre">StageConfig.relay.device</span></code> when present; otherwise
-inferred by runtime prep from <code class="docutils literal notranslate"><span class="pre">gpu</span></code> and <code class="docutils literal notranslate"><span class="pre">relay_backend</span></code></p></li>
+<li><p>communication transport: inferred from stage locality and placement
+(<code class="docutils literal notranslate"><span class="pre">local_object</span></code>, <code class="docutils literal notranslate"><span class="pre">cuda_ipc</span></code>, host shared memory, or <code class="docutils literal notranslate"><span class="pre">mooncake</span></code>)</p></li>
 </ul>
 </section>
 <section id="pipelineconfig-reference">
@@ -649,37 +650,32 @@ inferred by runtime prep from <code class="docutils literal notranslate"><span c
 <td><p>first stage</p></td>
 <td><p>Optional override for the stage that receives new requests.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">relay_backend</span></code></p></td>
-<td><p>one of <code class="docutils literal notranslate"><span class="pre">shm</span></code>, <code class="docutils literal notranslate"><span class="pre">nccl</span></code>, <code class="docutils literal notranslate"><span class="pre">nixl</span></code>, <code class="docutils literal notranslate"><span class="pre">mooncake</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">shm</span></code></p></td>
-<td><p>Global relay backend used when creating per-stage relays.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fused_stages</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fused_stages</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">list[list[str]]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">[]</span></code></p></td>
 <td><p>Adjacent linear stage groups to colocate in one runtime process, enabling Stage-level local dispatch while preserving normal Stage ownership.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">runtime_overrides</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">runtime_overrides</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">dict[str,</span> <span class="pre">Any]]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">{}</span></code></p></td>
 <td><p>Per-stage factory argument overrides applied during runtime prep.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">env_defaults</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">env_defaults</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">str]</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">{}</span></code></p></td>
 <td><p>Environment defaults applied before stage factory imports. Existing process values take precedence.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">endpoints</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">endpoints</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">EndpointsConfig</span></code></p></td>
 <td><p>IPC defaults</p></td>
 <td><p>Endpoint allocation settings. <code class="docutils literal notranslate"><span class="pre">base_path</span></code> controls where Unix-domain sockets are created.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">terminal_stages_fn</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">terminal_stages_fn</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>Dotted function path for request-aware terminal-stage resolution. The function receives the normalized <code class="docutils literal notranslate"><span class="pre">OmniRequest</span></code> and returns terminal stage names for that request, or <code class="docutils literal notranslate"><span class="pre">None</span></code> to use static terminals.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">config_cls</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">config_cls</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p>class name</p></td>
 <td><p>Stored automatically and used when loading a saved config file.</p></td>
@@ -693,8 +689,9 @@ inferred by runtime prep from <code class="docutils literal notranslate"><span c
 <li><p><code class="docutils literal notranslate"><span class="pre">terminal_stages</span></code>: all stages with <code class="docutils literal notranslate"><span class="pre">terminal=True</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">gpu_placement</span></code>: stage name to GPU id or TP GPU list for stages with <code class="docutils literal notranslate"><span class="pre">gpu</span></code></p></li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">RelayConfig</span></code> is the per-stage data-transfer override. It currently contains
-<code class="docutils literal notranslate"><span class="pre">slot_size_mb</span></code>, <code class="docutils literal notranslate"><span class="pre">credits</span></code>, <code class="docutils literal notranslate"><span class="pre">rank</span></code>, <code class="docutils literal notranslate"><span class="pre">world_size</span></code>, and <code class="docutils literal notranslate"><span class="pre">device</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CommConfig</span></code> is the per-stage communication tuning block. It contains
+<code class="docutils literal notranslate"><span class="pre">slot_size_mb</span></code>, <code class="docutils literal notranslate"><span class="pre">credits</span></code>, <code class="docutils literal notranslate"><span class="pre">mooncake_protocol</span></code>, <code class="docutils literal notranslate"><span class="pre">mooncake_hostname</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">mooncake_device_name</span></code>. It does not select a transport backend.</p>
 <section id="stage-fusion">
 <h3>Stage Fusion<a class="headerlink" href="#stage-fusion" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">fused_stages</span></code> is a framework-level colocation hint. It keeps every listed

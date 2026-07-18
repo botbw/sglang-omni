@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>LLaDA2.0-Uni &#8212; SGLang</title>
+    <title>Fun-ASR-Nano &#8212; SGLang</title>
   
   
   
@@ -49,14 +49,14 @@
     <script src="../_static/copybutton.js?v=ccdb6887"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'cookbook/llada2_uni';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'cookbook/fun_asr';</script>
     <script src="../_static/js/qwen3_omni_server_generator.js?v=94f3a115"></script>
     <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Omni Model Usage" href="../basic_usage/qwen3_omni.html" />
-    <link rel="prev" title="Ming-Omni" href="ming_omni.html" />
+    <link rel="next" title="MOSS-Transcribe-Diarize" href="moss_transcribe_diarize.html" />
+    <link rel="prev" title="Qwen3-ASR" href="qwen3_asr.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
@@ -166,12 +166,12 @@
 <li class="toctree-l1"><a class="reference internal" href="moss_tts.html">MOSS-TTS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="moss_tts_local.html">MOSS-TTS-Local</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qwen3_asr.html">Qwen3-ASR</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fun_asr.html">Fun-ASR-Nano</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Fun-ASR-Nano</a></li>
 <li class="toctree-l1"><a class="reference internal" href="moss_transcribe_diarize.html">MOSS-Transcribe-Diarize</a></li>
 <li class="toctree-l1"><a class="reference internal" href="whisper_asr.html">Whisper ASR</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qwen3_omni.html">Qwen3-Omni</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ming_omni.html">Ming-Omni</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">LLaDA2.0-Uni</a></li>
+<li class="toctree-l1"><a class="reference internal" href="llada2_uni.html">LLaDA2.0-Uni</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">General Usage</span></p>
 <ul class="nav bd-sidenav">
@@ -270,7 +270,7 @@
       
       
       
-      <li><a href="https://github.com/sgl-project/sglang-omni/blob/main/docs/cookbook/llada2_uni.md?plain=1" target="_blank"
+      <li><a href="https://github.com/sgl-project/sglang-omni/blob/main/docs/cookbook/fun_asr.md?plain=1" target="_blank"
    class="btn btn-sm btn-source-file-button dropdown-item"
    title="Show source"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -287,7 +287,7 @@
       
       
       
-      <li><a href="https://github.com/sgl-project/sglang-omni/edit/main/docs/cookbook/llada2_uni.md" target="_blank"
+      <li><a href="https://github.com/sgl-project/sglang-omni/edit/main/docs/cookbook/fun_asr.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -304,7 +304,7 @@
       
       
       
-      <li><a href="https://github.com/sgl-project/sglang-omni/issues/new?title=Issue%20on%20page%20%2Fcookbook/llada2_uni.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/sgl-project/sglang-omni/issues/new?title=Issue%20on%20page%20%2Fcookbook/fun_asr.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -334,7 +334,7 @@
       
       
       
-      <li><a href="../_sources/cookbook/llada2_uni.md" target="_blank"
+      <li><a href="../_sources/cookbook/fun_asr.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -410,7 +410,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>LLaDA2.0-Uni</h1>
+    <h1>Fun-ASR-Nano</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -420,16 +420,11 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#highlights">Highlights</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture">Architecture</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#text-input">Text Input</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#image-and-text-input">Image and Text Input</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#incoming-features">Incoming Features</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#known-limitations">Known Limitations</a></li>
 </ul>
             </nav>
@@ -442,127 +437,60 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="llada2-0-uni">
-<h1>LLaDA2.0-Uni<a class="headerlink" href="#llada2-0-uni" title="Link to this heading">#</a></h1>
-<p><a class="reference external" href="https://huggingface.co/inclusionAI/LLaDA2.0-Uni">LLaDA2.0-Uni</a> is a multimodal model that accepts text and image input. This SGLang-Omni cookbook covers the experimental text-output serving path.</p>
-<section id="highlights">
-<h2>Highlights<a class="headerlink" href="#highlights" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p>Unified dLLM-MoE Backbone — Built on LLaDA 2.0, unifying multimodal understanding and generation.</p></li>
-<li><p>Top-Tier Understanding &amp; Generation — Matches dedicated VLMs in visual QA and document understanding, while generating high-quality images.</p></li>
-<li><p>Interleaved Generation &amp; Reasoning — Empowered by unified discrete representations, unlocking interleaved generation and reasoning.</p></li>
-</ul>
-</section>
-<section id="architecture">
-<h2>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">#</a></h2>
-<p><img alt="LLaDA2.0-Uni Architecture" src="../_images/llada2.0_uni_architecture.png" /></p>
-<p>LLaDA2.0-Uni unifies multimodal understanding and generation into a simple Mask Token Prediction paradigm. Visual inputs are encoded by the SigLIP-VQ tokenizer into discrete semantic tokens, then mapped alongside text tokens to backbone hidden states under a unified mask prediction objective. Output tokens are decoded back to text via the Text De-Tokenizer, or reconstructed into high-fidelity images through the Diffusion Decoder. Empowered by unified discrete representations, it effortlessly handles complex interleaved generation and unlocks advanced interleaved reasoning, interleaving &lt;|image|&gt;…&lt;|/image|&gt; chunks to enable end-to-end training and inference within a single coherent framework.</p>
-</section>
+  <section class="tex2jax_ignore mathjax_ignore" id="fun-asr-nano">
+<h1>Fun-ASR-Nano<a class="headerlink" href="#fun-asr-nano" title="Link to this heading">#</a></h1>
+<p><a class="reference external" href="https://arxiv.org/abs/2509.12508">Fun-ASR-Nano</a> is a multilingual audio
+transcription model served
+through the OpenAI-compatible <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code> endpoint. It accepts
+one uploaded audio file per request and returns text.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
-<p>Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> by following <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a>.</p>
+<p>Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> by following <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a>,
+then download the model:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the -hf variant</span>
+hf<span class="w"> </span>download<span class="w"> </span>FunAudioLLM/Fun-ASR-Nano-2512-hf
+</pre></div>
+</div>
 </section>
 <section id="server-configuration">
 <h2>Server Configuration<a class="headerlink" href="#server-configuration" title="Link to this heading">#</a></h2>
-<p>LLaDA2.0-Uni runs a 4-stage pipeline
-(<code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">→</span> <span class="pre">image_encoder</span> <span class="pre">→</span> <span class="pre">thinker</span> <span class="pre">→</span> <span class="pre">decode</span></code>) on a single GPU. The
-thinker disables CUDA graph by default for this experimental DLLM path.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>inclusionAI/LLaDA2.0-Uni<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<p>Fun-ASR-Nano runs a single ASR stage on one GPU.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-ASR-Nano-2512-hf<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
 </section>
-<section id="text-input">
-<h2>Text Input<a class="headerlink" href="#text-input" title="Link to this heading">#</a></h2>
-<p>Send a text-only prompt and get a text response.</p>
-<p><strong>cURL</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/chat/completions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;inclusionAI/LLaDA2.0-Uni&quot;,</span>
-<span class="s1">    &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Hello!&quot;}],</span>
-<span class="s1">    &quot;max_tokens&quot;: 256</span>
-<span class="s1">  }&#39;</span>
+<section id="transcribe-audio">
+<h2>Transcribe Audio<a class="headerlink" href="#transcribe-audio" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/transcriptions<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">model</span><span class="o">=</span>FunAudioLLM/Fun-ASR-Nano-2512-hf<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">file</span><span class="o">=</span>@tests/data/query_to_cars.wav<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">language</span><span class="o">=</span>en<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">response_format</span><span class="o">=</span>json
 </pre></div>
 </div>
-<p><strong>Python</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s2">&quot;http://localhost:8000/v1/chat/completions&quot;</span><span class="p">,</span>
-    <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;inclusionAI/LLaDA2.0-Uni&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span><span class="p">}],</span>
-        <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="mi">256</span><span class="p">,</span>
-    <span class="p">},</span>
-<span class="p">)</span>
-<span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
-</pre></div>
-</div>
-</section>
-<section id="image-and-text-input">
-<h2>Image and Text Input<a class="headerlink" href="#image-and-text-input" title="Link to this heading">#</a></h2>
-<p>Send an image with a text prompt to get a text response.</p>
-<p><strong>cURL</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/chat/completions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;inclusionAI/LLaDA2.0-Uni&quot;,</span>
-<span class="s1">    &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Briefly describe the cars in this image.&quot;}],</span>
-<span class="s1">    &quot;images&quot;: [&quot;tests/data/cars.jpg&quot;],</span>
-<span class="s1">    &quot;modalities&quot;: [&quot;text&quot;],</span>
-<span class="s1">    &quot;max_tokens&quot;: 16</span>
-<span class="s1">  }&#39;</span>
-</pre></div>
-</div>
-<p><strong>Python</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;tests/data/query_to_cars.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="s2">&quot;http://localhost:8000/v1/audio/transcriptions&quot;</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;FunAudioLLM/Fun-ASR-Nano-2512-hf&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;response_format&quot;</span><span class="p">:</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">files</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;query_to_cars.wav&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="s2">&quot;audio/wav&quot;</span><span class="p">)},</span>
+        <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+    <span class="p">)</span>
 
-<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s2">&quot;http://localhost:8000/v1/chat/completions&quot;</span><span class="p">,</span>
-    <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;inclusionAI/LLaDA2.0-Uni&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Briefly describe the cars in this image.&quot;</span><span class="p">}],</span>
-        <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;tests/data/cars.jpg&quot;</span><span class="p">],</span>
-        <span class="s2">&quot;modalities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">],</span>
-        <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
-    <span class="p">},</span>
-<span class="p">)</span>
 <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>Images can also be passed inline using the OpenAI multi-content format:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-
-<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s2">&quot;http://localhost:8000/v1/chat/completions&quot;</span><span class="p">,</span>
-    <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;inclusionAI/LLaDA2.0-Uni&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[</span>
-                    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image_url&quot;</span><span class="p">,</span> <span class="s2">&quot;image_url&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;tests/data/cars.jpg&quot;</span><span class="p">}},</span>
-                    <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Briefly describe the cars in this image.&quot;</span><span class="p">},</span>
-                <span class="p">],</span>
-            <span class="p">}</span>
-        <span class="p">],</span>
-        <span class="s2">&quot;modalities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">],</span>
-        <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
-    <span class="p">},</span>
-<span class="p">)</span>
-<span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;choices&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="s2">&quot;content&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;text&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </section>
 <section id="request-parameters">
 <h2>Request Parameters<a class="headerlink" href="#request-parameters" title="Link to this heading">#</a></h2>
-<p>The table below lists all parameters accepted by the <code class="docutils literal notranslate"><span class="pre">/v1/chat/completions</span></code> endpoint for LLaDA2.0-Uni.</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
@@ -572,49 +500,76 @@ thinker disables CUDA graph by default for this experimental DLLM path.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">model</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">file</span></code></p></td>
+<td><p>file</p></td>
+<td><p>required</p></td>
+<td><p>Audio file uploaded as multipart form data</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">model</span></code></p></td>
 <td><p>string</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
+<td><p>server default</p></td>
 <td><p>Model identifier</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">messages</span></code></p></td>
-<td><p>list</p></td>
-<td><p>(required)</p></td>
-<td><p>List of chat messages, each with <code class="docutils literal notranslate"><span class="pre">role</span></code> and <code class="docutils literal notranslate"><span class="pre">content</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">language</span></code></p></td>
+<td><p>string</p></td>
+<td><p>unset</p></td>
+<td><p>Language hint. <code class="docutils literal notranslate"><span class="pre">en</span></code>/<code class="docutils literal notranslate"><span class="pre">english</span></code>/<code class="docutils literal notranslate"><span class="pre">英文</span></code> transcribe to English; <code class="docutils literal notranslate"><span class="pre">zh</span></code>/<code class="docutils literal notranslate"><span class="pre">cn</span></code>/<code class="docutils literal notranslate"><span class="pre">chinese</span></code>/<code class="docutils literal notranslate"><span class="pre">中文</span></code> (or unset) transcribes to Chinese; other values pass through as the target language</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">modalities</span></code></p></td>
-<td><p>list</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">[&quot;text&quot;]</span></code></p></td>
-<td><p>Output modalities (only <code class="docutils literal notranslate"><span class="pre">[&quot;text&quot;]</span></code> is supported)</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
+<td><p>string</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">json</span></code>, <code class="docutils literal notranslate"><span class="pre">verbose_json</span></code>, or <code class="docutils literal notranslate"><span class="pre">text</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">images</span></code></p></td>
-<td><p>list</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
-<td><p>List of image file paths (local paths or URLs)</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
+<td><p>float</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.0</span></code></p></td>
+<td><p>Sampling temperature; <code class="docutils literal notranslate"><span class="pre">0.0</span></code> (greedy) is the correct decoding mode for Fun-ASR-Nano and the default</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_tokens</span></code></p></td>
-<td><p>int</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">null</span></code></p></td>
-<td><p>Maximum number of tokens to generate</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>duration-based</p></td>
+<td><p>Generation budget scaled to the audio duration. Explicit values must be between 1 and 200</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<section id="incoming-features">
-<h3>Incoming Features<a class="headerlink" href="#incoming-features" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p>Text-to-image generation</p></li>
-<li><p>Text-to-Image Generation with Thinking</p></li>
-<li><p>Interleaved Generation</p></li>
-</ul>
 </section>
+<section id="benchmarking">
+<h2>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">#</a></h2>
+<p>SeedTTS EN concurrency/WER benchmarking for Fun-ASR-Nano lives in
+<code class="docutils literal notranslate"><span class="pre">benchmarks/eval/benchmark_asr_seedtts.py</span></code>. Pass the Fun-ASR-Nano model
+path with <code class="docutils literal notranslate"><span class="pre">--model-path</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download the test set once:</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.dataset.prepare<span class="w"> </span>--dataset<span class="w"> </span>seedtts
+
+<span class="c1"># Launch Fun-ASR-Nano:</span>
+sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-ASR-Nano-2512-hf<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+
+<span class="c1"># Sweep the full SeedTTS EN set (1088 clips) at 1..64 concurrency, 3 repeats:</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-ASR-Nano-2512-hf<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--concurrencies<span class="w"> </span><span class="m">1</span>,2,4,8,16,32,64<span class="w"> </span>--repeats<span class="w"> </span><span class="m">3</span>
+
+<span class="c1"># Quick smoke on a 20-sample subset:</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-ASR-Nano-2512-hf<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-samples<span class="w"> </span><span class="m">20</span><span class="w"> </span>--concurrencies<span class="w"> </span><span class="m">2</span><span class="w"> </span>--repeats<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
 </section>
 <section id="known-limitations">
 <h2>Known Limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p>Text output is supported for text and image input. Image generation and
-interleaved generation are not wired to the OpenAI-compatible response path
-yet.</p></li>
+<li><p>The endpoint accepts one uploaded file per request.</p></li>
+<li><p>Each uploaded audio segment must be 30 seconds or shorter, matching the
+official Fun-ASR VAD segment limit. Split longer recordings before upload.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">itn</span></code> and <code class="docutils literal notranslate"><span class="pre">hotwords</span></code> are supported by the model request builder but not
+exposed as form fields on the public transcription endpoint.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code> is accepted by the HTTP endpoint for OpenAI compatibility, but
+Fun-ASR-Nano currently ignores it (use <code class="docutils literal notranslate"><span class="pre">hotwords</span></code> inside the builder for
+context biasing instead).</p></li>
+<li><p>Audio is resampled to 16 kHz before transcription.</p></li>
+<li><p>bf16 is strongly recommended; fp16 can overflow to NaN in the adaptor path.</p></li>
 </ul>
 </section>
 </section>
@@ -631,20 +586,20 @@ yet.</p></li>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ming_omni.html"
+       href="qwen3_asr.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Ming-Omni</p>
+        <p class="prev-next-title">Qwen3-ASR</p>
       </div>
     </a>
     <a class="right-next"
-       href="../basic_usage/qwen3_omni.html"
+       href="moss_transcribe_diarize.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Omni Model Usage</p>
+        <p class="prev-next-title">MOSS-Transcribe-Diarize</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -666,16 +621,11 @@ yet.</p></li>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#highlights">Highlights</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#architecture">Architecture</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#text-input">Text Input</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#image-and-text-input">Image and Text Input</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#incoming-features">Incoming Features</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#known-limitations">Known Limitations</a></li>
 </ul>
   </nav></div>
