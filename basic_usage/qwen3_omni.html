@@ -608,7 +608,7 @@ instructions in the text message.</p>
 </div>
 <p>Use <code class="docutils literal notranslate"><span class="pre">examples/configs/qwen3_omni_colocated_h200.yaml</span></code> on single-H200 workers.</p>
 <p>For manual multi-GPU placement, use the example script:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/run_qwen3_omni_speech_server.py<span class="w"> </span><span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/run_omni.py<span class="w"> </span>qwen3-speech-server<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--gpu-thinker<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--gpu-talker<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
@@ -641,7 +641,7 @@ the value globally or per AR stage:</p>
 </pre></div>
 </div>
 <p>The speech server launcher exposes the same per-stage controls:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/run_qwen3_omni_speech_server.py<span class="w"> </span><span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/run_omni.py<span class="w"> </span>qwen3-speech-server<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--gpu-thinker<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--gpu-talker<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
