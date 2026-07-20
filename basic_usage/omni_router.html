@@ -489,6 +489,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manage-workers">Manage Workers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#routing-behavior">Routing Behavior</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-diagnostics">Request Diagnostics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-behavior">Overload Behavior</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#failure-handling">Failure Handling</a></li>
 </ul>
             </nav>
@@ -703,31 +704,39 @@ fragments.</p>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--max-connections</span></code></p></td>
 <td><p>auto: <code class="docutils literal notranslate"><span class="pre">128</span> <span class="pre">x</span> <span class="pre">workers</span></code>, capped at <code class="docutils literal notranslate"><span class="pre">4096</span></code></p></td>
-<td><p>Pool-wide cap on concurrent upstream connections across all workers (one shared client). Explicit values below <code class="docutils literal notranslate"><span class="pre">64</span> <span class="pre">x</span> <span class="pre">workers</span></code> log an under-feed warning.</p></td>
+<td><p>Admission bound: maximum concurrent in-flight model requests before the router fast-rejects with <code class="docutils literal notranslate"><span class="pre">503</span></code>. The upstream connection pool is sized to at least this value. Explicit values below <code class="docutils literal notranslate"><span class="pre">64</span> <span class="pre">x</span> <span class="pre">workers</span></code> log an under-feed warning.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--health-failure-threshold</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--max-inflight</span></code></p></td>
+<td><p>equal to <code class="docutils literal notranslate"><span class="pre">--max-connections</span></code></p></td>
+<td><p>Advanced override that decouples the admission bound from <code class="docutils literal notranslate"><span class="pre">--max-connections</span></code>. The upstream pool is sized to the larger of the two.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--health-failure-threshold</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">3</span></code></p></td>
 <td><p>Consecutive failed health checks or routed request failures before a worker becomes unhealthy.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--health-success-threshold</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--health-success-threshold</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">2</span></code></p></td>
 <td><p>Consecutive successful health checks before an unhealthy or unknown worker becomes healthy.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--health-check-timeout-secs</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--health-check-timeout-secs</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">5</span></code></p></td>
 <td><p>Timeout for one worker health-check request.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--health-check-interval-secs</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--health-check-interval-secs</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">10</span></code></p></td>
 <td><p>Interval between background worker health checks.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--health-check-endpoint</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--health-check-endpoint</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">/health</span></code></p></td>
 <td><p>Worker endpoint used by background health checks.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--log-level</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--log-level</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">info</span></code></p></td>
 <td><p>Router and Uvicorn log level.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--strict-limits</span></code></p></td>
+<td><p>off</p></td>
+<td><p>Fail startup instead of warning when the <code class="docutils literal notranslate"><span class="pre">nofile</span></code> soft limit is too low for the resolved upstream pool size (<code class="docutils literal notranslate"><span class="pre">max(--max-connections,</span> <span class="pre">--max-inflight)</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -783,8 +792,9 @@ curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:8008/v1/m
 become healthy.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ready</span></code>: at least one worker is routable. This returns <code class="docutils literal notranslate"><span class="pre">503</span></code> when all
 workers are unhealthy, dead, disabled, or still unknown.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/health</span></code>: worker-pool health summary. This returns <code class="docutils literal notranslate"><span class="pre">503</span></code> when no worker
-is routable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/health</span></code>: worker-pool health summary plus admission stats (<code class="docutils literal notranslate"><span class="pre">inflight</span></code>,
+<code class="docutils literal notranslate"><span class="pre">max_inflight</span></code>, <code class="docutils literal notranslate"><span class="pre">peak_inflight</span></code>, <code class="docutils literal notranslate"><span class="pre">rejected_total</span></code>). This returns <code class="docutils literal notranslate"><span class="pre">503</span></code> when no
+worker is routable.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/workers</span></code>: detailed worker state, including <code class="docutils literal notranslate"><span class="pre">health_state</span></code>, <code class="docutils literal notranslate"><span class="pre">disabled</span></code>,
 <code class="docutils literal notranslate"><span class="pre">routable</span></code>, <code class="docutils literal notranslate"><span class="pre">active_requests</span></code>, failure counters, and last error.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/models</span></code>: merged model list from routable workers.</p></li>
@@ -909,10 +919,46 @@ router-generated ID</p></li>
 requests. Each record contains the request ID, selected worker, path, stream
 flag, inferred capabilities, status code, duration, and terminal outcome.</p>
 </section>
+<section id="overload-behavior">
+<h2>Overload Behavior<a class="headerlink" href="#overload-behavior" title="Link to this heading">#</a></h2>
+<p>The router bounds its concurrent work. Once <code class="docutils literal notranslate"><span class="pre">--max-connections</span></code> in-flight model
+requests are being relayed, additional model requests are rejected immediately,
+before the request body is read:</p>
+<ul class="simple">
+<li><p>status <code class="docutils literal notranslate"><span class="pre">503</span></code> with an OpenAI-style error envelope (<code class="docutils literal notranslate"><span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;overloaded_error&quot;</span></code>)</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">Retry-After:</span> <span class="pre">1</span></code> header</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">route_rejected</span></code> log record with <code class="docutils literal notranslate"><span class="pre">reason=router_overloaded</span></code></p></li>
+</ul>
+<p>Health and management endpoints (<code class="docutils literal notranslate"><span class="pre">/live</span></code>, <code class="docutils literal notranslate"><span class="pre">/ready</span></code>, <code class="docutils literal notranslate"><span class="pre">/health</span></code>, <code class="docutils literal notranslate"><span class="pre">/workers</span></code>, admin
+routes) are never gated. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/health</span></code> reports the current in-flight level, the
+peak since startup, and the total rejected count.</p>
+<p>Sizing guidance:</p>
+<ul class="simple">
+<li><p>The auto default (<code class="docutils literal notranslate"><span class="pre">128</span> <span class="pre">x</span> <span class="pre">workers</span></code>) is a divergence backstop, not a latency
+target. For large responses on a single-core router, an oversized bound
+degrades service itself; size <code class="docutils literal notranslate"><span class="pre">--max-connections</span></code> toward
+<code class="docutils literal notranslate"><span class="pre">capacity</span> <span class="pre">x</span> <span class="pre">acceptable</span> <span class="pre">latency</span></code> for your payload shape.</p></li>
+<li><p>Each in-flight request holds two file descriptors (client plus upstream). The
+router warns at startup when the <code class="docutils literal notranslate"><span class="pre">nofile</span></code> soft limit is below
+<code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">x</span> <span class="pre">upstream</span> <span class="pre">pool</span> <span class="pre">size</span> <span class="pre">+</span> <span class="pre">headroom</span></code>, where the pool size is
+<code class="docutils literal notranslate"><span class="pre">max(--max-connections,</span> <span class="pre">--max-inflight)</span></code>. Raise the limit, or lower whichever
+of the two flags binds the pool (the warning names it); <code class="docutils literal notranslate"><span class="pre">--strict-limits</span></code>
+turns the warning into a startup error.</p></li>
+<li><p>A rejected request costs the client its keep-alive connection (the router
+responds before reading the body), so clients should back off on <code class="docutils literal notranslate"><span class="pre">503</span></code> rather
+than immediately retrying on a fresh connection.</p></li>
+</ul>
+</section>
 <section id="failure-handling">
 <h2>Failure Handling<a class="headerlink" href="#failure-handling" title="Link to this heading">#</a></h2>
-<p>If a worker health check or routed request fails repeatedly, the worker becomes
-unhealthy and leaves the routable pool. It can return to healthy after the
+<p>Worker liveness is owned by the background <code class="docutils literal notranslate"><span class="pre">/health</span></code> probes. A relayed request
+only marks a worker unhealthy when the router cannot get a usable response from
+it: a transport-level failure (connection error or read timeout, with no HTTP
+response) or a gateway status the worker returns, <code class="docutils literal notranslate"><span class="pre">502</span> <span class="pre">Bad</span> <span class="pre">Gateway</span></code> or <code class="docutils literal notranslate"><span class="pre">504</span> <span class="pre">Gateway</span> <span class="pre">Timeout</span></code>. Capacity backpressure and application statuses the worker
+answers with itself, <code class="docutils literal notranslate"><span class="pre">429</span> <span class="pre">Too</span> <span class="pre">Many</span> <span class="pre">Requests</span></code>, <code class="docutils literal notranslate"><span class="pre">503</span> <span class="pre">Service</span> <span class="pre">Unavailable</span></code>, <code class="docutils literal notranslate"><span class="pre">408</span> <span class="pre">Request</span> <span class="pre">Timeout</span></code>, and <code class="docutils literal notranslate"><span class="pre">500</span> <span class="pre">Internal</span> <span class="pre">Server</span> <span class="pre">Error</span></code>, are counted as per-request
+failures in the worker statistics but never evict a reachable worker, so one
+overloaded worker or a stream of bad-input requests cannot cascade the pool into
+unavailability. A worker that leaves the pool can return to healthy after the
 configured number of successful health checks.</p>
 <p>To inspect failover behavior:</p>
 <ol class="arabic simple">
@@ -988,6 +1034,7 @@ point with:</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#manage-workers">Manage Workers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#routing-behavior">Routing Behavior</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-diagnostics">Request Diagnostics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-behavior">Overload Behavior</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#failure-handling">Failure Handling</a></li>
 </ul>
   </nav></div>
