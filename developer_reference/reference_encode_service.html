@@ -534,6 +534,24 @@ key space, and invalidation path.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">revalidate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">InputT</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">ReferenceEncodeKey</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="o">...</span>
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">KeyedReferenceEncodeHook</span><span class="p">(</span><span class="n">ReferenceEncodeHook</span><span class="p">[</span><span class="n">InputT</span><span class="p">,</span> <span class="n">ArtifactT</span><span class="p">,</span> <span class="n">StoredT</span><span class="p">]):</span>
+    <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">model_revision</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">encoder_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">encoder_config_hash</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">artifact_kind</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">input_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">InputT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">options_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">InputT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span> <span class="o">...</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TensorReferenceEncodeHook</span><span class="p">(</span>
+    <span class="n">KeyedReferenceEncodeHook</span><span class="p">[</span><span class="n">InputT</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]</span>
+<span class="p">):</span>
+    <span class="n">storage_dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">output_dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">|</span> <span class="kc">None</span>
+
+
 <span class="k">class</span><span class="w"> </span><span class="nc">ReferenceEncodeService</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">InputT</span><span class="p">,</span> <span class="n">ArtifactT</span><span class="p">,</span> <span class="n">StoredT</span><span class="p">]):</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_or_encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_input</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">desc</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArtifactT</span><span class="p">:</span> <span class="o">...</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span> <span class="o">...</span>
@@ -566,6 +584,14 @@ and evictions.</p></li>
 <li><p>store/load conversion;</p></li>
 <li><p>revalidation for mutable local files.</p></li>
 </ul>
+<p>Hooks with structured identity should inherit <code class="docutils literal notranslate"><span class="pre">KeyedReferenceEncodeHook</span></code>. They
+provide key metadata, <code class="docutils literal notranslate"><span class="pre">input_key</span></code>, and <code class="docutils literal notranslate"><span class="pre">encode_one</span></code>, plus input normalization
+when the service does not already receive the typed item. The default builds
+<code class="docutils literal notranslate"><span class="pre">ReferenceEncodeKey</span></code> and rechecks input and option keys before insertion.
+Tensor-producing encoders should inherit <code class="docutils literal notranslate"><span class="pre">TensorReferenceEncodeHook</span></code>, which
+also stores a cache-owned CPU clone and returns a caller-owned clone in
+<code class="docutils literal notranslate"><span class="pre">output_dtype</span></code>. Structured artifacts such as nested prompt dictionaries keep
+their own store/load policy on top of <code class="docutils literal notranslate"><span class="pre">KeyedReferenceEncodeHook</span></code>.</p>
 </section>
 <section id="cache-key-contract">
 <h2>Cache-Key Contract<a class="headerlink" href="#cache-key-contract" title="Link to this heading">#</a></h2>
@@ -591,7 +617,9 @@ content identity.</p>
 <p>Hooks should store cache-owned artifacts, usually detached CPU tensors or a
 small CPU dictionary of detached tensors. <code class="docutils literal notranslate"><span class="pre">load_artifact</span></code> must return a
 caller-owned object, commonly by cloning and moving to the expected dtype or
-device. The service enforces the byte budget on the stored representation.</p>
+device. <code class="docutils literal notranslate"><span class="pre">TensorReferenceEncodeHook</span></code> provides this policy through
+<code class="docutils literal notranslate"><span class="pre">storage_dtype</span></code> and <code class="docutils literal notranslate"><span class="pre">output_dtype</span></code>. The service enforces the byte budget on the
+stored representation.</p>
 <p>If a stored artifact is larger than <code class="docutils literal notranslate"><span class="pre">max_bytes</span></code>, the leader request and all
 same-key followers still receive a result, but the artifact is not inserted into
 the LRU.</p>
