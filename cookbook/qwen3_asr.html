@@ -599,11 +599,9 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--concurrencies<span class="w"> </span><span class="m">1</span>,2,4,8,16,32,64<span class="w"> </span>--repeats<span class="w"> </span><span class="m">3</span><span class="w"> </span>--warmup
 </pre></div>
 </div>
-<p>ASR CI reuses the same single-pass benchmark entry point and applies WER,
-throughput, latency, and RTF thresholds.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">QWEN3_ASR_CI_CONCURRENCY</span><span class="o">=</span><span class="m">32</span><span class="w"> </span>pytest<span class="w"> </span>tests/test_model/test_asr_ci_seedtts.py<span class="w"> </span>-s
-</pre></div>
-</div>
+<p>The ASR CI gate runs Fun-ASR-Nano on this same benchmark entry point
+(<code class="docutils literal notranslate"><span class="pre">tests/test_model/test_asr_ci_fun_asr.py</span></code>). Qwen3-ASR remains the
+transcriber for the TTS and talker WER stages.</p>
 </section>
 <section id="known-limitations">
 <h2>Known Limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">#</a></h2>
