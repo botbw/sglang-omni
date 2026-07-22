@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Jul 21, 2026"/>
+    <meta name="docbuild:last-update" content="Jul 22, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -799,7 +799,7 @@
 </section>
 <section id="benchmarking">
 <h2>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">#</a></h2>
-<p>Thanks to the Moss team for providing the benchmark datasets, we prepare movies800times and aishell4_long as benchmark datasets for multi-speaker ASR. movies800times is a short-sequence dataset with 800 dialog clips, and aishell4_long is a long-sequence dataset with 20 long-form meeting audio. These two datasets are right now under private license, and you can contact the Moss team for access.</p>
+<p>Thanks to the Moss team for providing the benchmark datasets, we prepare movies800times, aishell4_long, and googletime as benchmark datasets for multi-speaker ASR. movies800times is a short-sequence dataset with 800 dialog clips, aishell4_long with googletime are long-sequence dataset of long-form meeting audio, and English podcasts. These datasets are right now under private license, and you can contact the Moss team for access.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Short-sequence ASR / diarization</span>
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_transcribe_diarize<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--dataset<span class="w"> </span>movies800times<span class="w"> </span><span class="se">\</span>
@@ -819,6 +819,17 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <span class="w">  </span>--max-new-tokens<span class="w"> </span><span class="m">65536</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--request-timeout-s<span class="w"> </span><span class="m">1800</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-dir<span class="w"> </span>results/moss_transcribe_diarize_aishell4_long
+
+<span class="c1"># Long-sequence English podcast ASR / diarization</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_transcribe_diarize<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--dataset<span class="w"> </span>googletime<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--concurrency<span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-running-requests<span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cuda-graph-max-bs<span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.80<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-new-tokens<span class="w"> </span><span class="m">65536</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--request-timeout-s<span class="w"> </span><span class="m">1800</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output-dir<span class="w"> </span>results/moss_transcribe_diarize_googletime
 </pre></div>
 </div>
 </section>
@@ -1034,7 +1045,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jul 21, 2026.
+  Last updated on Jul 22, 2026.
   <br/>
 </p>
   </div>
