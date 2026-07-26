@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Jul 25, 2026"/>
+    <meta name="docbuild:last-update" content="Jul 26, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -667,6 +667,22 @@ instructions in the text message.</p>
 </pre></div>
 </div>
 <p>Use <code class="docutils literal notranslate"><span class="pre">examples/configs/qwen3_omni_colocated_h200.yaml</span></code> on single-H200 workers.</p>
+<p>Exact-shape CUDA Graph replay is enabled by default for Qwen3-Omni Code2Wav.
+The default stage config supplies a 2% typed GPU memory budget; colocated
+example configs override it with their hardware-specific budget.</p>
+<p>To disable replay, add this runtime override to the YAML config:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runtime_overrides</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">code2wav</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enable_cuda_graph</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</pre></div>
+</div>
+<p>When replay is enabled, a custom Code2Wav stage must define
+<code class="docutils literal notranslate"><span class="pre">runtime.resources.total_gpu_memory_fraction</span></code>; startup rejects a missing typed
+budget before loading the model.</p>
+<p>The feature derives the exact <code class="docutils literal notranslate"><span class="pre">B=1</span></code> threshold windows from
+<code class="docutils literal notranslate"><span class="pre">stream_chunk_size</span></code> and <code class="docutils literal notranslate"><span class="pre">left_context_size</span></code>; the defaults capture
+<code class="docutils literal notranslate"><span class="pre">T{10,20,30,35}</span></code>. Unsupported shapes and final stream tails run eagerly.
+Capture-time incompatibilities also fall back to eager execution.</p>
 <p>For manual multi-GPU placement, use the example script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/run_omni.py<span class="w"> </span>qwen3-speech-server<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
@@ -715,6 +731,23 @@ the value globally or per AR stage:</p>
 <p><code class="docutils literal notranslate"><span class="pre">--mem-fraction-static</span></code> applies to both Qwen AR stages. Per-stage flags override
 the global value for that stage. Values must be greater than <code class="docutils literal notranslate"><span class="pre">0</span></code> and less than
 <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+<p>The thinker admits up to 64 running requests by default. Use the
+thinker-specific flag to lower or raise that limit in either text-only or
+speech mode:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--thinker-max-running-requests<span class="w"> </span><span class="m">16</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--max-running-requests</span></code> continues to target the generation stage, which is the
+talker in the Qwen3-Omni speech pipeline. To configure the thinker through a
+pipeline YAML file instead, use the stage runtime override:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runtime_overrides</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">thinker</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">server_args_overrides</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">max_running_requests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+</pre></div>
+</div>
 </section>
 </section>
 <section id="single-gpu-fp8-on-h100-h20">
@@ -1096,7 +1129,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jul 25, 2026.
+  Last updated on Jul 26, 2026.
   <br/>
 </p>
   </div>
