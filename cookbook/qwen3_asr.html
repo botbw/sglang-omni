@@ -592,7 +592,9 @@
 <p>Use <code class="docutils literal notranslate"><span class="pre">benchmarks/eval/benchmark_asr_seedtts.py</span></code> to sweep ASR concurrency on
 SeedTTS reference audio through <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>. It defaults to
 <code class="docutils literal notranslate"><span class="pre">--model-path</span> <span class="pre">Qwen/Qwen3-ASR-1.7B</span></code>; the shared request and metric logic lives in
-<code class="docutils literal notranslate"><span class="pre">benchmarks.tasks.asr</span></code> and also supports Fun-ASR through <code class="docutils literal notranslate"><span class="pre">--model-path</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">benchmarks.tasks.asr</span></code> and also supports Fun-ASR through <code class="docutils literal notranslate"><span class="pre">--model-path</span></code>.
+The report includes RTF (processing time divided by audio duration) and RTFx
+(successful input-audio seconds divided by wall-clock seconds).</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
 
 <span class="c1"># Sweep the full SeedTTS EN set (1088 clips) at 1..64 concurrency, 3 repeats:</span>
