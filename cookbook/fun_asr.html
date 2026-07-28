@@ -483,6 +483,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stream-transcription">Stream Transcription</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmark-results">Benchmark Results</a></li>
@@ -550,6 +551,23 @@ hf<span class="w"> </span>download<span class="w"> </span>FunAudioLLM/Fun-ASR-Na
 </pre></div>
 </div>
 </section>
+<section id="stream-transcription">
+<h2>Stream Transcription<a class="headerlink" href="#stream-transcription" title="Link to this heading">#</a></h2>
+<p>Set the multipart <code class="docutils literal notranslate"><span class="pre">stream</span></code> field to <code class="docutils literal notranslate"><span class="pre">true</span></code> and keep <code class="docutils literal notranslate"><span class="pre">response_format</span></code> as
+<code class="docutils literal notranslate"><span class="pre">json</span></code> or <code class="docutils literal notranslate"><span class="pre">text</span></code> to receive Server-Sent Events (SSE):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/transcriptions<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">model</span><span class="o">=</span>FunAudioLLM/Fun-ASR-Nano-2512-hf<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">file</span><span class="o">=</span>@tests/data/query_to_cars.wav<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">language</span><span class="o">=</span>en<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">response_format</span><span class="o">=</span>json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">stream</span><span class="o">=</span><span class="nb">true</span>
+</pre></div>
+</div>
+<p>The response contains zero or more <code class="docutils literal notranslate"><span class="pre">transcript.text.delta</span></code> events, followed
+by one <code class="docutils literal notranslate"><span class="pre">transcript.text.done</span></code> event with the complete post-processed
+transcript, then <code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">[DONE]</span></code>. Streaming primarily reduces time to first
+text; it does not change the final transcript.</p>
+</section>
 <section id="request-parameters">
 <h2>Request Parameters<a class="headerlink" href="#request-parameters" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -581,12 +599,17 @@ hf<span class="w"> </span>download<span class="w"> </span>FunAudioLLM/Fun-ASR-Na
 <td><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">json</span></code>, <code class="docutils literal notranslate"><span class="pre">verbose_json</span></code>, or <code class="docutils literal notranslate"><span class="pre">text</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stream</span></code></p></td>
+<td><p>boolean</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
+<td><p>Emit SSE text deltas. Streaming accepts only <code class="docutils literal notranslate"><span class="pre">json</span></code> or <code class="docutils literal notranslate"><span class="pre">text</span></code> response formats</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p>float</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0.0</span></code></p></td>
 <td><p>Sampling temperature; <code class="docutils literal notranslate"><span class="pre">0.0</span></code> (greedy) is the correct decoding mode for Fun-ASR-Nano and the default</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
 <td><p>integer</p></td>
 <td><p>duration-based</p></td>
 <td><p>Generation budget scaled to the audio duration. Explicit values must be between 1 and 200</p></td>
@@ -615,6 +638,11 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-ASR-Nano-2512-hf<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--max-samples<span class="w"> </span><span class="m">20</span><span class="w"> </span>--concurrencies<span class="w"> </span><span class="m">2</span><span class="w"> </span>--repeats<span class="w"> </span><span class="m">1</span>
+
+<span class="c1"># Measure text TTFT and inter-chunk latency through the SSE endpoint:</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-ASR-Nano-2512-hf<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-samples<span class="w"> </span><span class="m">20</span><span class="w"> </span>--concurrencies<span class="w"> </span><span class="m">2</span><span class="w"> </span>--repeats<span class="w"> </span><span class="m">1</span><span class="w"> </span>--stream
 </pre></div>
 </div>
 </section>
@@ -829,6 +857,7 @@ context biasing instead).</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stream-transcription">Stream Transcription</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmark-results">Benchmark Results</a></li>
