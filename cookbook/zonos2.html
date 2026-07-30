@@ -733,7 +733,7 @@ config differences (excluding those, corpus is EN ~1.3% / ZH ~1.4–1.7%). All E
 <td><p>0.92</p></td>
 <td><p>4.6</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>streaming, adaptive <code class="docutils literal notranslate"><span class="pre">24→32</span></code> (default)</strong></p></td>
+<tr class="row-even"><td><p>streaming, adaptive <code class="docutils literal notranslate"><span class="pre">24→32</span></code> (historical benchmark)</p></td>
 <td><p>1.3%</p></td>
 <td><p><strong>0.77</strong></p></td>
 <td><p><strong>5.6</strong></p></td>
@@ -749,16 +749,19 @@ config differences (excluding those, corpus is EN ~1.3% / ZH ~1.4–1.7%). All E
 <section id="streaming-throughput-stream-emit-chunk-frames">
 <h3>Streaming throughput (<code class="docutils literal notranslate"><span class="pre">stream_emit_chunk_frames</span></code>)<a class="headerlink" href="#streaming-throughput-stream-emit-chunk-frames" title="Link to this heading">#</a></h3>
 <p>In streaming mode the AR engine pushes sampled frames to the vocoder over an in-process queue.
-By default the engine <strong>coalesces <code class="docutils literal notranslate"><span class="pre">stream_emit_chunk_frames=32</span></code> frames into one message</strong> instead
-of one <code class="docutils literal notranslate"><span class="pre">put()</span></code> per frame; the per-frame puts run on the resolve host loop and serialize against
-the next decode launch, so batching them gives <strong>−17% streaming RTF and +21% throughput,
-WER-neutral</strong>, vs the per-frame path (inter-chunk latency also improves, 0.37 s → 0.28 s). To keep
-first-audio latency low, the default also emits a <strong>smaller first chunk</strong>
-(<code class="docutils literal notranslate"><span class="pre">stream_emit_first_chunk_frames=24</span></code>), so time-to-first-chunk stays at the per-frame level
-(~0.30 s) instead of waiting for a full 32-frame batch (which would add ~0.09 s). Set
-<code class="docutils literal notranslate"><span class="pre">stream_emit_first_chunk_frames=0</span></code> to disable the adaptive first chunk, or
-<code class="docutils literal notranslate"><span class="pre">stream_emit_chunk_frames=1</span></code> for the lowest-latency per-frame streaming. The 2-GPU <code class="docutils literal notranslate"><span class="pre">multi_gpu</span></code>
-pipeline (codec + speaker encoder on <code class="docutils literal notranslate"><span class="pre">cuda:1</span></code>) stacks on top for the best streaming RTF (~0.69).</p>
+In steady state the engine <strong>coalesces <code class="docutils literal notranslate"><span class="pre">stream_emit_chunk_frames=32</span></code> frames into one message</strong>
+instead of one <code class="docutils literal notranslate"><span class="pre">put()</span></code> per frame; the per-frame puts run on the resolve host loop and serialize
+against the next decode launch, so batching them gives <strong>−17% streaming RTF and +21% throughput,
+WER-neutral</strong>, vs the per-frame path (inter-chunk latency also improves, 0.37 s → 0.28 s). Those
+measurements used the historical <code class="docutils literal notranslate"><span class="pre">24→32</span></code> producer cadence shown above.</p>
+<p>The current continuity-safe default sends 58 delayed-code rows in the first producer message:
+the vocoder’s 40-frame initial chunk plus its shared 18-row de-shear/EOS lookahead. Later
+producer messages return to 32 rows. An explicit request-level <code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code>
+override recalculates the first producer boundary; request value <code class="docutils literal notranslate"><span class="pre">0</span></code> selects the vocoder’s
+steady 40-frame chunk. The independent <code class="docutils literal notranslate"><span class="pre">stream_emit_first_chunk_frames=0</span></code> pipeline setting
+disables the adaptive producer boundary and uses the steady 32-row message size from the start.
+Set <code class="docutils literal notranslate"><span class="pre">stream_emit_chunk_frames=1</span></code> for per-frame streaming. The 2-GPU <code class="docutils literal notranslate"><span class="pre">multi_gpu</span></code> pipeline
+(codec + speaker encoder on <code class="docutils literal notranslate"><span class="pre">cuda:1</span></code>) stacks on top for the best measured streaming RTF (~0.69).</p>
 <blockquote>
 <div><p>ZH (<code class="docutils literal notranslate"><span class="pre">--lang</span> <span class="pre">zh</span></code>, full 2020) — Qwen3-ASR corpus CER 1.8–3.0% (median 0%; the corpus reflects a
 9–16/2020 catastrophic-sample tail, not config differences — excluding those, ~1.4–1.7%).

@@ -743,10 +743,11 @@ them, and returns raw audio bytes to the HTTP layer.</p>
 <p>For <code class="docutils literal notranslate"><span class="pre">stream=true</span></code>, the route emits <code class="docutils literal notranslate"><span class="pre">audio/pcm</span></code> bytes directly. The HTTP response
 headers are derived from the first audio chunk and subsequent chunks must keep
 the same sample rate. TTS chunk-timing knobs such as
-<code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code> are forwarded as request params so model schedulers
-can consume them without changing Stage, Coordinator, or Relay. Streaming
-speech defaults <code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code> to <code class="docutils literal notranslate"><span class="pre">1</span></code> when the client does not
-provide a value.</p>
+<code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code> are forwarded as request params only when the
+client provides them, including an explicit <code class="docutils literal notranslate"><span class="pre">0</span></code>, so model schedulers can consume
+them without changing Stage, Coordinator, or Relay. When the field is omitted,
+the speech route leaves it unset and each model applies its own streaming
+default.</p>
 </section>
 </section>
 </section>
