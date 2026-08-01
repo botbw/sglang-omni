@@ -415,7 +415,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Jul 31, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 01, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1280,7 +1280,7 @@ Python object references for LOCAL_OBJECT payloads and stream chunks</p></li>
 <p>All schedulers share the same interface: <code class="docutils literal notranslate"><span class="pre">inbox</span></code>, <code class="docutils literal notranslate"><span class="pre">outbox</span></code>, <code class="docutils literal notranslate"><span class="pre">start()</span></code>, <code class="docutils literal notranslate"><span class="pre">stop()</span></code>, <code class="docutils literal notranslate"><span class="pre">abort()</span></code>.</p>
 <section id="omnischeduler-composition-with-sglang">
 <h3>OmniScheduler — Composition with SGLang<a class="headerlink" href="#omnischeduler-composition-with-sglang" title="Link to this heading">#</a></h3>
-<p>For AR stages. Subset of SGLang Scheduler — reuses <code class="docutils literal notranslate"><span class="pre">get_next_batch_to_run()</span></code>, <code class="docutils literal notranslate"><span class="pre">run_batch()</span></code>, <code class="docutils literal notranslate"><span class="pre">process_batch_result()</span></code>, <code class="docutils literal notranslate"><span class="pre">event_loop_normal()</span></code>, overlap scheduling.</p>
+<p>For AR stages. Subset of SGLang Scheduler — reuses <code class="docutils literal notranslate"><span class="pre">get_next_batch_to_run()</span></code>, <code class="docutils literal notranslate"><span class="pre">run_batch()</span></code>, <code class="docutils literal notranslate"><span class="pre">process_batch_result()</span></code>, <code class="docutils literal notranslate"><span class="pre">event_loop_normal()</span></code>. (Overlap scheduling ended up unsupported: the <code class="docutils literal notranslate"><span class="pre">Req.inflight_middle_chunks</span></code> decrement lags one iteration on that loop, so <code class="docutils literal notranslate"><span class="pre">_event_loop_overlap</span></code> refuses to run.)</p>
 <ul class="simple">
 <li><p><strong>Reused from SGLang:</strong> <code class="docutils literal notranslate"><span class="pre">get_next_batch_to_run()</span></code>, <code class="docutils literal notranslate"><span class="pre">process_batch_result()</span></code>, <code class="docutils literal notranslate"><span class="pre">self_check_during_idle()</span></code> — KV cache management, prefill/decode scheduling, tree cache, dLLM support</p></li>
 <li><p><strong>Overridden:</strong> <code class="docutils literal notranslate"><span class="pre">init</span></code> (skip ZMQ/tokenizer/metrics), <code class="docutils literal notranslate"><span class="pre">recv_requests()</span></code> (drain inbox, route stream chunks to per-request state), <code class="docutils literal notranslate"><span class="pre">process_input_requests()</span></code> (<code class="docutils literal notranslate"><span class="pre">request_builder</span></code> conversion), <code class="docutils literal notranslate"><span class="pre">run_batch()</span></code> (delegate to ModelRunner), <code class="docutils literal notranslate"><span class="pre">send_to_tokenizer()</span></code> (no-op)</p></li>
@@ -2423,7 +2423,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jul 31, 2026.
+  Last updated on Aug 01, 2026.
   <br/>
 </p>
   </div>
