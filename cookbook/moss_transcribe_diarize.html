@@ -737,7 +737,7 @@
     <span class="p">)</span>
 </pre></div>
 </div>
-<p>For longer multi-speaker audio, raise <code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code> so the decoder can finish the full diarized transcript. The example below uses a repo-local clip with two speakers:</p>
+<p>When a request omits <code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code>, the server sizes the output budget from the audio duration. The default is <code class="docutils literal notranslate"><span class="pre">max(5120,</span> <span class="pre">10</span> <span class="pre">tokens</span> <span class="pre">per</span> <span class="pre">audio</span> <span class="pre">second)</span></code>, so a 60 minute recording gets a 36000 token budget without any client changes. Operators can pin a fixed <code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code> in the stage config, which disables duration scaling for requests that omit the field. An explicit <code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code> in the request always wins over both defaults. The scheduler clamps the final value to the context remaining after the audio prompt, so large explicit values are safe to send. Set the field explicitly when you want a hard cap or a larger budget than the default, as in this example with a clip from the repo that has two speakers:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/transcriptions<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="nv">model</span><span class="o">=</span>OpenMOSS-Team/MOSS-Transcribe-Diarize<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="nv">file</span><span class="o">=</span>@docs/_static/audio/gaokao-listening.wav<span class="w"> </span><span class="se">\</span>
@@ -784,8 +784,8 @@
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
 <td><p>int</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">5120</span></code></p></td>
-<td><p>Max generated tokens; raise for long audio (e.g. <code class="docutils literal notranslate"><span class="pre">65536</span></code>)</p></td>
+<td><p>duration scaled</p></td>
+<td><p>Max generated tokens. Omitted requests default to <code class="docutils literal notranslate"><span class="pre">max(5120,</span> <span class="pre">10</span> <span class="pre">*</span> <span class="pre">audio</span> <span class="pre">seconds)</span></code>, or to the fixed stage value when the operator configured one. Explicit values always win and are clamped to the remaining model context</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code></p></td>
 <td><p>string</p></td>
