@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Aug 04, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 05, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -654,6 +654,10 @@ chunks in real time:</p>
 <p>Streaming returns <code class="docutils literal notranslate"><span class="pre">audio/pcm</span></code> 16-bit mono PCM bytes with sample-rate metadata in
 the response headers. See the <a class="reference internal" href="higgs_tts.html#streaming"><span class="std std-ref">Higgs TTS cookbook</span></a>
 for a full Python raw PCM consumer.</p>
+<p>Base/reference-cloning checkpoints use true incremental codec and vocoder
+streaming for both this HTTP endpoint and <code class="docutils literal notranslate"><span class="pre">/v1/audio/speech/stream</span></code> WebSocket
+sessions with <code class="docutils literal notranslate"><span class="pre">stream_audio=true</span></code>. CustomVoice and VoiceDesign remain
+non-streaming.</p>
 </section>
 </section>
 <section id="generation-parameters">
@@ -903,7 +907,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 04, 2026.
+  Last updated on Aug 05, 2026.
   <br/>
 </p>
   </div>

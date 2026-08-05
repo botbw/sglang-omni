@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Aug 04, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 05, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -492,6 +492,7 @@
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-mode">Speech Mode</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Launch the Server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realtime-speech-with-server-vad">Realtime Speech with Server VAD</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-gpu-fp8-on-h100-h20">Single-GPU FP8 on H100/H20</a></li>
@@ -657,7 +658,8 @@ instructions in the text message.</p>
 </section>
 <section id="speech-mode">
 <h2>Speech Mode<a class="headerlink" href="#speech-mode" title="Link to this heading">#</a></h2>
-<p>Speech mode runs the full 9-stage pipeline across multiple GPUs. It produces both text (from the thinker) and audio (from the talker) output.</p>
+<p>Speech mode runs the full eight-stage pipeline on one or more GPUs. It produces
+both text (from the thinker) and audio (from the talker) output.</p>
 <section id="id1">
 <h3>Launch the Server<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <p>Speech mode can run as a colocated one-GPU worker using the colocated config:</p>
@@ -750,6 +752,40 @@ pipeline YAML file instead, use the stage runtime override:</p>
 <span class="w">      </span><span class="nt">max_running_requests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
 </pre></div>
 </div>
+</section>
+<section id="realtime-speech-with-server-vad">
+<h3>Realtime Speech with Server VAD<a class="headerlink" href="#realtime-speech-with-server-vad" title="Link to this heading">#</a></h3>
+<p>The speech pipeline can stream spoken responses over <code class="docutils literal notranslate"><span class="pre">/v1/realtime</span></code>. Enable the
+WebSocket endpoint on the standard speech pipeline:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8008</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--enable-realtime
+</pre></div>
+</div>
+<p>After connecting to <code class="docutils literal notranslate"><span class="pre">ws://localhost:8008/v1/realtime</span></code>, request text and audio
+output:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;session.update&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;session&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;modalities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;audio&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;input_audio_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pcm16&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;output_audio_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pcm16&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Stream mono 16 kHz PCM16 input with <code class="docutils literal notranslate"><span class="pre">input_audio_buffer.append</span></code>. Server VAD
+automatically commits each utterance and starts generation. Text arrives in
+<code class="docutils literal notranslate"><span class="pre">response.text.delta</span></code> events; spoken output arrives as base64-encoded mono
+24 kHz PCM16 in <code class="docutils literal notranslate"><span class="pre">response.audio.delta</span></code> events, followed by
+<code class="docutils literal notranslate"><span class="pre">response.audio.done</span></code> and <code class="docutils literal notranslate"><span class="pre">response.done</span></code>.</p>
+<p>Audio output is opt-in: sessions remain text-only unless both modalities are
+requested. A thinker-only server rejects audio negotiation because it has no
+<code class="docutils literal notranslate"><span class="pre">code2wav</span></code> stage.</p>
+<p>The browser example in <code class="docutils literal notranslate"><span class="pre">playground/qwen-omni/realtime</span></code> captures microphone
+input and lets the user select text-only output or text plus streamed PCM16
+audio playback.</p>
 </section>
 </section>
 <section id="single-gpu-fp8-on-h100-h20">
@@ -1088,6 +1124,7 @@ with the AutoRound checkpoint:</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-mode">Speech Mode</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Launch the Server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realtime-speech-with-server-vad">Realtime Speech with Server VAD</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-gpu-fp8-on-h100-h20">Single-GPU FP8 on H100/H20</a></li>
@@ -1131,7 +1168,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 04, 2026.
+  Last updated on Aug 05, 2026.
   <br/>
 </p>
   </div>

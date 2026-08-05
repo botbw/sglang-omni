@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Aug 04, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 05, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -511,9 +511,20 @@
 </section>
 <section id="server-configuration">
 <h2>Server Configuration<a class="headerlink" href="#server-configuration" title="Link to this heading">#</a></h2>
-<p>Qwen3-ASR runs a single ASR stage on one GPU.</p>
+<p>Qwen3-ASR runs a single ASR stage on one GPU.
+Async decode is enabled by default for decode batches of at least two requests,
+allowing the shared one-step-lookahead path to overlap host-side result
+processing with the next GPU decode forward. Use <code class="docutils literal notranslate"><span class="pre">--decode-mode</span> <span class="pre">sync</span></code> to disable
+it, or tune the crossover with <code class="docutils literal notranslate"><span class="pre">--async-lookahead-min-batch-size</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p>For example, force synchronous decode when comparing modes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--decode-mode<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
@@ -704,7 +715,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 04, 2026.
+  Last updated on Aug 05, 2026.
   <br/>
 </p>
   </div>
