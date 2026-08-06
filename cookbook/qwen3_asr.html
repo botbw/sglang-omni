@@ -507,7 +507,8 @@
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
 <p>Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> by following <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a>, then download the model:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hf<span class="w"> </span>download<span class="w"> </span>Qwen/Qwen3-ASR-1.7B
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL_REVISION</span><span class="o">=</span>7278e1e70fe206f11671096ffdd38061171dd6e5
+<span class="nv">MODEL_PATH</span><span class="o">=</span><span class="k">$(</span>hf<span class="w"> </span>download<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span>--revision<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">MODEL_REVISION</span><span class="si">}</span><span class="s2">&quot;</span><span class="k">)</span>
 </pre></div>
 </div>
 </section>
@@ -519,7 +520,8 @@ allowing the shared one-step-lookahead path to overlap host-side result
 processing with the next GPU decode forward. Use <code class="docutils literal notranslate"><span class="pre">--decode-mode</span> <span class="pre">sync</span></code> to disable
 it, or tune the crossover with <code class="docutils literal notranslate"><span class="pre">--async-lookahead-min-batch-size</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">MODEL_PATH</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-name<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
@@ -585,22 +587,36 @@ it, or tune the crossover with <code class="docutils literal notranslate"><span 
 <td><p><code class="docutils literal notranslate"><span class="pre">en</span></code></p></td>
 <td><p>Language hint; <code class="docutils literal notranslate"><span class="pre">zh</span></code>/<code class="docutils literal notranslate"><span class="pre">cn</span></code> select Chinese, other values use English prompting</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code></p></td>
+<td><p>string</p></td>
+<td><p>none</p></td>
+<td><p>Accepted for OpenAI compatibility; Qwen3-ASR currently ignores it</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
 <td><p>string</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">json</span></code>, <code class="docutils literal notranslate"><span class="pre">verbose_json</span></code>, or <code class="docutils literal notranslate"><span class="pre">text</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p>float</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0.01</span></code> effective</p></td>
 <td><p>Sampling temperature; <code class="docutils literal notranslate"><span class="pre">0</span></code> is converted to near-greedy <code class="docutils literal notranslate"><span class="pre">0.01</span></code></p></td>
 </tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
+<td><p>integer</p></td>
+<td><p>server stage limit</p></td>
+<td><p>Per-request generation-token limit</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stream</span></code></p></td>
+<td><p>boolean</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
+<td><p>Return transcript events over SSE</p></td>
+</tr>
 </tbody>
 </table>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">verbose_json</span></code> is accepted, but currently returns the same minimal JSON shape as <code class="docutils literal notranslate"><span class="pre">json</span></code>:
-<code class="docutils literal notranslate"><span class="pre">{&quot;text&quot;:</span> <span class="pre">&quot;...&quot;}</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code> is supported inside the model request builder, but the public transcription endpoint does not currently expose it as a form field. The route uses the ASR stage default unless the pipeline is configured another way.</p>
+<p><code class="docutils literal notranslate"><span class="pre">verbose_json</span></code> uses the model adapter’s verbose response schema and includes
+duration-based usage (rounded-up audio seconds) when duration probing succeeds.</p>
 </section>
 <section id="benchmarking">
 <h2>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">#</a></h2>
@@ -610,13 +626,33 @@ SeedTTS reference audio through <code class="docutils literal notranslate"><span
 <code class="docutils literal notranslate"><span class="pre">benchmarks.tasks.asr</span></code> and also supports Fun-ASR through <code class="docutils literal notranslate"><span class="pre">--model-path</span></code>.
 The report includes RTF (processing time divided by audio duration) and RTFx
 (successful input-audio seconds divided by wall-clock seconds).</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">MODEL_PATH</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-name<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 
-<span class="c1"># Sweep the full SeedTTS EN set (1088 clips) at 1..64 concurrency, 3 repeats:</span>
+<span class="c1"># Sweep the full SeedTTS EN set (1088 clips), 3 repeats per concurrency:</span>
+<span class="c1"># Set SERVER_GPU_PID to the server process PID reported by nvidia-smi.</span>
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--concurrencies<span class="w"> </span><span class="m">1</span>,2,4,8,16,32,64<span class="w"> </span>--repeats<span class="w"> </span><span class="m">3</span><span class="w"> </span>--warmup
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--gpu-process-pid<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">SERVER_GPU_PID</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--dataset-revision<span class="w"> </span>27f4c1adee83b5b29b7c4b375f6b976324bda308<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-revision<span class="w"> </span>7278e1e70fe206f11671096ffdd38061171dd6e5<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--concurrencies<span class="w"> </span><span class="m">1</span>,2,4,8,16,32,64<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--repeats<span class="w"> </span><span class="m">3</span><span class="w"> </span>--warmup
 </pre></div>
 </div>
+<p>The result JSON includes the applied dataset revision, declared model revision,
+an effective evaluation-input content hash, normalization, repository and
+dependency fingerprints, complete sample counts, and latency/RTF/throughput.
+When local NVML and <code class="docutils literal notranslate"><span class="pre">psutil</span></code> sampling are available, it also includes CPU use,
+power, and peak/steady GPU memory. Pass each server GPU PID reported by NVML via
+<code class="docutils literal notranslate"><span class="pre">--gpu-process-pid</span></code>; without explicit PIDs, process-specific metrics remain
+unavailable rather than including unrelated workloads on the same GPU. In a
+Docker container, use the host PID namespace (<code class="docutils literal notranslate"><span class="pre">--pid=host</span></code>) to collect process
+CPU metrics. Unavailable metrics and monitor errors remain explicit. Optional
+server settings and an exact launch command can be declared with the benchmark’s
+provenance flags.</p>
 <p>The ASR CI gate runs the selected ASR CI model preset on this same benchmark
 entry point (<code class="docutils literal notranslate"><span class="pre">tests/test_model/test_asr_ci_seedtts.py</span></code>). Qwen3-ASR remains
 the transcriber for the TTS and talker WER stages.</p>

@@ -495,6 +495,8 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-diagnostics">Request Diagnostics</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-behavior">Overload Behavior</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#failure-handling">Failure Handling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#durable-router-state">Durable Router State</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-process-router-control-data-plane-split">Multi-Process Router (Control/Data-Plane Split)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#distinguish-502-responses">Distinguish <code class="docutils literal notranslate"><span class="pre">502</span></code> Responses</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-worker-state">Inspect Worker State</a></li>
@@ -740,13 +742,25 @@ fragments.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">/health</span></code></p></td>
 <td><p>Worker endpoint used by background health checks.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--log-level</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--router-state-dir</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">$SGLANG_OMNI_ROUTER_STATE_DIR</span></code>, else <code class="docutils literal notranslate"><span class="pre">$XDG_STATE_HOME/sglang-omni-router</span></code>, else <code class="docutils literal notranslate"><span class="pre">~/.local/state/sglang-omni-router</span></code></p></td>
+<td><p>Directory for <a class="reference internal" href="#durable-router-state"><span class="std std-ref">durable router state</span></a> (the weight-update journal), which must survive a host reboot. Mount it on a persistent volume in a container.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--log-level</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">info</span></code></p></td>
 <td><p>Router and Uvicorn log level.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--strict-limits</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--strict-limits</span></code></p></td>
 <td><p>off</p></td>
 <td><p>Fail startup instead of warning when the <code class="docutils literal notranslate"><span class="pre">nofile</span></code> soft limit is too low for the resolved upstream pool size (<code class="docutils literal notranslate"><span class="pre">max(--max-connections,</span> <span class="pre">--max-inflight)</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--router-processes</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p>Number of data-plane relay processes. <code class="docutils literal notranslate"><span class="pre">1</span></code> keeps the single-process router below; <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code> enables the multi-process router (x86-64 Linux only, and rejected at startup together with an explicit <code class="docutils literal notranslate"><span class="pre">--policy</span> <span class="pre">least_request</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--shutdown-drain-secs</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--request-timeout-secs</span></code></p></td>
+<td><p>Multi-process only: how long a stopping data-plane process waits for in-flight requests before cancelling them. The default matches the request timeout, so a routine shutdown never truncates a request its own timeout would have allowed.</p></td>
 </tr>
 </tbody>
 </table>
@@ -984,6 +998,122 @@ point with:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sglang_omni_router.serve<span class="w"> </span>--help
 </pre></div>
 </div>
+</section>
+<section id="durable-router-state">
+<h2>Durable Router State<a class="headerlink" href="#durable-router-state" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">--router-state-dir</span></code> holds the control-plane state that must outlive both a
+router restart and a reboot of the router host. Today that is the weight-update
+journal: when an update is interrupted after some workers were already updated,
+the journal keeps the affected workers disabled until an operator verifies
+their weight versions and re-enables them
+(<code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/workers/{worker_id}</span> <span class="pre">{&quot;disabled&quot;:</span> <span class="pre">false}</span></code>). Workers run on their own
+hosts and outlive the router, so losing the journal would let a fresh router
+re-enable a pool whose weights no longer match.</p>
+<p>Resolution order:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--router-state-dir</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_ROUTER_STATE_DIR</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">$XDG_STATE_HOME/sglang-omni-router</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">~/.local/state/sglang-omni-router</span></code></p></li>
+</ol>
+<p>The directory is created owner-only (<code class="docutils literal notranslate"><span class="pre">0700</span></code>, journal file <code class="docutils literal notranslate"><span class="pre">0600</span></code>) and is keyed
+by the router’s <code class="docutils literal notranslate"><span class="pre">host:port</span></code>, so several routers on one machine keep separate
+journals. If the directory cannot be created or written, the failure mode
+depends on the mode: with <code class="docutils literal notranslate"><span class="pre">--router-processes</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code> startup fails; the
+single-process default still starts, logs a warning, and refuses weight
+updates (<code class="docutils literal notranslate"><span class="pre">503</span></code>) until <code class="docutils literal notranslate"><span class="pre">--router-state-dir</span></code> points at a writable persistent
+path. In neither mode is there a temp-directory fallback, which would look
+durable while a reboot silently dropped the record.</p>
+<p>If the journal itself becomes unreadable, re-enabling cannot resolve it and
+every weight update stays blocked with <code class="docutils literal notranslate"><span class="pre">409</span></code>. Verify the pool’s weight
+versions, then drop the record explicitly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://127.0.0.1:8000/weight_update_journal/resolve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="nv">$SGLANG_OMNI_ADMIN_KEY</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;acknowledge&quot;: true}&#39;</span>
+</pre></div>
+</div>
+<p>The call is admin-authenticated, requires <code class="docutils literal notranslate"><span class="pre">acknowledge</span></code> so the record cannot be
+dropped by accident, reports the worker ids it dropped, and fails with <code class="docutils literal notranslate"><span class="pre">503</span></code> if
+the file could not be removed. The affected workers stay disabled until they
+are re-enabled one by one.</p>
+<p>In a container, mount it on a persistent volume:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </span>/srv/sglang-omni-router:/var/lib/sglang-omni-router<span class="w"> </span>...<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>python<span class="w"> </span>-m<span class="w"> </span>sglang_omni_router.serve<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--router-state-dir<span class="w"> </span>/var/lib/sglang-omni-router<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--worker-urls<span class="w"> </span>http://127.0.0.1:8011
+</pre></div>
+</div>
+<p>What this directory does <strong>not</strong> manage:</p>
+<ul class="simple">
+<li><p>Per-run runtime files (serialized config, internal socket, worker snapshot,
+admission shared memory) stay in a temporary per-run workdir. They are
+rebuilt at startup and are meant to disappear with the process tree.</p></li>
+<li><p>Logs. The router writes to stdout/stderr; persist them with your container
+runtime, systemd, or log collector.</p></li>
+</ul>
+</section>
+<section id="multi-process-router-control-data-plane-split">
+<h2>Multi-Process Router (Control/Data-Plane Split)<a class="headerlink" href="#multi-process-router-control-data-plane-split" title="Link to this heading">#</a></h2>
+<blockquote>
+<div><p>x86-64 Linux only: the shared admission seqlock relies on x86-64 store
+ordering, and any other machine is refused at startup. Enabled with
+<code class="docutils literal notranslate"><span class="pre">--router-processes</span> <span class="pre">N</span></code>; the default <code class="docutils literal notranslate"><span class="pre">1</span></code> keeps the
+single-process router described above. The one behavioral addition at
+<code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">1</span></code> is the weight-update journal: recovery at startup can keep workers
+from an earlier interrupted update disabled until an operator re-enables
+them.</p>
+</div></blockquote>
+<p>At <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code> the router runs as a small process tree:</p>
+<ul class="simple">
+<li><p>A <strong>supervisor</strong> binds the public port once and passes the listening socket
+to <code class="docutils literal notranslate"><span class="pre">N</span></code> <strong>data-plane (DP)</strong> processes, which accept from the shared queue and
+relay the model routes (<code class="docutils literal notranslate"><span class="pre">/generate</span></code>, <code class="docutils literal notranslate"><span class="pre">/v1/chat/completions</span></code>,
+<code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code>, <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>).</p></li>
+<li><p>One <strong>control plane (CP)</strong> owns the worker registry, health checks, and the
+admin surface. DPs learn the routable-worker set from a snapshot file the CP
+republishes on every state change and on a fixed keepalive cadence. Admin
+requests sent to the public port are forwarded to the CP, which enforces the
+admin key; <code class="docutils literal notranslate"><span class="pre">/v1/models</span></code>, <code class="docutils literal notranslate"><span class="pre">/live</span></code>, and <code class="docutils literal notranslate"><span class="pre">/ready</span></code> are answered by the DP
+itself, <code class="docutils literal notranslate"><span class="pre">/health</span></code> is the CP’s aggregate view.</p></li>
+<li><p>The supervisor restarts crashed children (with a fail-closed budget for
+rapid crash loops), fences replaced processes by generation, and tears the
+tree down in order on SIGTERM. A stopping DP drains in-flight requests for
+up to <code class="docutils literal notranslate"><span class="pre">--shutdown-drain-secs</span></code> (default: <code class="docutils literal notranslate"><span class="pre">--request-timeout-secs</span></code>) before
+remaining tasks are cancelled, and the supervisor waits out that drain
+before escalating to SIGKILL.</p></li>
+</ul>
+<p>Behavior differences to know about:</p>
+<ul class="simple">
+<li><p><strong>The admission bound is shared and soft.</strong> The in-flight bound spans all
+DPs through a shared-memory counter array. Concurrent admission checks can
+overshoot the bound by at most <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">-</span> <span class="pre">1</span></code> requests. In <code class="docutils literal notranslate"><span class="pre">/health</span></code>, <code class="docutils literal notranslate"><span class="pre">inflight</span></code> is
+an instantaneous sum (not a linearizable value) and <code class="docutils literal notranslate"><span class="pre">peak_inflight</span></code> is
+best-effort. <code class="docutils literal notranslate"><span class="pre">rejected_total</span></code> is exact while every live slot stays readable;
+a DP killed mid-write loses the counters it had not yet published, so the
+total is best-effort across a crash and reclaim window.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">least_request</span></code> requires a single process.</strong> It reads per-process
+counters, so <code class="docutils literal notranslate"><span class="pre">--router-processes</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code> combined with an explicit
+<code class="docutils literal notranslate"><span class="pre">--policy</span> <span class="pre">least_request</span></code> fails at startup; use <code class="docutils literal notranslate"><span class="pre">round_robin</span></code> (DPs stagger
+their starting offsets to avoid herding) or <code class="docutils literal notranslate"><span class="pre">random</span></code>.</p></li>
+<li><p><strong>CP unavailability degrades before it fails.</strong> DPs keep serving from their
+last snapshot for the stale timeout, then shed new requests with fast <code class="docutils literal notranslate"><span class="pre">503</span></code>s
+and flip <code class="docutils literal notranslate"><span class="pre">/ready</span></code>; one republish restores service. <code class="docutils literal notranslate"><span class="pre">/health</span></code> reports
+<code class="docutils literal notranslate"><span class="pre">degraded</span></code> while some DPs are missing and <code class="docutils literal notranslate"><span class="pre">503</span></code> only when nothing can serve.</p></li>
+<li><p><strong>Worker weight updates wait for the data planes.</strong> Before broadcasting, the
+CP publishes the disabled-worker snapshot and waits until every live DP has
+acknowledged it; on timeout the update fails closed and nothing is sent.</p></li>
+<li><p><strong>Counters are aggregated.</strong> <code class="docutils literal notranslate"><span class="pre">/workers</span></code> totals are summed across DPs and
+stay monotonic across DP restarts; <code class="docutils literal notranslate"><span class="pre">active_requests</span></code> is a best-effort gauge
+over live DPs. Counters reset with the CP, matching single-process restarts.</p></li>
+<li><p><strong>File descriptors scale with <code class="docutils literal notranslate"><span class="pre">N</span></code>.</strong> Each DP holds a full-size upstream pool
+(a skewed keep-alive client mix can pin the whole bound onto one DP, which
+must still carry it) with keep-alives split <code class="docutils literal notranslate"><span class="pre">pool</span> <span class="pre">/</span> <span class="pre">N</span></code>; the startup log
+prints the per-process and cluster fd budget for the nofile check.</p></li>
+</ul>
+<p>CPU affinity guidance for dense deployments: pin the <code class="docutils literal notranslate"><span class="pre">N</span></code> DP processes to <code class="docutils literal notranslate"><span class="pre">N</span></code>
+dedicated cores on one NUMA node; the CP and supervisor are near-idle and can
+share one core; keep model workers and benchmark clients on other cores (or
+the other NUMA node) so relay throughput is not contended.</p>
 </section>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
@@ -1227,6 +1357,8 @@ separately after the drain completes.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-diagnostics">Request Diagnostics</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-behavior">Overload Behavior</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#failure-handling">Failure Handling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#durable-router-state">Durable Router State</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-process-router-control-data-plane-split">Multi-Process Router (Control/Data-Plane Split)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#distinguish-502-responses">Distinguish <code class="docutils literal notranslate"><span class="pre">502</span></code> Responses</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-worker-state">Inspect Worker State</a></li>

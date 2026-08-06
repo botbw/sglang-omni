@@ -609,6 +609,10 @@ mode.</p>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Non-streaming responses include <code class="docutils literal notranslate"><span class="pre">X-Finish-Reason:</span> <span class="pre">stop</span></code> after codec EOS or
+<code class="docutils literal notranslate"><span class="pre">X-Finish-Reason:</span> <span class="pre">length</span></code> when generation reaches <code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code>. A <code class="docutils literal notranslate"><span class="pre">length</span></code>
+response still contains decodable audio, but the utterance may be incomplete.
+Batch responses expose the same value as each item’s <code class="docutils literal notranslate"><span class="pre">finish_reason</span></code>.</p>
 </section>
 </section>
 <section id="language-hint">
