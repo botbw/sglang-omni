@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Aug 05, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 06, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -248,6 +248,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/qwen3_asr_concurrency_profile.html">Qwen3-ASR High-Concurrency Benchmark and Bottleneck Profile</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/rl_admin_control.html">RL Admin Control</a></li>
 </ul>
 
@@ -487,6 +488,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#concurrency-tuning">Concurrency tuning</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#known-limitations">Known Limitations</a></li>
 </ul>
             </nav>
@@ -618,6 +620,112 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <p>The ASR CI gate runs the selected ASR CI model preset on this same benchmark
 entry point (<code class="docutils literal notranslate"><span class="pre">tests/test_model/test_asr_ci_seedtts.py</span></code>). Qwen3-ASR remains
 the transcriber for the TTS and talker WER stages.</p>
+<p>For the current-main concurrency baseline, the fixed-baseline comparison, and
+the per-stage bottleneck decomposition (issue #1324), see
+<a class="reference internal" href="../developer_reference/qwen3_asr_concurrency_profile.html"><span class="std std-doc">Qwen3-ASR concurrency profile</span></a>.
+The benchmark’s <code class="docutils literal notranslate"><span class="pre">--profile-events</span></code>, <code class="docutils literal notranslate"><span class="pre">--sample-util</span></code>, <code class="docutils literal notranslate"><span class="pre">--save-raw-dir</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">--fingerprint</span></code> flags capture the telemetry that report uses.</p>
+</section>
+<section id="concurrency-tuning">
+<h2>Concurrency tuning<a class="headerlink" href="#concurrency-tuning" title="Link to this heading">#</a></h2>
+<p>The request-build, admission, and CUDA-graph policy defaults come from a
+measured sweep (issue #1324 Q-PR5): <code class="docutils literal notranslate"><span class="pre">request_build_max_workers</span></code> {2, 4, 8} ×
+<code class="docutils literal notranslate"><span class="pre">request_build_max_pending</span></code> {16, 32, 64} × <code class="docutils literal notranslate"><span class="pre">max_running_requests</span></code> {16, 32, 64}
+with matching CUDA-graph coverage, each configuration a full SeedTTS EN
+concurrency sweep (1–64, three repeats plus warmup) on one 141 GB GPU with the
+pre-LM encoder enabled and its embedding cache disabled (unique-input regime).
+Requests/s by client concurrency:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>config (workers/pending/running)</p></th>
+<th class="head text-right"><p>c=8</p></th>
+<th class="head text-right"><p>c=16</p></th>
+<th class="head text-right"><p>c=32</p></th>
+<th class="head text-right"><p>c=64</p></th>
+<th class="head text-right"><p>shed at c=64</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2 / 16 / 32</p></td>
+<td class="text-right"><p>39.1</p></td>
+<td class="text-right"><p>47.5</p></td>
+<td class="text-right"><p>52.3</p></td>
+<td class="text-right"><p>51.0</p></td>
+<td class="text-right"><p>704/3264</p></td>
+</tr>
+<tr class="row-odd"><td><p>4 / 16 / 32</p></td>
+<td class="text-right"><p>47.6</p></td>
+<td class="text-right"><p>60.3</p></td>
+<td class="text-right"><p>70.4</p></td>
+<td class="text-right"><p>55.4</p></td>
+<td class="text-right"><p>301/3264</p></td>
+</tr>
+<tr class="row-even"><td><p>8 / 16 / 32</p></td>
+<td class="text-right"><p>48.5</p></td>
+<td class="text-right"><p>75.6</p></td>
+<td class="text-right"><p>89.7</p></td>
+<td class="text-right"><p>64.6</p></td>
+<td class="text-right"><p>173/3264</p></td>
+</tr>
+<tr class="row-odd"><td><p>8 / 16 / 16</p></td>
+<td class="text-right"><p>57.6</p></td>
+<td class="text-right"><p>75.4</p></td>
+<td class="text-right"><p>42.2</p></td>
+<td class="text-right"><p>46.7</p></td>
+<td class="text-right"><p>250/3264</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>8 / 32 / 32 (default)</strong></p></td>
+<td class="text-right"><p>57.7</p></td>
+<td class="text-right"><p>76.5</p></td>
+<td class="text-right"><p>87.1</p></td>
+<td class="text-right"><p>65.1</p></td>
+<td class="text-right"><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>8 / 64 / 32</p></td>
+<td class="text-right"><p>55.2</p></td>
+<td class="text-right"><p>76.6</p></td>
+<td class="text-right"><p>87.9</p></td>
+<td class="text-right"><p>64.7</p></td>
+<td class="text-right"><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>8 / 32 / 64</p></td>
+<td class="text-right"><p>57.4</p></td>
+<td class="text-right"><p>77.0</p></td>
+<td class="text-right"><p>90.2</p></td>
+<td class="text-right"><p>96.8</p></td>
+<td class="text-right"><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>8 / 64 / 64</p></td>
+<td class="text-right"><p>57.0</p></td>
+<td class="text-right"><p>74.3</p></td>
+<td class="text-right"><p>88.8</p></td>
+<td class="text-right"><p>100.3</p></td>
+<td class="text-right"><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Reading, and the resulting defaults:</p>
+<ul class="simple">
+<li><p><strong>Build workers scale monotonically to 8</strong> at every concurrency ≥ 8 and cost
+nothing at concurrency 1 (0.099–0.101 s mean everywhere), so 8 is the
+default (it is also what lets the pre-LM encoder form real batches).</p></li>
+<li><p><strong>Pending 16 → 32 removes all concurrency-64 shedding</strong> and lifts
+concurrency-8 throughput ~19 %; 64 adds nothing further. 32 is the default.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">max_running_requests</span></code> 16 collapses concurrency 32</strong> (queue-bound) with no
+light-load latency benefit, so there is no latency-first case for lowering
+it. 32 (the default) is memory-conservative for 80 GB GPUs; raising it to
+<strong>64 unlocks the concurrency-64 regime</strong> (+~50 % requests/s, zero shedding)
+at the price of larger CUDA-graph and KV memory — the throughput-first
+override:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-running-requests<span class="w"> </span><span class="m">64</span><span class="w">   </span><span class="c1"># throughput-first; needs the extra GPU memory</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Corpus WER stayed 0.0122 for every configuration at every level.</p></li>
+</ul>
 </section>
 <section id="known-limitations">
 <h2>Known Limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">#</a></h2>
@@ -681,6 +789,7 @@ the transcriber for the TTS and talker WER stages.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#concurrency-tuning">Concurrency tuning</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#known-limitations">Known Limitations</a></li>
 </ul>
   </nav></div>
@@ -715,7 +824,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 05, 2026.
+  Last updated on Aug 06, 2026.
   <br/>
 </p>
   </div>
