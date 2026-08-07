@@ -799,6 +799,9 @@ override:</p></li>
 <h2>Known Limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>The endpoint accepts one uploaded file per request.</p></li>
+<li><p>Audio duration is bounded by the configured context and requested
+<code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code>, rather than a fixed 30-second window. Split audio or reduce
+<code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code> if the request exceeds that token budget.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code> is accepted by the HTTP endpoint for OpenAI compatibility, but Qwen3-ASR currently ignores it.</p></li>
 <li><p>Audio is resampled to 16 kHz before transcription.</p></li>
 </ul>
