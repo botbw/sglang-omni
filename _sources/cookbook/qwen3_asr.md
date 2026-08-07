@@ -70,7 +70,7 @@ print(resp.json()["text"])
 |---|---|---|---|
 | `file` | file | required | Audio file uploaded as multipart form data |
 | `model` | string | server default | Model identifier |
-| `language` | string | `en` | Language hint; `zh`/`cn` select Chinese, other values use English prompting |
+| `language` | string | `en` | Language hint as a supported code or canonical name (case-insensitive) |
 | `prompt` | string | none | Accepted for OpenAI compatibility; Qwen3-ASR currently ignores it |
 | `response_format` | string | `json` | `json`, `verbose_json`, or `text` |
 | `temperature` | float | `0.01` effective | Sampling temperature; `0` is converted to near-greedy `0.01` |
@@ -79,6 +79,24 @@ print(resp.json()["text"])
 
 `verbose_json` uses the model adapter's verbose response schema and includes
 duration-based usage (rounded-up audio seconds) when duration probing succeeds.
+
+### Language Hints
+
+Qwen3-ASR accepts the following 30 language codes and their canonical names:
+
+| Codes | Canonical names |
+|---|---|
+| `ar`, `yue`, `zh`, `cs`, `da`, `nl`, `en`, `fil`, `fi`, `fr` | Arabic, Cantonese, Chinese, Czech, Danish, Dutch, English, Filipino, Finnish, French |
+| `de`, `el`, `hi`, `hu`, `id`, `it`, `ja`, `ko`, `mk`, `ms` | German, Greek, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Macedonian, Malay |
+| `fa`, `pl`, `pt`, `ro`, `ru`, `es`, `sv`, `th`, `tr`, `vi` | Persian, Polish, Portuguese, Romanian, Russian, Spanish, Swedish, Thai, Turkish, Vietnamese |
+
+For example, `language=es` and `language=Spanish` both force the prompt suffix
+`language Spanish<asr_text>`. The legacy `cn` and regional `zh-*` spellings are
+also accepted as Chinese. Unsupported language hints return HTTP 400 instead of
+silently falling back to English.
+
+The model also has ASR coverage for 22 Chinese dialects, but those dialect names
+are not supported as forced `language` hints; use `Chinese`/`zh` for them.
 
 ## Benchmarking
 
