@@ -217,6 +217,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/ming_tts.html">Ming-Omni-TTS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/moss_tts.html">MOSS-TTS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/moss_tts_local.html">MOSS-TTS-Local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cookbook/dots_tts.html">dots.tts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/zonos2.html">ZONOS2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/qwen3_asr.html">Qwen3-ASR</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/fun_asr.html">Fun-ASR-Nano</a></li>
@@ -569,7 +570,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 </tr>
 <tr class="row-odd"><td><p><a class="reference external" href="https://github.com/studio-dots-ai/dots.tts">dots.tts</a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts.yaml</span></code> (MeanFlow), <code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts_soar.yaml</span></code> (SOAR)</p></td>
-<td><p>48 kHz continuous-latent TTS with reference audio. MeanFlow (<code class="docutils literal notranslate"><span class="pre">dots.tts-mf</span></code>) uses continuous batching (<code class="docutils literal notranslate"><span class="pre">max_running_requests=16</span></code> by default) with engine-wide <code class="docutils literal notranslate"><span class="pre">num_steps=4</span></code> and Euler. SOAR (<code class="docutils literal notranslate"><span class="pre">dots.tts-soar</span></code>) is flow matching and runs the single-request solver with CFG at <code class="docutils literal notranslate"><span class="pre">max_running_requests=1</span></code>. Both require <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> + <code class="docutils literal notranslate"><span class="pre">ref_text</span></code>. TP1 only</p></td>
+<td><p>48 kHz continuous-latent TTS with reference audio. MeanFlow (<code class="docutils literal notranslate"><span class="pre">dots.tts-mf</span></code>) uses continuous batching (<code class="docutils literal notranslate"><span class="pre">max_running_requests=16</span></code> by default) with engine-wide <code class="docutils literal notranslate"><span class="pre">num_steps=4</span></code> and Euler. SOAR (<code class="docutils literal notranslate"><span class="pre">dots.tts-soar</span></code>) and base (<code class="docutils literal notranslate"><span class="pre">dots.tts-base</span></code>) are flow matching and run the single-request solver with CFG at <code class="docutils literal notranslate"><span class="pre">max_running_requests=1</span></code>; both use the SOAR config. All require <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> + <code class="docutils literal notranslate"><span class="pre">ref_text</span></code>. TP1 only</p></td>
 </tr>
 </tbody>
 </table>
@@ -667,7 +668,8 @@ references, or data URLs.</p>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
-<p>SOAR is a flow-matching checkpoint, so it runs the single-request solver
+<p><code class="docutils literal notranslate"><span class="pre">dots.tts-base</span></code> uses the same config; pass <code class="docutils literal notranslate"><span class="pre">--model-path</span> <span class="pre">dots-studio/dots.tts-base</span></code>.</p>
+<p>SOAR and base are flow-matching checkpoints, so they run the single-request solver
 (<code class="docutils literal notranslate"><span class="pre">max_running_requests=1</span></code>) with classifier-free guidance. Continuous batching is
 MeanFlow-only for now. <code class="docutils literal notranslate"><span class="pre">rednote-hilab/dots.tts-*</span></code> is the old org name and redirects to
 <code class="docutils literal notranslate"><span class="pre">dots-studio/dots.tts-*</span></code>; both work as <code class="docutils literal notranslate"><span class="pre">--model-path</span></code>.</p>
