@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Aug 07, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 08, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -568,8 +568,8 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <td><p>Voice cloning via <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> or <code class="docutils literal notranslate"><span class="pre">references[0].audio_path</span></code> (+ <code class="docutils literal notranslate"><span class="pre">text</span></code>). Duration via <code class="docutils literal notranslate"><span class="pre">${token:N}</span></code> or <code class="docutils literal notranslate"><span class="pre">token_count</span></code>. Benchmark at <code class="docutils literal notranslate"><span class="pre">--max-concurrency</span> <span class="pre">8</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference external" href="https://github.com/studio-dots-ai/dots.tts">dots.tts</a></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts.yaml</span></code></p></td>
-<td><p>48 kHz continuous-latent TTS with reference audio and continuous batching (<code class="docutils literal notranslate"><span class="pre">max_running_requests=16</span></code> by default). The MF batch path uses engine-wide <code class="docutils literal notranslate"><span class="pre">num_steps=4</span></code> and Euler, and requires <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> + <code class="docutils literal notranslate"><span class="pre">ref_text</span></code>. TP1 only</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts.yaml</span></code> (MeanFlow), <code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts_soar.yaml</span></code> (SOAR)</p></td>
+<td><p>48 kHz continuous-latent TTS with reference audio. MeanFlow (<code class="docutils literal notranslate"><span class="pre">dots.tts-mf</span></code>) uses continuous batching (<code class="docutils literal notranslate"><span class="pre">max_running_requests=16</span></code> by default) with engine-wide <code class="docutils literal notranslate"><span class="pre">num_steps=4</span></code> and Euler. SOAR (<code class="docutils literal notranslate"><span class="pre">dots.tts-soar</span></code>) is flow matching and runs the single-request solver with CFG at <code class="docutils literal notranslate"><span class="pre">max_running_requests=1</span></code>. Both require <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> + <code class="docutils literal notranslate"><span class="pre">ref_text</span></code>. TP1 only</p></td>
 </tr>
 </tbody>
 </table>
@@ -657,6 +657,20 @@ references, or data URLs.</p>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
+<p>For dots.tts SOAR:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>dots-studio/dots.tts-soar<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/dots_tts_soar.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--allowed-media-domain<span class="w"> </span>huggingface.co<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--allowed-media-domain<span class="w"> </span>cas-bridge.xethub.hf.co<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--allowed-media-domain<span class="w"> </span>us.aws.cdn.hf.co<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p>SOAR is a flow-matching checkpoint, so it runs the single-request solver
+(<code class="docutils literal notranslate"><span class="pre">max_running_requests=1</span></code>) with classifier-free guidance. Continuous batching is
+MeanFlow-only for now. <code class="docutils literal notranslate"><span class="pre">rednote-hilab/dots.tts-*</span></code> is the old org name and redirects to
+<code class="docutils literal notranslate"><span class="pre">dots-studio/dots.tts-*</span></code>; both work as <code class="docutils literal notranslate"><span class="pre">--model-path</span></code>.</p>
 <p>For Ming-Omni-TTS on two 80 GB GPUs:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>inclusionAI/Ming-omni-tts-16.8B-A3B<span class="w"> </span><span class="se">\</span>
@@ -1326,7 +1340,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 07, 2026.
+  Last updated on Aug 08, 2026.
   <br/>
 </p>
   </div>

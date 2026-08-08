@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.0" />
-    <meta name="docbuild:last-update" content="Aug 07, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 08, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -517,7 +517,9 @@
 </section>
 <section id="server-configuration">
 <h2>Server Configuration<a class="headerlink" href="#server-configuration" title="Link to this heading">#</a></h2>
-<p>Qwen3-ASR runs a single ASR stage on one GPU.
+<p>Qwen3-ASR runs a single ASR stage on one GPU. Its default <code class="docutils literal notranslate"><span class="pre">auto</span></code> dtype follows
+the checkpoint configuration (BF16 for Qwen3-ASR-1.7B); pass
+<code class="docutils literal notranslate"><span class="pre">--stages.asr.factory-args.dtype</span> <span class="pre">float16</span></code> to force FP16.
 Async decode is enabled by default for decode batches of at least two requests,
 allowing the shared one-step-lookahead path to overlap host-side result
 processing with the next GPU decode forward. Use <code class="docutils literal notranslate"><span class="pre">--decode-mode</span> <span class="pre">sync</span></code> to disable
@@ -602,8 +604,8 @@ it, or tune the crossover with <code class="docutils literal notranslate"><span 
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p>float</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">0.01</span></code> effective</p></td>
-<td><p>Sampling temperature; <code class="docutils literal notranslate"><span class="pre">0</span></code> is converted to near-greedy <code class="docutils literal notranslate"><span class="pre">0.01</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+<td><p>Sampling temperature; <code class="docutils literal notranslate"><span class="pre">0</span></code> uses greedy decoding</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
 <td><p>integer</p></td>
@@ -898,7 +900,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 07, 2026.
+  Last updated on Aug 08, 2026.
   <br/>
 </p>
   </div>
