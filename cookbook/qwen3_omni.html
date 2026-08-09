@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 08, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 09, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -207,6 +207,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../get_started/installation.html">🚀 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/release_notes.html">Release Notes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook</span></p>
 <ul class="current nav bd-sidenav">
@@ -511,16 +512,15 @@ This page covers every supported server configuration — use the generator to g
 command for your hardware, then check the tables to confirm your combination is supported.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>frankleeeee/sglang-omni:dev
-docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--shm-size<span class="w"> </span>32g<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span>frankleeeee/sglang-omni:dev<span class="w"> </span>/bin/zsh
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>hongccc/sglang-omni:dev
+docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--shm-size<span class="w"> </span>32g<span class="w"> </span>--gpus<span class="w"> </span>all<span class="w"> </span>hongccc/sglang-omni:dev<span class="w"> </span>/bin/zsh
 </pre></div>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/sgl-project/sglang-omni.git
-<span class="nb">cd</span><span class="w"> </span>sglang-omni
-uv<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span>-p<span class="w"> </span><span class="m">3</span>.12<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-v<span class="w"> </span>.
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span>-p<span class="w"> </span><span class="m">3</span>.12<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;sglang-omni==0.1.1&quot;</span>
 </pre></div>
 </div>
+<p>See <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a> for Docker digests and source installs.</p>
 </section>
 <section id="server-configuration">
 <h2>Server Configuration<a class="headerlink" href="#server-configuration" title="Link to this heading">#</a></h2>
@@ -960,7 +960,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 08, 2026.
+  Last updated on Aug 09, 2026.
   <br/>
 </p>
   </div>

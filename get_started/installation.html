@@ -56,12 +56,12 @@
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Higgs TTS" href="../cookbook/higgs_tts.html" />
+    <link rel="next" title="Release Notes" href="release_notes.html" />
     <link rel="prev" title="SGLang-Omni" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 08, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 09, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -207,6 +207,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">🚀 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release_notes.html">Release Notes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook</span></p>
 <ul class="nav bd-sidenav">
@@ -502,11 +503,16 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="installation">
 <h1>🚀 Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
-<p>We provide two installation paths. Docker is recommended — the image ships with UCX, flash-attn, sglang, and CUDA prebuilt.</p>
+<p>Current stable release: <strong>v0.1.1</strong> on <a class="reference external" href="https://pypi.org/project/sglang-omni/">PyPI</a>.</p>
+<p>Two install paths. Docker is recommended — UCX, flash-attn, sglang, and CUDA are prebuilt.</p>
 <section id="option-a-docker-recommended">
 <h2>🐳 Option A: Docker (recommended)<a class="headerlink" href="#option-a-docker-recommended" title="Link to this heading">#</a></h2>
 <p><strong>1. Pull the image</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>lmsysorg/sglang-omni:dev
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>hongccc/sglang-omni:dev
+</pre></div>
+</div>
+<p>Only the <code class="docutils literal notranslate"><span class="pre">dev</span></code> tag is published today. It moves with main — pin by digest for reproducible runs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>lmsysorg/sglang-omni@sha256:&lt;digest&gt;
 </pre></div>
 </div>
 <p><strong>2. Run the container</strong></p>
@@ -516,40 +522,36 @@
 <span class="w">    </span>--ipc<span class="w"> </span>host<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--network<span class="w"> </span>host<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--privileged<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>lmsysorg/sglang-omni:dev<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>hongccc/sglang-omni:dev<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>/bin/zsh
 </pre></div>
 </div>
 <p><strong>3. Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> inside the container</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:sgl-project/sglang-omni.git
-<span class="nb">cd</span><span class="w"> </span>sglang-omni
-
-uv<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span>-p<span class="w"> </span><span class="m">3</span>.12
-<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>sglang-omni
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">dev</span></code> image is mutable. Pin the image by digest when you need a reproducible environment.</p>
-</section>
-<section id="option-b-manual-install">
-<h2>🛠️ Option B: Manual install<a class="headerlink" href="#option-b-manual-install" title="Link to this heading">#</a></h2>
-<p>Build the prerequisites first:</p>
-<ul class="simple">
-<li><p><strong>UCX 1.20.x</strong> with CUDA + verbs support — follow <a class="reference external" href="https://github.com/openucx/ucx">upstream</a>, or reuse the exact build flags in <a class="reference download internal" download="" href="../_downloads/9c6d2dd30e172995ff9466799d6f77ed/Dockerfile"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">docker/Dockerfile</span></code></span></a>.</p></li>
-<li><p><strong>flash-attn-4</strong> — install <code class="docutils literal notranslate"><span class="pre">&gt;=4.0.0b18</span></code>, matching <code class="docutils literal notranslate"><span class="pre">torch==2.11.0</span></code> and SGLang 0.5.16’s <code class="docutils literal notranslate"><span class="pre">nvidia-cutlass-dsl</span></code> 4.6.0 pin.</p></li>
-</ul>
-<p>Then install:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span>-p<span class="w"> </span><span class="m">3</span>.12
 <span class="nb">source</span><span class="w"> </span>.venv/bin/activate
 
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>sglang-omni
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;sglang-omni==0.1.1&quot;</span>
 </pre></div>
 </div>
-<p>To pin an exact package version, use <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;sglang-omni==X.Y.Z&quot;</span></code>.</p>
+</section>
+<section id="option-b-manual-install">
+<h2>🛠️ Option B: Manual install<a class="headerlink" href="#option-b-manual-install" title="Link to this heading">#</a></h2>
+<p>Build prerequisites first:</p>
+<ul class="simple">
+<li><p><strong>UCX 1.20.x</strong> with CUDA + verbs — <a class="reference external" href="https://github.com/openucx/ucx">upstream</a>, or reuse flags in <a class="reference download internal" download="" href="../_downloads/9c6d2dd30e172995ff9466799d6f77ed/Dockerfile"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">docker/Dockerfile</span></code></span></a>.</p></li>
+<li><p><strong>flash-attn-4</strong> <code class="docutils literal notranslate"><span class="pre">&gt;=4.0.0b18</span></code>, matching <code class="docutils literal notranslate"><span class="pre">torch==2.11.0</span></code> and SGLang 0.5.16’s <code class="docutils literal notranslate"><span class="pre">nvidia-cutlass-dsl</span></code> 4.6.0 pin.</p></li>
+</ul>
+<p>Then:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </span>-p<span class="w"> </span><span class="m">3</span>.12
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;sglang-omni==0.1.1&quot;</span>
+</pre></div>
+</div>
+<p>Latest on the index without a pin: <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">sglang-omni</span></code>.</p>
 <section id="install-from-source">
 <h3>Install from source<a class="headerlink" href="#install-from-source" title="Link to this heading">#</a></h3>
-<p>For development or testing an unreleased change, install from source:</p>
+<p>For development or unreleased changes:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:sgl-project/sglang-omni.git
 <span class="nb">cd</span><span class="w"> </span>sglang-omni
 
@@ -584,11 +586,11 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
       </div>
     </a>
     <a class="right-next"
-       href="../cookbook/higgs_tts.html"
+       href="release_notes.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Higgs TTS</p>
+        <p class="prev-next-title">Release Notes</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -648,7 +650,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 08, 2026.
+  Last updated on Aug 09, 2026.
   <br/>
 </p>
   </div>

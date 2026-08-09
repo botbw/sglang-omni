@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Capture-safe GPU radix hash (MOSS-TTS Local generated rows) &#8212; SGLang</title>
+    <title>Release Notes &#8212; SGLang</title>
   
   
   
@@ -49,13 +49,15 @@
     <script src="../_static/copybutton.js?v=ccdb6887"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'design/gpu_radix_hash';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/release_notes';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <script src="../_static/js/qwen3_omni_server_generator.js?v=94f3a115"></script>
     <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Higgs TTS" href="../cookbook/higgs_tts.html" />
+    <link rel="prev" title="🚀 Installation" href="installation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
@@ -158,8 +160,6 @@
       
       
       
-        
-      
       <dialog id="pst-primary-sidebar-modal"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
@@ -205,9 +205,9 @@
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../get_started/installation.html">🚀 Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../get_started/release_notes.html">Release Notes</a></li>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">🚀 Installation</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Release Notes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook</span></p>
 <ul class="nav bd-sidenav">
@@ -328,7 +328,7 @@
       
       
       
-      <li><a href="https://github.com/sgl-project/sglang-omni/blob/main/docs/design/gpu_radix_hash.md?plain=1" target="_blank"
+      <li><a href="https://github.com/sgl-project/sglang-omni/blob/main/docs/get_started/release_notes.md?plain=1" target="_blank"
    class="btn btn-sm btn-source-file-button dropdown-item"
    title="Show source"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -345,7 +345,7 @@
       
       
       
-      <li><a href="https://github.com/sgl-project/sglang-omni/edit/main/docs/design/gpu_radix_hash.md" target="_blank"
+      <li><a href="https://github.com/sgl-project/sglang-omni/edit/main/docs/get_started/release_notes.md" target="_blank"
    class="btn btn-sm btn-source-edit-button dropdown-item"
    title="Suggest edit"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -362,7 +362,7 @@
       
       
       
-      <li><a href="https://github.com/sgl-project/sglang-omni/issues/new?title=Issue%20on%20page%20%2Fdesign/gpu_radix_hash.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/sgl-project/sglang-omni/issues/new?title=Issue%20on%20page%20%2Fget_started/release_notes.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -392,7 +392,7 @@
       
       
       
-      <li><a href="../_sources/design/gpu_radix_hash.md" target="_blank"
+      <li><a href="../_sources/get_started/release_notes.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -475,7 +475,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Capture-safe GPU radix hash (MOSS-TTS Local generated rows)</h1>
+    <h1>Release Notes</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -485,14 +485,7 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem">Problem</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#approach">Approach</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#capture-safety-argument">Capture-safety argument</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-int64-overflow">No int64 overflow</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#collision-analysis">Collision analysis</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#two-layer-verification-rubric">Two-layer verification rubric</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-1">v0.1.1</a></li>
 </ul>
             </nav>
         </div>
@@ -504,104 +497,20 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="capture-safe-gpu-radix-hash-moss-tts-local-generated-rows">
-<h1>Capture-safe GPU radix hash (MOSS-TTS Local generated rows)<a class="headerlink" href="#capture-safe-gpu-radix-hash-moss-tts-local-generated-rows" title="Link to this heading">#</a></h1>
-<section id="problem">
-<h2>Problem<a class="headerlink" href="#problem" title="Link to this heading">#</a></h2>
-<p>Every decoded frame on the Local v1.5 path appends one radix-cache token id to
-the request’s KV chain; the radix tree keys on those ids. Because the text
-channel alone is the same assistant-slot id for every continuing frame, the key
-must hash the <strong>full</strong> 13-channel row (text + 12 RVQ codes) so that a radix
-prefix match implies identical audio content (otherwise a re-prefill after
-retraction could falsely prefix-match into another identical-prompt request’s
-cached generated region).</p>
-<p>The previous generated-row key reused the prompt-path helper
-<code class="docutils literal notranslate"><span class="pre">moss_tts.request_builders.build_row_cache_key_ids</span></code>, which moves the row tensor
-to host (<code class="docutils literal notranslate"><span class="pre">row.numpy().tobytes()</span></code>) and hashes with blake2b. On the prompt path
-that is fine – it runs once, before decode, outside any CUDA-graph capture
-region. On the <strong>generated</strong>-row path it runs every decode step on a tensor the
-local-frame decode just produced on device, so it forces a
-GPU-&gt;CPU sync + host hashing + CPU-&gt;GPU upload of <code class="docutils literal notranslate"><span class="pre">next_token_ids</span></code> <strong>per frame</strong>.
-That host sync blocks CUDA-graph capture and the async-decode lookahead
-(#734 / #736), which this PR is preparing the path for.</p>
-</section>
-<section id="approach">
-<h2>Approach<a class="headerlink" href="#approach" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">sglang_omni/models/moss_tts_local/radix_hash.py</span></code> computes the generated-row key
-entirely in int64 torch ops – a fixed-coefficient polynomial (Horner) hash:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>                       <span class="c1"># C = 13, static</span>
-    <span class="n">acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">acc</span> <span class="o">*</span> <span class="n">BASE</span> <span class="o">+</span> <span class="n">row</span><span class="p">[:,</span> <span class="n">channel</span><span class="p">])</span> <span class="o">%</span> <span class="n">MOD</span>
-<span class="n">key</span> <span class="o">=</span> <span class="n">acc</span> <span class="o">%</span> <span class="n">HASH_SPACE</span>                          <span class="c1"># continuing frames</span>
-<span class="n">key</span> <span class="o">=</span> <span class="n">audio_end_id</span>                              <span class="c1"># EOS rows (torch.where)</span>
-</pre></div>
-</div>
+  <section class="tex2jax_ignore mathjax_ignore" id="release-notes">
+<h1>Release Notes<a class="headerlink" href="#release-notes" title="Link to this heading">#</a></h1>
+<section id="v0-1-1">
+<h2>v0.1.1<a class="headerlink" href="#v0-1-1" title="Link to this heading">#</a></h2>
+<p>First PyPI release. Install: <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">&quot;sglang-omni==0.1.1&quot;</span></code>.</p>
+<p>Highlights since the early 0.1 line:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">MOD</span> <span class="pre">=</span> <span class="pre">2**31</span> <span class="pre">-</span> <span class="pre">1</span></code> (Mersenne prime M31), <code class="docutils literal notranslate"><span class="pre">BASE</span> <span class="pre">=</span> <span class="pre">1_000_000_007</span></code> (prime &lt; MOD).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">HASH_SPACE</span> <span class="pre">=</span> <span class="pre">151643</span></code> – <code class="docutils literal notranslate"><span class="pre">&lt;|endoftext|&gt;</span></code> opens the special/control id band.
-Continuing keys fold strictly below it; EOS rows keep the raw <code class="docutils literal notranslate"><span class="pre">audio_end</span></code> id
-(in the band) so <code class="docutils literal notranslate"><span class="pre">Req._check_vocab_boundary_finish</span></code> still fires eos.</p></li>
+<li><p><strong>TTS</strong>: dots.tts, ZONOS2; TTS architecture refactor (shared engine/ref-encode/vocoder paths); OpenAI speech + uploaded voices</p></li>
+<li><p><strong>ASR</strong>: Fun-ASR, ARK-ASR; shared transcription serving; Qwen3-ASR pre-LM encoder and multilingual support</p></li>
+<li><p><strong>Router</strong>: multiprocess CP/DP router; full TTS route set (<code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code>, batch, stream, voices)</p></li>
+<li><p><strong>Runtime</strong>: CUDA-IPC weight sync / MPS-DP; speech API surface cleanup</p></li>
+<li><p><strong>Omni</strong>: Qwen3-Omni talker/streaming fixes and perf work</p></li>
 </ul>
-<p>The prompt path is <strong>unchanged</strong>: <code class="docutils literal notranslate"><span class="pre">build_row_cache_key_ids</span></code> (blake2b) stays for
-prompt preprocessing. Only <code class="docutils literal notranslate"><span class="pre">model_runner._row_radix_token_ids</span></code>’s generated-row
-path is swapped to the GPU hash. This boundary is deliberate – the prompt hash
-is not on the decode hot path and never enters a capture region.</p>
-</section>
-<section id="capture-safety-argument">
-<h2>Capture-safety argument<a class="headerlink" href="#capture-safety-argument" title="Link to this heading">#</a></h2>
-<p>The hash uses only elementwise int64 ops (<code class="docutils literal notranslate"><span class="pre">mul</span></code>, <code class="docutils literal notranslate"><span class="pre">add</span></code>, <code class="docutils literal notranslate"><span class="pre">remainder</span></code>,
-<code class="docutils literal notranslate"><span class="pre">where</span></code>) over a <strong>static</strong> channel count, on the input tensor’s device. There is
-no <code class="docutils literal notranslate"><span class="pre">.cpu()</span></code>, <code class="docutils literal notranslate"><span class="pre">.item()</span></code>, <code class="docutils literal notranslate"><span class="pre">.tolist()</span></code>, numpy round-trip, data-dependent control
-flow, or dynamic shape. The Python <code class="docutils literal notranslate"><span class="pre">for</span></code> over <code class="docutils literal notranslate"><span class="pre">range(13)</span></code> unrolls into a fixed
-op sequence at trace/capture time. Therefore the function introduces no host
-sync and is CUDA-graph capturable / async-decode safe.</p>
-<section id="no-int64-overflow">
-<h3>No int64 overflow<a class="headerlink" href="#no-int64-overflow" title="Link to this heading">#</a></h3>
-<p>With <code class="docutils literal notranslate"><span class="pre">acc</span> <span class="pre">&lt;</span> <span class="pre">MOD</span></code> and each channel value reduced <code class="docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">MOD</span></code> (both <code class="docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">2**31</span></code>) and
-<code class="docutils literal notranslate"><span class="pre">BASE</span> <span class="pre">&lt;</span> <span class="pre">MOD</span></code>, every Horner step <code class="docutils literal notranslate"><span class="pre">acc</span> <span class="pre">*</span> <span class="pre">BASE</span> <span class="pre">+</span> <span class="pre">v</span> <span class="pre">&lt;</span> <span class="pre">2**31</span> <span class="pre">*</span> <span class="pre">2**31</span> <span class="pre">=</span> <span class="pre">2**62</span></code>, well
-inside signed int64 (<code class="docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">2**63</span></code>). So the arithmetic is exact and bit-reproducible
-on CPU and GPU – no implementation-defined wraparound. This is asserted in
-<code class="docutils literal notranslate"><span class="pre">test_matches_python_reference</span></code> against a pure-Python bignum reference.</p>
-</section>
-</section>
-<section id="collision-analysis">
-<h2>Collision analysis<a class="headerlink" href="#collision-analysis" title="Link to this heading">#</a></h2>
-<p>The key only drives radix cache hit/miss; it never changes sampled output (see
-two-layer verification below). A clash matters only when two <strong>distinct</strong> audio
-rows produce the same key <strong>and</strong> sit on top of an otherwise identical full
-prefix – the same risk profile the prior blake2b-then-fold key already carried.</p>
-<ul class="simple">
-<li><p>Raw polynomial space is <code class="docutils literal notranslate"><span class="pre">MOD</span> <span class="pre">~</span> <span class="pre">2.1e9</span></code>. Horner is order-sensitive (a channel
-permutation changes the key) and spreads neighbours (a single-channel +/-1
-shifts the key by a power of <code class="docutils literal notranslate"><span class="pre">BASE</span> <span class="pre">mod</span> <span class="pre">MOD</span></code>), so structurally similar rows do
-not cluster. Raw-hash injectivity on a constructed adjacent/permuted/random
-batch is asserted in <code class="docutils literal notranslate"><span class="pre">test_no_collisions_on_adjacent_and_permuted_rows</span></code>.</p></li>
-<li><p>The fold to <code class="docutils literal notranslate"><span class="pre">HASH_SPACE</span> <span class="pre">=</span> <span class="pre">151643</span></code> is the operative space (identical to the
-prior key’s fold). Expected folded clashes for <code class="docutils literal notranslate"><span class="pre">n</span></code> co-resident generated rows
-on a shared prefix are <code class="docutils literal notranslate"><span class="pre">~</span> <span class="pre">n^2</span> <span class="pre">/</span> <span class="pre">(2</span> <span class="pre">*</span> <span class="pre">151643)</span></code> – e.g. &lt; 0.02 for n = 75. A fold
-clash degrades to a single-position radix false-match (~1/151643) that only
-takes effect atop an identical full prefix; it cannot corrupt output, only
-cache locality.</p></li>
-</ul>
-</section>
-<section id="two-layer-verification-rubric">
-<h2>Two-layer verification rubric<a class="headerlink" href="#two-layer-verification-rubric" title="Link to this heading">#</a></h2>
-<p>Replacing the key algorithm means the old “both sides run the same blake2b”
-parity assumption no longer holds, so verification splits into two independent
-layers:</p>
-<ol class="arabic simple">
-<li><p><strong>Output layer (bit-identity).</strong> <code class="docutils literal notranslate"><span class="pre">audio_codes</span></code> / <code class="docutils literal notranslate"><span class="pre">output_ids</span></code> are produced by
-sampling, which does <strong>not</strong> depend on the radix key value. The fixed-seed S0
-gate (<code class="docutils literal notranslate"><span class="pre">tests/unit_test/moss_tts_local/test_s0_gate.py</span></code>, gpu-marked) and the
-graph-vs-eager sentinel assert bit-identical decoded output before vs after
-this change. <strong>Status: PASS</strong> (H100 at the review head: S0 3/3, the
-graph-vs-eager sentinel, and the on-GPU <code class="docutils literal notranslate"><span class="pre">moss_tts_local</span></code> suite).</p></li>
-<li><p><strong>Key layer (algorithm properties).</strong> Determinism, collision behaviour, EOS
-preservation, output domain, and dtype/device-follow are covered as CPU unit
-tests in <code class="docutils literal notranslate"><span class="pre">tests/unit_test/moss_tts_local/test_radix_hash.py</span></code> (green on CPU).</p></li>
-</ol>
-<p>The output layer is the behaviour-neutrality guarantee; the key layer pins the
-hash’s own contract independent of any GPU run.</p>
+<p>See <a class="reference internal" href="installation.html"><span class="std std-doc">Installation</span></a>. New model cookbooks are listed on the docs home page.</p>
 </section>
 </section>
 
@@ -616,6 +525,24 @@ hash’s own contract independent of any GPU run.</p>
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
+    <a class="left-prev"
+       href="installation.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">🚀 Installation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../cookbook/higgs_tts.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Higgs TTS</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
 </div>
                 </footer>
               
@@ -634,14 +561,7 @@ hash’s own contract independent of any GPU run.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem">Problem</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#approach">Approach</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#capture-safety-argument">Capture-safety argument</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#no-int64-overflow">No int64 overflow</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#collision-analysis">Collision analysis</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#two-layer-verification-rubric">Two-layer verification rubric</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-1">v0.1.1</a></li>
 </ul>
   </nav></div>
 

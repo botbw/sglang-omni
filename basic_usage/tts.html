@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 08, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 09, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -207,6 +207,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../get_started/installation.html">🚀 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/release_notes.html">Release Notes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook</span></p>
 <ul class="nav bd-sidenav">
@@ -516,13 +517,16 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="tts-model-usage">
 <h1>TTS Model Usage<a class="headerlink" href="#tts-model-usage" title="Link to this heading">#</a></h1>
-<p>This guide uses <a class="reference external" href="https://huggingface.co/fishaudio/s2-pro">Fish Speech S2-Pro</a> as an example TTS (text-to-speech) model with SGLang-Omni and the OpenAI-compatible API. The same <code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code> endpoint also supports Voxtral TTS, Qwen3-TTS, Ming-Omni-TTS, MOSS-TTS, and dots.tts.</p>
+<p>This guide uses <a class="reference external" href="https://huggingface.co/fishaudio/s2-pro">Fish Speech S2-Pro</a> as the example. The same <code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code> endpoint also serves Higgs TTS, Voxtral TTS, Qwen3-TTS, Ming-Omni-TTS, MOSS-TTS, MOSS-TTS Local, dots.tts, and ZONOS2.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
 <p>Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> by following <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a>, then download the model:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hf<span class="w"> </span>download<span class="w"> </span>fishaudio/s2-pro
 </pre></div>
 </div>
+<p>Fish Audio requires its model-specific DAC dependencies. Complete the
+<a class="reference internal" href="../cookbook/fishaudio_s2_pro.html#prerequisites"><span class="std std-ref">Fish Audio S2-Pro prerequisites</span></a>
+before starting the server.</p>
 <p>Qwen3-TTS uses the upstream <code class="docutils literal notranslate"><span class="pre">qwen-tts</span></code> package. Install it without dependencies
 so the SGLang-Omni Transformers 5.12 / SGLang 0.5.16 stack remains in place:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>sox<span class="w"> </span>einops
@@ -568,9 +572,21 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/moss_tts.yaml</span></code></p></td>
 <td><p>Voice cloning via <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> or <code class="docutils literal notranslate"><span class="pre">references[0].audio_path</span></code> (+ <code class="docutils literal notranslate"><span class="pre">text</span></code>). Duration via <code class="docutils literal notranslate"><span class="pre">${token:N}</span></code> or <code class="docutils literal notranslate"><span class="pre">token_count</span></code>. Benchmark at <code class="docutils literal notranslate"><span class="pre">--max-concurrency</span> <span class="pre">8</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://github.com/studio-dots-ai/dots.tts">dots.tts</a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../cookbook/moss_tts_local.html"><span class="std std-doc">MOSS-TTS Local</span></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/moss_tts_local.yaml</span></code></p></td>
+<td><p>48 kHz stereo local-transformer MOSS-TTS; voice cloning / reference-less; streaming</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../cookbook/higgs_tts.html"><span class="std std-doc">Higgs TTS</span></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--model-path</span></code> only</p></td>
+<td><p>Voice cloning, streaming; no example YAML required</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../cookbook/dots_tts.html"><span class="std std-doc">dots.tts</span></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts.yaml</span></code> (MeanFlow), <code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts_soar.yaml</span></code> (SOAR)</p></td>
 <td><p>48 kHz continuous-latent TTS with reference audio. MeanFlow (<code class="docutils literal notranslate"><span class="pre">dots.tts-mf</span></code>) uses continuous batching (<code class="docutils literal notranslate"><span class="pre">max_running_requests=16</span></code> by default) with engine-wide <code class="docutils literal notranslate"><span class="pre">num_steps=4</span></code> and Euler. SOAR (<code class="docutils literal notranslate"><span class="pre">dots.tts-soar</span></code>) and base (<code class="docutils literal notranslate"><span class="pre">dots.tts-base</span></code>) are flow matching and run the single-request solver with CFG at <code class="docutils literal notranslate"><span class="pre">max_running_requests=1</span></code>; both use the SOAR config. All require <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> + <code class="docutils literal notranslate"><span class="pre">ref_text</span></code>. TP1 only</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../cookbook/zonos2.html"><span class="std std-doc">ZONOS2</span></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--model-path</span> <span class="pre">Zyphra/zonos2</span></code></p></td>
+<td><p>MoE TTS, 9 DAC codebooks, voice cloning; needs Descript DAC extras (see cookbook)</p></td>
 </tr>
 </tbody>
 </table>
@@ -1342,7 +1358,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 08, 2026.
+  Last updated on Aug 09, 2026.
   <br/>
 </p>
   </div>

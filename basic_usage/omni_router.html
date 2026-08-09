@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 08, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 09, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -207,6 +207,7 @@
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../get_started/installation.html">🚀 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/release_notes.html">Release Notes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook</span></p>
 <ul class="nav bd-sidenav">
@@ -743,23 +744,27 @@ fragments.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">/health</span></code></p></td>
 <td><p>Worker endpoint used by background health checks.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--router-state-dir</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--voice-owner-worker-url</span></code></p></td>
+<td><p>first worker with <code class="docutils literal notranslate"><span class="pre">speech</span></code> and <code class="docutils literal notranslate"><span class="pre">audio_input</span></code></p></td>
+<td><p>Single-process mode only. Worker that owns uploaded TTS voices. Voice management and synthesis requests that use uploaded voices stay on this worker. Without such an owner, built-in voices can still route to eligible speech workers, but voice management is unavailable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--router-state-dir</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">$SGLANG_OMNI_ROUTER_STATE_DIR</span></code>, else <code class="docutils literal notranslate"><span class="pre">$XDG_STATE_HOME/sglang-omni-router</span></code>, else <code class="docutils literal notranslate"><span class="pre">~/.local/state/sglang-omni-router</span></code></p></td>
 <td><p>Directory for <a class="reference internal" href="#durable-router-state"><span class="std std-ref">durable router state</span></a> (the weight-update journal), which must survive a host reboot. Mount it on a persistent volume in a container.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--log-level</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--log-level</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">info</span></code></p></td>
 <td><p>Router and Uvicorn log level.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--strict-limits</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--strict-limits</span></code></p></td>
 <td><p>off</p></td>
 <td><p>Fail startup instead of warning when the <code class="docutils literal notranslate"><span class="pre">nofile</span></code> soft limit is too low for the resolved upstream pool size (<code class="docutils literal notranslate"><span class="pre">max(--max-connections,</span> <span class="pre">--max-inflight)</span></code>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--router-processes</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--router-processes</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
 <td><p>Number of data-plane relay processes. <code class="docutils literal notranslate"><span class="pre">1</span></code> keeps the single-process router below; <code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code> enables the multi-process router (x86-64 Linux only, and rejected at startup together with an explicit <code class="docutils literal notranslate"><span class="pre">--policy</span> <span class="pre">least_request</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--shutdown-drain-secs</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--shutdown-drain-secs</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">--request-timeout-secs</span></code></p></td>
 <td><p>Multi-process only: how long a stopping data-plane process waits for in-flight requests before cancelling them. The default matches the request timeout, so a routine shutdown never truncates a request its own timeout would have allowed.</p></td>
 </tr>
@@ -821,7 +826,8 @@ workers are unhealthy, dead, disabled, or still unknown.</p></li>
 <code class="docutils literal notranslate"><span class="pre">max_inflight</span></code>, <code class="docutils literal notranslate"><span class="pre">peak_inflight</span></code>, <code class="docutils literal notranslate"><span class="pre">rejected_total</span></code>). This returns <code class="docutils literal notranslate"><span class="pre">503</span></code> when no
 worker is routable.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/workers</span></code>: detailed worker state, including <code class="docutils literal notranslate"><span class="pre">health_state</span></code>, <code class="docutils literal notranslate"><span class="pre">disabled</span></code>,
-<code class="docutils literal notranslate"><span class="pre">routable</span></code>, <code class="docutils literal notranslate"><span class="pre">active_requests</span></code>, failure counters, and last error.</p></li>
+<code class="docutils literal notranslate"><span class="pre">routable</span></code>, <code class="docutils literal notranslate"><span class="pre">active_requests</span></code>, aggregate and per-service-class request
+counters, and last error.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/models</span></code>: merged model list from routable workers.</p></li>
 </ul>
 </section>
@@ -915,10 +921,50 @@ serving the request.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">audios</span></code>, <code class="docutils literal notranslate"><span class="pre">audio_inputs</span></code>, or audio message parts require <code class="docutils literal notranslate"><span class="pre">audio_input</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">videos</span></code>, <code class="docutils literal notranslate"><span class="pre">video</span></code>, or video message parts require <code class="docutils literal notranslate"><span class="pre">video_input</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">modalities:</span> <span class="pre">[&quot;audio&quot;]</span></code> or <code class="docutils literal notranslate"><span class="pre">audio</span></code> output fields require <code class="docutils literal notranslate"><span class="pre">audio_output</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code> requires <code class="docutils literal notranslate"><span class="pre">speech</span></code>, plus <code class="docutils literal notranslate"><span class="pre">streaming</span></code> for streamed speech</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code> and <code class="docutils literal notranslate"><span class="pre">/v1/audio/speech/batch</span></code> require <code class="docutils literal notranslate"><span class="pre">speech</span></code>;
+<code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code> also requires <code class="docutils literal notranslate"><span class="pre">streaming</span></code> when <code class="docutils literal notranslate"><span class="pre">stream:</span> <span class="pre">true</span></code> (batch speech
+does not support streaming)</p></li>
+<li><p>speech requests using <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> or audio-bearing <code class="docutils literal notranslate"><span class="pre">references</span></code> also require
+<code class="docutils literal notranslate"><span class="pre">audio_input</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/v1/audio/speech/stream</span></code> WebSocket sessions require <code class="docutils literal notranslate"><span class="pre">speech</span></code> and <code class="docutils literal notranslate"><span class="pre">streaming</span></code>,
+plus <code class="docutils literal notranslate"><span class="pre">audio_input</span></code> when configured with reference audio</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/v1/audio/voices</span></code> management and synthesis using an uploaded voice require
+the owner worker, which has both <code class="docutils literal notranslate"><span class="pre">speech</span></code> and <code class="docutils literal notranslate"><span class="pre">audio_input</span></code></p></li>
 </ul>
 <p>Register narrower worker capabilities only when a worker cannot serve one of
 those request classes.</p>
+<p>The complete TTS route set described below is currently supported by the
+single-process router (<code class="docutils literal notranslate"><span class="pre">--router-processes</span> <span class="pre">1</span></code>). Multi-process router data
+planes retain the route surface documented in
+Multi-Process Router.</p>
+<p>Uploaded TTS voices are mutable worker-local state. The Router sends voice
+list, upload, and delete operations to <code class="docutils literal notranslate"><span class="pre">--voice-owner-worker-url</span></code>, and pins
+speech, batch, and WebSocket requests that name an uploaded voice to the same
+worker. It returns <code class="docutils literal notranslate"><span class="pre">503</span></code> if that owner is unavailable instead of silently
+routing the request to a worker without the voice. Once the uploaded-voice
+registry is available, built-in voices remain balanced by the configured
+routing policy. By default, the first routable worker with both <code class="docutils literal notranslate"><span class="pre">speech</span></code> and
+<code class="docutils literal notranslate"><span class="pre">audio_input</span></code> capabilities becomes the owner and remains the owner for that
+router process. Configure
+<code class="docutils literal notranslate"><span class="pre">--voice-owner-worker-url</span></code> when the owner must remain stable across router
+restarts. Pools without such an owner can still route built-in TTS to eligible
+speech workers, but voice management returns <code class="docutils literal notranslate"><span class="pre">503</span></code>.
+The owner cannot be removed or have either required capability removed through
+the router’s worker API while the router is running.</p>
+<p>Voice ownership assumes one router is the writer for the pool, clients perform
+voice mutations through that router, and the owner keeps its speaker directory
+across restarts. Multiple independent routers or direct mutations against a
+worker are not coordinated and are unsupported for uploaded voices.
+The router loads its uploaded-voice registry in the background after voice
+traffic begins and reconciles it after voice mutations. Until the initial load
+succeeds, or while a mutation outcome is unresolved, every non-default voice
+name is pinned to the owner because the router cannot safely distinguish a
+built-in name from an uploaded name. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/health</span></code> reports the selected owner,
+owner routability, registry state, and uploaded-voice count under
+<code class="docutils literal notranslate"><span class="pre">voice_routing</span></code>.
+The router hydrates this registry through the compact
+<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/audio/voices?names_only=true</span></code> response rather than transferring stored
+reference metadata.</p>
 <p>Large JSON requests are not fully parsed by the router. With a homogeneous pool
 of complete Omni V1 replicas, no extra headers are needed. With mixed models,
 provide a model hint. With mixed worker capabilities, provide a capability hint
@@ -929,20 +975,30 @@ when the router cannot infer a single safe worker set:</p>
 <code class="docutils literal notranslate"><span class="pre">image_input</span></code>, <code class="docutils literal notranslate"><span class="pre">audio_input</span></code>, <code class="docutils literal notranslate"><span class="pre">video_input</span></code>, <code class="docutils literal notranslate"><span class="pre">audio_output</span></code>, or <code class="docutils literal notranslate"><span class="pre">streaming</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">X-SGLang-Omni-Route-Stream</span></code>: <code class="docutils literal notranslate"><span class="pre">true</span></code> or <code class="docutils literal notranslate"><span class="pre">false</span></code> for large streaming requests</p></li>
 </ul>
+<p>Speech and speech-batch JSON bodies larger than 1 MiB are conservatively pinned
+to the voice owner because the router cannot fully inspect them to rule out an
+uploaded voice reference. Without an eligible owner, the router conservatively
+requires <code class="docutils literal notranslate"><span class="pre">audio_input</span></code>; it never weakens capability selection at the size
+boundary. Route-hint headers do not override voice ownership.</p>
 <p>These headers are router-only hints and are not forwarded to workers.</p>
 </section>
 <section id="request-diagnostics">
 <h2>Request Diagnostics<a class="headerlink" href="#request-diagnostics" title="Link to this heading">#</a></h2>
-<p>Routed responses include:</p>
+<p>Routed HTTP responses include:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">X-SGLang-Omni-Worker</span></code>: selected worker ID</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">X-SGLang-Omni-Request-ID</span></code>: request ID from the request headers or body, or a
 router-generated ID</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">X-SGLang-Omni-Route-Attempt</span></code>: currently <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
 </ul>
-<p>Router logs include a route-completion record for buffered and streaming
-requests. Each record contains the request ID, selected worker, path, stream
-flag, inferred capabilities, status code, duration, and terminal outcome.</p>
+<p>HTTP routes emit <code class="docutils literal notranslate"><span class="pre">route_completed</span></code> after worker selection and <code class="docutils literal notranslate"><span class="pre">route_rejected</span></code>
+before selection. Completion records contain the request ID, selected worker,
+path, stream flag, inferred capabilities, status code, duration, and terminal
+outcome.</p>
+<p>WebSocket sessions cannot add HTTP response headers after the upgrade. Router
+rejections are sent as a TTS <code class="docutils literal notranslate"><span class="pre">error</span></code> event followed by a protocol-appropriate
+close code. Every accepted WebSocket emits one <code class="docutils literal notranslate"><span class="pre">tts_websocket_completed</span></code> record,
+including rejections before worker selection; those records use <code class="docutils literal notranslate"><span class="pre">worker=-</span></code>.</p>
 </section>
 <section id="overload-behavior">
 <h2>Overload Behavior<a class="headerlink" href="#overload-behavior" title="Link to this heading">#</a></h2>
@@ -950,9 +1006,12 @@ flag, inferred capabilities, status code, duration, and terminal outcome.</p>
 requests are being relayed, additional model requests are rejected immediately,
 before the request body is read:</p>
 <ul class="simple">
-<li><p>status <code class="docutils literal notranslate"><span class="pre">503</span></code> with an OpenAI-style error envelope (<code class="docutils literal notranslate"><span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;overloaded_error&quot;</span></code>)</p></li>
-<li><p>a <code class="docutils literal notranslate"><span class="pre">Retry-After:</span> <span class="pre">1</span></code> header</p></li>
-<li><p>a <code class="docutils literal notranslate"><span class="pre">route_rejected</span></code> log record with <code class="docutils literal notranslate"><span class="pre">reason=router_overloaded</span></code></p></li>
+<li><p>HTTP requests receive status <code class="docutils literal notranslate"><span class="pre">503</span></code>, an OpenAI-style error envelope
+(<code class="docutils literal notranslate"><span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;overloaded_error&quot;</span></code>), a <code class="docutils literal notranslate"><span class="pre">Retry-After:</span> <span class="pre">1</span></code> header, and a
+<code class="docutils literal notranslate"><span class="pre">route_rejected</span></code> log with <code class="docutils literal notranslate"><span class="pre">reason=router_overloaded</span></code></p></li>
+<li><p>WebSocket requests receive a TTS <code class="docutils literal notranslate"><span class="pre">error</span></code> event with
+<code class="docutils literal notranslate"><span class="pre">error_type=overloaded_error</span></code>, close code <code class="docutils literal notranslate"><span class="pre">1013</span></code>, and a terminal log with
+<code class="docutils literal notranslate"><span class="pre">outcome=router_overloaded</span></code></p></li>
 </ul>
 <p>Health and management endpoints (<code class="docutils literal notranslate"><span class="pre">/live</span></code>, <code class="docutils literal notranslate"><span class="pre">/ready</span></code>, <code class="docutils literal notranslate"><span class="pre">/health</span></code>, <code class="docutils literal notranslate"><span class="pre">/workers</span></code>, admin
 routes) are never gated. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/health</span></code> reports the current in-flight level, the
@@ -1103,9 +1162,10 @@ and flip <code class="docutils literal notranslate"><span class="pre">/ready</sp
 <li><p><strong>Worker weight updates wait for the data planes.</strong> Before broadcasting, the
 CP publishes the disabled-worker snapshot and waits until every live DP has
 acknowledged it; on timeout the update fails closed and nothing is sent.</p></li>
-<li><p><strong>Counters are aggregated.</strong> <code class="docutils literal notranslate"><span class="pre">/workers</span></code> totals are summed across DPs and
-stay monotonic across DP restarts; <code class="docutils literal notranslate"><span class="pre">active_requests</span></code> is a best-effort gauge
-over live DPs. Counters reset with the CP, matching single-process restarts.</p></li>
+<li><p><strong>Counters are aggregated.</strong> <code class="docutils literal notranslate"><span class="pre">/workers</span></code> aggregate totals and
+<code class="docutils literal notranslate"><span class="pre">*_requests_by_class</span></code> maps are summed across DPs and stay monotonic across DP
+restarts; <code class="docutils literal notranslate"><span class="pre">active_requests</span></code> is a best-effort gauge over live DPs. Counters
+reset with the CP, matching single-process restarts.</p></li>
 <li><p><strong>File descriptors scale with <code class="docutils literal notranslate"><span class="pre">N</span></code>.</strong> Each DP holds a full-size upstream pool
 (a skewed keep-alive client mix can pin the whole bound onto one DP, which
 must still carry it) with keep-alives split <code class="docutils literal notranslate"><span class="pre">pool</span> <span class="pre">/</span> <span class="pre">N</span></code>; the startup log
@@ -1399,7 +1459,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 08, 2026.
+  Last updated on Aug 09, 2026.
   <br/>
 </p>
   </div>
