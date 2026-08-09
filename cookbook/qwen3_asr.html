@@ -525,13 +525,26 @@ the checkpoint configuration (BF16 for Qwen3-ASR-1.7B); pass
 Async decode is enabled by default for decode batches of at least two requests,
 allowing the shared one-step-lookahead path to overlap host-side result
 processing with the next GPU decode forward. Use <code class="docutils literal notranslate"><span class="pre">--decode-mode</span> <span class="pre">sync</span></code> to disable
-it, or tune the crossover with <code class="docutils literal notranslate"><span class="pre">--async-lookahead-min-batch-size</span></code>.</p>
+it, or tune the crossover with <code class="docutils literal notranslate"><span class="pre">--async-lookahead-min-batch-size</span></code>.
+The request builders also use the shared LM prefill-admission gate while more
+request builds are pending: prefill starts when 16 built requests are ready,
+after the oldest ready request waits 24 ms, or immediately when build work drains.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">MODEL_PATH</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-name<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
+<p>For a single 24 GB RTX 4090 (SM89), use the checked-in consumer profile:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_asr_rtx4090.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p>This qualified profile keeps the model in BF16, limits the stage to 16 running
+requests, and sets <code class="docutils literal notranslate"><span class="pre">mem_fraction_static</span></code> to <code class="docutils literal notranslate"><span class="pre">0.65</span></code>. Its bounds are specific to
+the validated RTX 4090 layout; use the default configuration or a separately
+qualified profile on other GPU architectures.</p>
 <p>For example, force synchronous decode when comparing modes:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
@@ -747,7 +760,7 @@ Requests/s by client concurrency:</p>
 <td class="text-right"><p>46.7</p></td>
 <td class="text-right"><p>250/3264</p></td>
 </tr>
-<tr class="row-even"><td><p><strong>8 / 32 / 32 (default)</strong></p></td>
+<tr class="row-even"><td><p>8 / 32 / 32</p></td>
 <td class="text-right"><p>57.7</p></td>
 <td class="text-right"><p>76.5</p></td>
 <td class="text-right"><p>87.1</p></td>
@@ -761,7 +774,7 @@ Requests/s by client concurrency:</p>
 <td class="text-right"><p>64.7</p></td>
 <td class="text-right"><p>0</p></td>
 </tr>
-<tr class="row-even"><td><p>8 / 32 / 64</p></td>
+<tr class="row-even"><td><p><strong>8 / 32 / 64 (default)</strong></p></td>
 <td class="text-right"><p>57.4</p></td>
 <td class="text-right"><p>77.0</p></td>
 <td class="text-right"><p>90.2</p></td>
@@ -787,13 +800,12 @@ default (it is also what lets the pre-LM encoder form real batches).</p></li>
 concurrency-8 throughput ~19 %; 64 adds nothing further. 32 is the default.</p></li>
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">max_running_requests</span></code> 16 collapses concurrency 32</strong> (queue-bound) with no
 light-load latency benefit, so there is no latency-first case for lowering
-it. 32 (the default) is memory-conservative for 80 GB GPUs; raising it to
-<strong>64 unlocks the concurrency-64 regime</strong> (+~50 % requests/s, zero shedding)
-at the price of larger CUDA-graph and KV memory — the throughput-first
-override:</p></li>
+it. The default is 64 because it unlocks the concurrency-64 regime (+~50 %
+requests/s, zero shedding), at the price of larger CUDA-graph and KV memory.
+On memory-constrained GPUs, use the memory-conservative override:</p></li>
 </ul>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--max-running-requests<span class="w"> </span><span class="m">64</span><span class="w">   </span><span class="c1"># throughput-first; needs the extra GPU memory</span>
+<span class="w">  </span>--max-running-requests<span class="w"> </span><span class="m">32</span>
 </pre></div>
 </div>
 <ul class="simple">
