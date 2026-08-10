@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 09, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 10, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -528,14 +528,33 @@ endpoint.</p>
 dependencies so the SGLang-Omni Transformers 5.12 / SGLang 0.5.16 stack remains
 in place:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>apt-get<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>sox
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>sox<span class="w"> </span>einops<span class="w"> </span>onnxruntime
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span>sox<span class="w"> </span>einops
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span>qwen-tts<span class="o">==</span><span class="m">0</span>.1.1
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">--no-deps</span></code> is required on <strong>both</strong> lines, for two different reasons.</p>
+<p><code class="docutils literal notranslate"><span class="pre">qwen-tts</span></code> pins Transformers 4.57.3, which would replace the project’s 5.12.1.
+And resolving <code class="docutils literal notranslate"><span class="pre">sox</span></code> normally pulls <code class="docutils literal notranslate"><span class="pre">numpy</span></code> past the ceiling <code class="docutils literal notranslate"><span class="pre">numba==0.65.1</span></code>
+imposes (numba requires <code class="docutils literal notranslate"><span class="pre">numpy&lt;=2.4</span></code>); the upgraded <code class="docutils literal notranslate"><span class="pre">numpy</span></code> then breaks
+<code class="docutils literal notranslate"><span class="pre">librosa</span></code>, so <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">qwen_tts</span></code> fails with <code class="docutils literal notranslate"><span class="pre">Numba</span> <span class="pre">needs</span> <span class="pre">NumPy</span> <span class="pre">2.4</span> <span class="pre">or</span> <span class="pre">less</span></code>
+before the server can start.</p>
+<p>Do not add <code class="docutils literal notranslate"><span class="pre">onnxruntime</span></code> to that line either — it is already a SGLang-Omni
+dependency, and resolving it pulls <code class="docutils literal notranslate"><span class="pre">numpy</span></code> the same way.</p>
 <blockquote>
 <div><p>Do <strong>not</strong> install <code class="docutils literal notranslate"><span class="pre">qwen-tts</span></code> with dependencies here. Its declared dependency
 set can pull a different Transformers/Torch stack than the SGLang-Omni runtime.</p>
 </div></blockquote>
+<p>Concretely, <code class="docutils literal notranslate"><span class="pre">qwen-tts</span></code> 0.1.1 pins Transformers 4.57.3, and its model code calls
+APIs that Transformers 5.12 has since renamed or removed — most visibly the mask
+factories (<code class="docutils literal notranslate"><span class="pre">create_causal_mask</span></code> and friends), which now spell <code class="docutils literal notranslate"><span class="pre">input_embeds</span></code> as
+<code class="docutils literal notranslate"><span class="pre">inputs_embeds</span></code> and no longer accept <code class="docutils literal notranslate"><span class="pre">cache_position</span></code>. SGLang-Omni patches these
+differences in
+<code class="docutils literal notranslate"><span class="pre">sglang_omni/models/qwen3_tts/compat.py</span></code>, which every Qwen3-TTS entry point
+applies before importing <code class="docutils literal notranslate"><span class="pre">qwen_tts</span></code>. The pinned Transformers 5.12 / SGLang 0.5.16
+stack is therefore the supported configuration, not a workaround.</p>
+<p>If you hit a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> raised from inside <code class="docutils literal notranslate"><span class="pre">qwen_tts</span></code>, do not resolve it by
+installing the package’s own Transformers pin — that breaks the rest of the
+runtime. Report it instead, so the shim can cover it.</p>
 <p>The Python <code class="docutils literal notranslate"><span class="pre">sox</span></code> package shells out to the system <code class="docutils literal notranslate"><span class="pre">sox</span></code> binary on some paths, so install both.</p>
 <p>Download a checkpoint (both repositories are public, no token required):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>hf<span class="w"> </span>download<span class="w"> </span>Qwen/Qwen3-TTS-12Hz-0.6B-Base
@@ -914,7 +933,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 09, 2026.
+  Last updated on Aug 10, 2026.
   <br/>
 </p>
   </div>
