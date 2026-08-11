@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 10, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 11, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -528,7 +528,7 @@ next GPU decode forward even for a single request. Use <code class="docutils lit
 disable it, or tune the crossover with <code class="docutils literal notranslate"><span class="pre">--async-lookahead-min-batch-size</span></code>.
 The request builders also use the shared LM prefill-admission gate: prefill
 starts when 16 built requests are ready or after the oldest ready request waits
-24 ms. Once request-build work drains, a ready prefill is released immediately
+40 ms. Once request-build work drains, a ready prefill is released immediately
 if decode is idle; while decode is active, it continues coalescing until the
 same request target or deadline.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
@@ -917,7 +917,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 10, 2026.
+  Last updated on Aug 11, 2026.
   <br/>
 </p>
   </div>
