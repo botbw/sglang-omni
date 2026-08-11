@@ -815,6 +815,15 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <span class="w">  </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.80<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-dir<span class="w"> </span>results/moss_transcribe_diarize_movies800times
 
+<span class="c1"># note (Xinyu): Add one dedicated request-event profiling pass after the measured</span>
+<span class="c1"># evaluation. This pass is excluded from reported accuracy and speed metrics.</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_transcribe_diarize<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--dataset<span class="w"> </span>movies800times<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--concurrency<span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--profile-events<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--profile-event-dir<span class="w"> </span>/tmp/moss_td_bench_profile<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output-dir<span class="w"> </span>results/moss_transcribe_diarize_movies800times_profile
+
 <span class="c1"># Long-sequence ASR / diarization</span>
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_transcribe_diarize<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--dataset<span class="w"> </span>aishell4_long<span class="w"> </span><span class="se">\</span>
@@ -838,6 +847,13 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <span class="w">  </span>--output-dir<span class="w"> </span>results/moss_transcribe_diarize_googletime
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">--profile-events</span></code> starts request-level event recording through the serve
+profiler endpoints, runs one extra pass, and adds its <code class="docutils literal notranslate"><span class="pre">stage_breakdown</span></code>,
+<code class="docutils literal notranslate"><span class="pre">hop_breakdown</span></code>, and speed metrics under <code class="docutils literal notranslate"><span class="pre">profile</span></code> in both
+<code class="docutils literal notranslate"><span class="pre">transcribe_diarize_results.json</span></code> and <code class="docutils literal notranslate"><span class="pre">transcribe_diarize_speed_results.json</span></code>.
+The event directory is a server-side path, so report generation requires the
+benchmark process to see the same filesystem. For router or DP deployments,
+pass every worker serve URL with a comma-separated <code class="docutils literal notranslate"><span class="pre">--profile-urls</span></code> value.</p>
 </section>
 <section id="benchmark-results">
 <h2>Benchmark Results<a class="headerlink" href="#benchmark-results" title="Link to this heading">#</a></h2>
