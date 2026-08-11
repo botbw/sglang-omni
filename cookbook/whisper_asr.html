@@ -572,12 +572,17 @@
 <td><p>unset</p></td>
 <td><p>Optional language hint</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code></p></td>
+<td><p>string</p></td>
+<td><p>unset</p></td>
+<td><p>Optional text used as Whisper prev-context conditioning</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
 <td><p>string</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
 <td><p>Use <code class="docutils literal notranslate"><span class="pre">json</span></code> for the current Whisper path</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p>float</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0.0</span></code></p></td>
 <td><p>Sampling temperature; defaults to greedy decoding</p></td>
@@ -602,8 +607,12 @@ experimental path.</p></li>
 <li><p>First startup can take several minutes.</p></li>
 <li><p>The endpoint accepts one uploaded file per request.</p></li>
 <li><p>Audio is resampled to 16 kHz before transcription.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code> is accepted by the HTTP endpoint for OpenAI compatibility, but
-Whisper ASR currently does not pass it into decoding.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code> conditions decoding via Whisper prev-context tokens. Only the last
+223 prompt tokens are kept (224 prev-context tokens including
+<code class="docutils literal notranslate"><span class="pre">&lt;|startofprev|&gt;</span></code>) — fewer when <code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code> is large, since prompt,
+task prefix, and output share Whisper’s 448-token decoder context.
+<code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code> is likewise clamped to that context. The prompt must not
+contain Whisper special tokens.</p></li>
 </ul>
 </section>
 </section>
