@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 11, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 12, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -786,6 +786,28 @@ automatically commits each utterance and starts generation. Text arrives in
 <p>Audio output is opt-in: sessions remain text-only unless both modalities are
 requested. A thinker-only server rejects audio negotiation because it has no
 <code class="docutils literal notranslate"><span class="pre">code2wav</span></code> stage.</p>
+<p>For text-and-audio sessions, server-owned barge-in is enabled by default. When
+server VAD emits <code class="docutils literal notranslate"><span class="pre">input_audio_buffer.speech_started</span></code>, the active response is
+cancelled with reason <code class="docutils literal notranslate"><span class="pre">turn_detected</span></code>; its user transcription still completes
+and enters conversation history before the next queued turn runs. Cancelled
+assistant output is not added to conversation history.</p>
+<p>Clients must stop buffered playback on <code class="docutils literal notranslate"><span class="pre">speech_started</span></code> and reject every later
+<code class="docutils literal notranslate"><span class="pre">response.audio.delta</span></code> for that response until its <code class="docutils literal notranslate"><span class="pre">response.done</span></code>. If speech
+starts before <code class="docutils literal notranslate"><span class="pre">response.created</span></code>, retain a pending-interruption flag and reject
+the response when its ID arrives. Automatic barge-in ends with
+<code class="docutils literal notranslate"><span class="pre">response.done.status=&quot;cancelled&quot;</span></code> and reason <code class="docutils literal notranslate"><span class="pre">turn_detected</span></code>; explicit
+<code class="docutils literal notranslate"><span class="pre">response.cancel</span></code> uses reason <code class="docutils literal notranslate"><span class="pre">client_cancelled</span></code>.</p>
+<p>If assistant audio has already been scheduled for playback, the client must
+also send <code class="docutils literal notranslate"><span class="pre">conversation.item.truncate</span></code> with the assistant <code class="docutils literal notranslate"><span class="pre">item_id</span></code> from
+<code class="docutils literal notranslate"><span class="pre">response.audio.delta</span></code>, <code class="docutils literal notranslate"><span class="pre">content_index:</span> <span class="pre">0</span></code>, and the played duration in
+<code class="docutils literal notranslate"><span class="pre">audio_end_ms</span></code>. The server replies with <code class="docutils literal notranslate"><span class="pre">conversation.item.truncated</span></code> and
+removes that assistant item from conversation history. The whole assistant
+transcript is removed because the endpoint cannot align text with played audio.</p>
+<p>Set <code class="docutils literal notranslate"><span class="pre">turn_detection.interrupt_response</span></code> to <code class="docutils literal notranslate"><span class="pre">false</span></code> in <code class="docutils literal notranslate"><span class="pre">session.update</span></code> to opt
+out. This is the only <code class="docutils literal notranslate"><span class="pre">turn_detection</span></code> field applied dynamically by the current
+endpoint. Server VAD remains fixed at its startup defaults; <code class="docutils literal notranslate"><span class="pre">threshold</span></code>,
+<code class="docutils literal notranslate"><span class="pre">prefix_padding_ms</span></code>, and <code class="docutils literal notranslate"><span class="pre">silence_duration_ms</span></code> do not reconfigure it. Text-only
+responses are not interrupted automatically.</p>
 <p>The browser example in <code class="docutils literal notranslate"><span class="pre">playground/qwen-omni/realtime</span></code> captures microphone
 input and lets the user select text-only output or text plus streamed PCM16
 audio playback.</p>
@@ -1171,7 +1193,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 11, 2026.
+  Last updated on Aug 12, 2026.
   <br/>
 </p>
   </div>

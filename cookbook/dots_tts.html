@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 11, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 12, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -820,7 +820,7 @@ dit_cache_tokens = patch_capacity × (hidden_patch_size + latent_patch_size)   #
 </section>
 <section id="performance">
 <h3>Performance<a class="headerlink" href="#performance" title="Link to this heading">#</a></h3>
-<p>We report throughput on Seed-TTS EN. Client <code class="docutils literal notranslate"><span class="pre">--max-concurrency</span></code> sweep against a single dots.tts server started from <code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts.yaml</span></code> (<code class="docutils literal notranslate"><span class="pre">max_running_requests=16</span></code>, bf16, <code class="docutils literal notranslate"><span class="pre">num_steps=4</span></code>, backbone decode CUDA graph and graph-captured acoustic tail on). Each row is the mean of two runs, seed 42. Hardware: <strong>1x H100</strong>.</p>
+<p>Seed-TTS EN benchmark at main commit <code class="docutils literal notranslate"><span class="pre">2b45073c</span></code>, seed 42, with 10 warmup requests. Throughput and latency were measured on <strong>1x H100</strong>. The server used <code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts.yaml</span></code>, which enables the optimized acoustic tail, vocoder, and backbone CUDA Graph. Every row uses all 1,088 samples.</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head text-right"><p>Concurrency</p></th>
@@ -833,51 +833,51 @@ dit_cache_tokens = patch_capacity × (hidden_patch_size + latent_patch_size)   #
 </thead>
 <tbody>
 <tr class="row-even"><td class="text-right"><p>1</p></td>
-<td class="text-right"><p>0.90</p></td>
-<td class="text-right"><p>1.11 s</p></td>
-<td class="text-right"><p>0.284</p></td>
-<td class="text-right"><p>3.58</p></td>
-<td class="text-right"><p>1.06%</p></td>
+<td class="text-right"><p>0.935</p></td>
+<td class="text-right"><p>1.070 s</p></td>
+<td class="text-right"><p>0.275</p></td>
+<td class="text-right"><p>3.726</p></td>
+<td class="text-right"><p>1.241%</p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p>2</p></td>
-<td class="text-right"><p>1.48</p></td>
-<td class="text-right"><p>1.35 s</p></td>
-<td class="text-right"><p>0.329</p></td>
-<td class="text-right"><p>6.16</p></td>
-<td class="text-right"><p>1.25%</p></td>
+<td class="text-right"><p>1.556</p></td>
+<td class="text-right"><p>1.286 s</p></td>
+<td class="text-right"><p>0.314</p></td>
+<td class="text-right"><p>6.493</p></td>
+<td class="text-right"><p>1.256%</p></td>
 </tr>
 <tr class="row-even"><td class="text-right"><p>4</p></td>
-<td class="text-right"><p>2.43</p></td>
-<td class="text-right"><p>1.64 s</p></td>
-<td class="text-right"><p>0.399</p></td>
-<td class="text-right"><p>10.14</p></td>
-<td class="text-right"><p>1.36%</p></td>
+<td class="text-right"><p>2.493</p></td>
+<td class="text-right"><p>1.603 s</p></td>
+<td class="text-right"><p>0.390</p></td>
+<td class="text-right"><p>10.407</p></td>
+<td class="text-right"><p>1.264%</p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p>8</p></td>
-<td class="text-right"><p>3.99</p></td>
-<td class="text-right"><p>2.00 s</p></td>
-<td class="text-right"><p>0.486</p></td>
-<td class="text-right"><p>16.65</p></td>
-<td class="text-right"><p>1.31%</p></td>
+<td class="text-right"><p>3.875</p></td>
+<td class="text-right"><p>2.062 s</p></td>
+<td class="text-right"><p>0.502</p></td>
+<td class="text-right"><p>16.173</p></td>
+<td class="text-right"><p>1.323%</p></td>
 </tr>
 <tr class="row-even"><td class="text-right"><p>16</p></td>
-<td class="text-right"><p>4.64</p></td>
-<td class="text-right"><p>3.43 s</p></td>
-<td class="text-right"><p>0.830</p></td>
-<td class="text-right"><p>19.36</p></td>
-<td class="text-right"><p>1.31%</p></td>
+<td class="text-right"><p>4.760</p></td>
+<td class="text-right"><p>3.344 s</p></td>
+<td class="text-right"><p>0.812</p></td>
+<td class="text-right"><p>19.859</p></td>
+<td class="text-right"><p>1.348%</p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p>32</p></td>
-<td class="text-right"><p>4.43</p></td>
-<td class="text-right"><p>7.15 s</p></td>
-<td class="text-right"><p>1.797</p></td>
-<td class="text-right"><p>18.47</p></td>
-<td class="text-right"><p>1.27%</p></td>
+<td class="text-right"><p>4.988</p></td>
+<td class="text-right"><p>6.344 s</p></td>
+<td class="text-right"><p>1.596</p></td>
+<td class="text-right"><p>20.818</p></td>
+<td class="text-right"><p>1.331%</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Zero failed requests in every run, and no sample above 50% WER. c=1 is a 50-sample latency probe; the other rows use the full 1,088-sample set. WER is measured on the first run of each row.</p>
+<p>All requests completed successfully.</p>
 <ul class="simple">
 <li><p><strong>Concurrency</strong> — Maximum number of in-flight client requests (<code class="docutils literal notranslate"><span class="pre">--max-concurrency</span></code>).</p></li>
 <li><p><strong>Throughput (req/s)</strong> — Completed requests divided by total benchmark wall-clock time.</p></li>
@@ -892,7 +892,7 @@ dit_cache_tokens = patch_capacity × (hidden_patch_size + latent_patch_size)   #
 <span class="w">  </span>--model<span class="w"> </span>dots-studio/dots.tts-mf<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--ref-format<span class="w"> </span>references<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--base-url<span class="w"> </span>http://127.0.0.1:8000<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--lang<span class="w"> </span>en<span class="w"> </span>--max-concurrency<span class="w"> </span><span class="m">16</span><span class="w"> </span>--warmup<span class="w"> </span><span class="m">8</span><span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--lang<span class="w"> </span>en<span class="w"> </span>--max-concurrency<span class="w"> </span><span class="m">16</span><span class="w"> </span>--max-samples<span class="w"> </span><span class="m">1088</span><span class="w"> </span>--warmup<span class="w"> </span><span class="m">10</span><span class="w"> </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--generate-only<span class="w"> </span>--use-existing-server<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output-dir<span class="w"> </span>results/dots-seedtts-en-c16
 
@@ -998,7 +998,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 11, 2026.
+  Last updated on Aug 12, 2026.
   <br/>
 </p>
   </div>
