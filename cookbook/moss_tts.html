@@ -567,6 +567,36 @@ download the model (public, no token required):</p>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
+<p>The default model-specific layout keeps the FP32 reference encoder on CPU and
+loads the GPU vocoder in BF16. This removes one codec copy from GPU and halves
+the parameter memory of the remaining codec.</p>
+<p>For the bounded 32 GB qualification layout, use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>OpenMOSS-Team/MOSS-TTS-v1.5<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/moss_tts_32gb.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p>This configuration limits request concurrency and CUDA Graph capture to batch
+size 1. It completed startup and reference-less non-streaming synthesis on one
+RTX 5090 with 32,607 MiB, peaking at 26,939 MiB. Treat this as a measured
+qualification point rather than a general claim for every 32 GB card.</p>
+<p>For the directly measured 24 GB layout, use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>OpenMOSS-Team/MOSS-TTS-v1.5<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/moss_tts_24gb.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p>This profile completed startup, CUDA Graph capture, reference and
+reference-less synthesis, streaming, cancellation, and recovery on one RTX
+4090 with 24,564 MiB. Peak sampled VRAM was 23,251 MiB, leaving a minimum of
+960 MiB free. SGLang profiled an effective 6,708-token KV capacity below the
+requested <code class="docutils literal notranslate"><span class="pre">max_total_tokens:</span> <span class="pre">8192</span></code>. Treat this as a concurrency-1,
+CUDA-Graph-cap-1 qualification point, not a broader 24 GB capacity claim.</p>
+<p>Both policies can be changed explicitly through the preprocessing/vocoder
+<code class="docutils literal notranslate"><span class="pre">runtime_overrides</span></code> entries when profiling another layout. Explicit <code class="docutils literal notranslate"><span class="pre">device</span></code>
+values take precedence over the GPU selected by stage placement.</p>
 </section>
 <section id="synthesizing-speech">
 <h2>Synthesizing Speech<a class="headerlink" href="#synthesizing-speech" title="Link to this heading">#</a></h2>
