@@ -51,7 +51,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_usage/qwen3_omni';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=94f3a115"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
     <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -495,6 +495,7 @@
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-mode">Speech Mode</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Launch the Server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-stage-placement">Speech Stage Placement</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realtime-speech-with-server-vad">Realtime Speech with Server VAD</a></li>
 </ul>
 </li>
@@ -696,7 +697,7 @@ Capture-time incompatibilities also fall back to eager execution.</p>
 <span class="w">  </span>--gpu-thinker<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--gpu-talker<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--gpu-code-predictor<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--gpu-code2wav<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--gpu-code2wav<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8008</span>
 </pre></div>
 </div>
@@ -729,7 +730,7 @@ the value globally or per AR stage:</p>
 <span class="w">  </span>--gpu-thinker<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--gpu-talker<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--gpu-code-predictor<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--gpu-code2wav<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--gpu-code2wav<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8008</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--thinker-mem-fraction-static<span class="w"> </span><span class="m">0</span>.88<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--talker-mem-fraction-static<span class="w"> </span><span class="m">0</span>.88
@@ -755,6 +756,76 @@ pipeline YAML file instead, use the stage runtime override:</p>
 <span class="w">      </span><span class="nt">max_running_requests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
 </pre></div>
 </div>
+</section>
+<section id="speech-stage-placement">
+<h3>Speech Stage Placement<a class="headerlink" href="#speech-stage-placement" title="Link to this heading">#</a></h3>
+<p>At concurrency 8, the talker is the heaviest speech stage: it holds its GPU
+at about 86% median utilization. Give it a GPU of its own. The code2wav
+vocoder is light by comparison (9–13% median utilization) and shares the
+thinker’s GPU by default. That default holds only when the thinker stays on
+its own default GPU — a <code class="docutils literal notranslate"><span class="pre">--thinker-gpus</span></code> override moves the thinker alone,
+not code2wav, so pass <code class="docutils literal notranslate"><span class="pre">--code2wav-gpu</span></code> explicitly too if you relocate the
+thinker.</p>
+<p>This is the default topology for <code class="docutils literal notranslate"><span class="pre">sgl-omni</span> <span class="pre">serve</span></code> without GPU overrides:
+thinker alone, talker alone, code2wav on the thinker’s GPU. When code2wav
+shares the thinker’s GPU, the thinker’s auto-sized KV pool shrinks to make
+room for it — about 4.3 GiB smaller, measured on H200, since the vocoder
+itself needs roughly 1.4–1.6 GiB. That adjustment only happens for the
+auto-sized budget: an explicitly pinned <code class="docutils literal notranslate"><span class="pre">--thinker-mem-fraction-static</span></code>
+gets no automatic carve-out, so a tightly pinned fraction should leave
+headroom for code2wav.</p>
+<p>A concurrency-8 experiment held code2wav fixed on the thinker’s GPU and
+varied only the talker’s placement, from sharing the thinker’s GPU to
+having its own. Every concurrent metric improved:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>metric (concurrency 8, two measured pairs)</p></th>
+<th class="head"><p>talker shares the thinker’s GPU</p></th>
+<th class="head"><p>talker alone</p></th>
+<th class="head"><p>change</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>wall-clock time</p></td>
+<td><p>22.8–24.1 s</p></td>
+<td><p>20.2–20.7 s</p></td>
+<td><p>9–16% lower</p></td>
+</tr>
+<tr class="row-odd"><td><p>time to first audio (TTFA), p50</p></td>
+<td><p>1.43–1.71 s</p></td>
+<td><p>0.99–1.20 s</p></td>
+<td><p>16–42% lower</p></td>
+</tr>
+<tr class="row-even"><td><p>TTFA, p90</p></td>
+<td><p>2.66–2.70 s</p></td>
+<td><p>1.42–1.46 s</p></td>
+<td><p>46–47% lower</p></td>
+</tr>
+<tr class="row-odd"><td><p>end-to-end latency, p50</p></td>
+<td><p>10.04–10.05 s</p></td>
+<td><p>8.94–9.44 s</p></td>
+<td><p>6–11% lower</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A follow-up single-variable pair tested moving code2wav to its own GPU
+instead, with the talker already isolated in both arms. Wall-clock time and
+end-to-end latency were flat (−0.7% and −0.9%, well within noise for a
+single interleaved pair) — giving the vocoder a dedicated GPU bought
+nothing, which is why code2wav shares the thinker’s GPU instead of getting
+isolated like the talker.</p>
+<p>Single-stream traffic (one request at a time) sees a different trade-off.
+In the talker-placement experiment above, isolating the talker — moving it
+off the thinker’s GPU — made single-stream end-to-end latency 14–17% worse:
+with one request in flight there is no contention to escape, while that
+experiment’s thinker-to-talker handoff started crossing a device boundary.
+Single-stream TTFA still improved by about 30% (0.48–0.49 s to 0.34–0.35 s),
+because the talker no longer waits its turn on a shared GPU. Both the old
+and the new default layout already keep the thinker and talker on separate
+GPUs, so these numbers describe that experiment’s topology change, not the
+default code2wav placement. Streaming TTS workloads should prefer this
+layout regardless, since TTFA is the latency users notice first.</p>
 </section>
 <section id="realtime-speech-with-server-vad">
 <h3>Realtime Speech with Server VAD<a class="headerlink" href="#realtime-speech-with-server-vad" title="Link to this heading">#</a></h3>
@@ -1149,6 +1220,7 @@ with the AutoRound checkpoint:</p>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-mode">Speech Mode</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Launch the Server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-stage-placement">Speech Stage Placement</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realtime-speech-with-server-vad">Realtime Speech with Server VAD</a></li>
 </ul>
 </li>
