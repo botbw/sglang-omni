@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 13, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 14, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -533,13 +533,37 @@ first launch will prompt to execute the checkpoint’s bundled code.</p>
 Async decode is enabled by default for decode batches of at least two requests,
 allowing the shared one-step-lookahead path to overlap host-side result
 processing with the next GPU decode forward. Use <code class="docutils literal notranslate"><span class="pre">--decode-mode</span> <span class="pre">sync</span></code> to disable
-it, or tune the crossover with <code class="docutils literal notranslate"><span class="pre">--async-lookahead-min-batch-size</span></code>.</p>
+it, or tune the crossover with <code class="docutils literal notranslate"><span class="pre">--async-lookahead-min-batch-size</span></code>.
+Request concurrency and audio-encoder batching are controlled separately:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">max_running_requests</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">32</span></code> and limits requests admitted by the
+ASR scheduler.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">8</span></code> and limits the number of uncached
+audio items processed by one encoder forward. Larger cache-miss batches are
+processed as sequential encoder microbatches, so request concurrency does
+not directly create an unbounded encoder batch.</p></li>
+</ul>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
-<p>For example, force synchronous decode when comparing modes:</p>
+<p>The encoder activation memory is in addition to the model weights and KV
+cache. For long clips or high concurrency, leave additional runtime headroom
+by lowering SGLang’s static memory fraction, for example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.75<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mem_fraction_static</span></code> controls the SGLang memory budget for model weights and
+the KV-cache pool; it does not replace <code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code>. The two
+settings protect different parts of the serving path. ARK does not override
+SGLang’s default static memory fraction; use <code class="docutils literal notranslate"><span class="pre">0.75</span></code> when long clips or high
+concurrency still need additional encoder headroom and the reduced KV-cache
+capacity is acceptable.</p>
+<p>To force synchronous decode while comparing modes, use:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--decode-mode<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
@@ -790,7 +814,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 13, 2026.
+  Last updated on Aug 14, 2026.
   <br/>
 </p>
   </div>
