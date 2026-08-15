@@ -234,6 +234,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">General Usage</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/qwen3_omni.html">Omni Model Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage/audio_translations.html">Audio Translations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts.html">TTS Model Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts_process_topology.html">TTS Process Topology</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/omni_router.html">Omni Router Usage</a></li>
@@ -521,6 +522,7 @@ so it runs on the same single-stage batched ASR pipeline as Qwen3-ASR and reuses
 SGLang’s native Qwen2 decoder. The checkpoint’s tokenizer and config are loaded
 with <code class="docutils literal notranslate"><span class="pre">trust_remote_code=True</span></code> (the served <code class="docutils literal notranslate"><span class="pre">ServerArgs</span></code> also sets it), so the
 first launch will prompt to execute the checkpoint’s bundled code.</p>
+<p>ARK-ASR does not support <code class="docutils literal notranslate"><span class="pre">/v1/audio/translations</span></code>; that endpoint returns HTTP 400. Use <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
 <p>Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> by following <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a>, then download the model:</p>

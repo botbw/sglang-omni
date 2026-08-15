@@ -10,6 +10,8 @@ SGLang's native Qwen2 decoder. The checkpoint's tokenizer and config are loaded
 with `trust_remote_code=True` (the served `ServerArgs` also sets it), so the
 first launch will prompt to execute the checkpoint's bundled code.
 
+ARK-ASR does not support `/v1/audio/translations`; that endpoint returns HTTP 400. Use `/v1/audio/transcriptions`.
+
 ## Prerequisites
 
 Install `sglang-omni` by following [Installation](../get_started/installation.md), then download the model:

@@ -234,6 +234,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">General Usage</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/qwen3_omni.html">Omni Model Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage/audio_translations.html">Audio Translations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts.html">TTS Model Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts_process_topology.html">TTS Process Topology</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/omni_router.html">Omni Router Usage</a></li>
@@ -488,7 +489,10 @@
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-server-is">What This Server Is</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#start-the-server">Start the Server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#start-the-server">Start the Server</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unified-sglang-cli">Unified SGLang CLI</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#check-that-it-works">Check That It Works</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#health-check">Health check</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#list-the-served-model">List the served model</a></li>
@@ -551,6 +555,23 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">--log-level</span></code>: logging level for the server process</p></li>
 </ul>
 <p>If you already have a pipeline config file, you can also pass <code class="docutils literal notranslate"><span class="pre">--config</span> <span class="pre">path/to/config.yaml</span></code>. When the config file contains <code class="docutils literal notranslate"><span class="pre">model_path</span></code>, <code class="docutils literal notranslate"><span class="pre">--model-path</span></code> is optional and can be used as an override.</p>
+<section id="unified-sglang-cli">
+<h3>Unified SGLang CLI<a class="headerlink" href="#unified-sglang-cli" title="Link to this heading">#</a></h3>
+<p>When SGLang-Omni is installed alongside an SGLang release that supports serve
+backend plugins, the same server can be launched through the core executable:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sglang<span class="w"> </span>serve<span class="w"> </span>&lt;model-name-or-path&gt;<span class="w"> </span>--model-type<span class="w"> </span>omni<span class="w"> </span><span class="o">[</span>additional-arguments<span class="o">]</span>
+</pre></div>
+</div>
+<p>Config-only launches are supported as well:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sglang<span class="w"> </span>serve<span class="w"> </span>--model-type<span class="w"> </span>omni<span class="w"> </span>--config<span class="w"> </span>path/to/config.yaml
+</pre></div>
+</div>
+<p>SGLang-Omni intentionally does not install another <code class="docutils literal notranslate"><span class="pre">sglang</span></code> executable. It
+registers an <code class="docutils literal notranslate"><span class="pre">omni</span></code> serve backend with SGLang core, while <code class="docutils literal notranslate"><span class="pre">sgl-omni</span> <span class="pre">serve</span></code>
+remains available as a backward-compatible alias. Automatic Omni model
+detection is not enabled yet; select the backend explicitly with
+<code class="docutils literal notranslate"><span class="pre">--model-type</span> <span class="pre">omni</span></code>.</p>
+</section>
 </section>
 <section id="check-that-it-works">
 <h2>Check That It Works<a class="headerlink" href="#check-that-it-works" title="Link to this heading">#</a></h2>
@@ -734,7 +755,10 @@
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-this-server-is">What This Server Is</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#start-the-server">Start the Server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#start-the-server">Start the Server</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#unified-sglang-cli">Unified SGLang CLI</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#check-that-it-works">Check That It Works</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#health-check">Health check</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#list-the-served-model">List the served model</a></li>

@@ -234,6 +234,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">General Usage</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/qwen3_omni.html">Omni Model Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage/audio_translations.html">Audio Translations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts.html">TTS Model Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts_process_topology.html">TTS Process Topology</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/omni_router.html">Omni Router Usage</a></li>
@@ -512,6 +513,7 @@
   <section class="tex2jax_ignore mathjax_ignore" id="qwen3-asr">
 <h1>Qwen3-ASR<a class="headerlink" href="#qwen3-asr" title="Link to this heading">#</a></h1>
 <p><a class="reference external" href="https://huggingface.co/Qwen/Qwen3-ASR-1.7B">Qwen3-ASR</a> is an audio transcription model served through the OpenAI-compatible <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code> endpoint. It accepts one uploaded audio file per request and returns text.</p>
+<p>Qwen3-ASR does not support <code class="docutils literal notranslate"><span class="pre">/v1/audio/translations</span></code>; that endpoint returns HTTP 400. Use <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
 <p>Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> by following <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a>, then download the model:</p>

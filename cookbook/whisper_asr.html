@@ -234,6 +234,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">General Usage</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/qwen3_omni.html">Omni Model Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage/audio_translations.html">Audio Translations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts.html">TTS Model Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts_process_topology.html">TTS Process Topology</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/omni_router.html">Omni Router Usage</a></li>
@@ -492,6 +493,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#encoder-cuda-graph">Encoder CUDA Graph</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prefill-coalescing">Prefill Coalescing</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#translate-audio">Translate Audio</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#long-audio">Long Audio</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
@@ -579,6 +581,25 @@
 </pre></div>
 </div>
 </section>
+<section id="translate-audio">
+<h2>Translate Audio<a class="headerlink" href="#translate-audio" title="Link to this heading">#</a></h2>
+<p>Whisper multilingual checkpoints can translate source speech to English via
+<code class="docutils literal notranslate"><span class="pre">/v1/audio/translations</span></code>. Use a multilingual, non-turbo checkpoint: <code class="docutils literal notranslate"><span class="pre">*.en</span></code>
+checkpoints have no translate task, and <code class="docutils literal notranslate"><span class="pre">whisper-large-v3-turbo</span></code> was distilled
+without it.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/translations<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">model</span><span class="o">=</span>openai/whisper-large-v3<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">file</span><span class="o">=</span>@tests/data/query_to_cars.wav<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">language</span><span class="o">=</span>fr<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">response_format</span><span class="o">=</span>json
+</pre></div>
+</div>
+<p>For this endpoint, <code class="docutils literal notranslate"><span class="pre">language</span></code> is an optional source-language hint and a
+<strong>SGLang-Omni extension</strong>. OpenAI’s official audio translations request schema
+does not include <code class="docutils literal notranslate"><span class="pre">language</span></code>; the translation target is English in both APIs.
+See the <a class="reference internal" href="../basic_usage/audio_translations.html"><span class="std std-doc">audio translation support matrix</span></a>
+for response formats and other ASR models.</p>
+</section>
 <section id="request-parameters">
 <h2>Request Parameters<a class="headerlink" href="#request-parameters" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -603,7 +624,7 @@
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">language</span></code></p></td>
 <td><p>string</p></td>
 <td><p>unset</p></td>
-<td><p>Optional language hint</p></td>
+<td><p>Optional source-language hint; on translations this is a SGLang-Omni extension</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code></p></td>
 <td><p>string</p></td>
@@ -613,7 +634,7 @@
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
 <td><p>string</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
-<td><p>Use <code class="docutils literal notranslate"><span class="pre">json</span></code> for the current Whisper path</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">json</span></code>, <code class="docutils literal notranslate"><span class="pre">verbose_json</span></code>, or raw <code class="docutils literal notranslate"><span class="pre">text</span></code>; translation <code class="docutils literal notranslate"><span class="pre">srt</span></code>/<code class="docutils literal notranslate"><span class="pre">vtt</span></code> require segment timestamps and return HTTP 400</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p>float</p></td>
@@ -623,11 +644,10 @@
 </tbody>
 </table>
 </div>
-<p>The request builder also supports <code class="docutils literal notranslate"><span class="pre">task</span></code> (<code class="docutils literal notranslate"><span class="pre">transcribe</span></code> by default) and
-<code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code>, but the public transcription endpoint currently exposes only
-the fields above. The route uses the ASR stage default unless the pipeline is
-configured another way. For smoke tests, keep the request minimal and use
-<code class="docutils literal notranslate"><span class="pre">response_format=json</span></code>.</p>
+<p>The serving route selects the internal <code class="docutils literal notranslate"><span class="pre">task</span></code> from the endpoint (<code class="docutils literal notranslate"><span class="pre">transcribe</span></code>
+or <code class="docutils literal notranslate"><span class="pre">translate</span></code>); it is not a public form field. The route uses the ASR stage
+default unless the pipeline is configured another way. For smoke tests, keep
+the request minimal and use <code class="docutils literal notranslate"><span class="pre">response_format=json</span></code>.</p>
 </section>
 <section id="long-audio">
 <h2>Long Audio<a class="headerlink" href="#long-audio" title="Link to this heading">#</a></h2>
@@ -793,13 +813,13 @@ declares in code (<code class="docutils literal notranslate"><span class="pre">W
 <ul class="simple">
 <li><p>This path is experimental and not yet correctness-validated. Prefer Qwen3-ASR
 for validated ASR serving.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">verbose_json</span></code> returns a single segment spanning the audio duration; <code class="docutils literal notranslate"><span class="pre">srt</span></code>
+and <code class="docutils literal notranslate"><span class="pre">vtt</span></code> are not supported and return HTTP 400.</p></li>
 <li><p>Encoder CUDA Graph is enabled by default and requires SGLang generation CUDA
 Graph to remain enabled. Validate the selected buckets before production use.</p></li>
 <li><p>Chunked prefill is disabled because the Whisper encoder prefix must be
 admitted atomically. Requests that exceed the current prefill budget wait
 for the next batch instead of splitting the encoder prefix.</p></li>
-<li><p>Use <code class="docutils literal notranslate"><span class="pre">response_format=json</span></code>; other response formats are not validated for this
-experimental path.</p></li>
 <li><p>First startup can take several minutes.</p></li>
 <li><p>The endpoint accepts one uploaded file per request.</p></li>
 <li><p>Audio is resampled to 16 kHz before transcription.</p></li>
@@ -865,6 +885,7 @@ contain Whisper special tokens.</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#encoder-cuda-graph">Encoder CUDA Graph</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prefill-coalescing">Prefill Coalescing</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#translate-audio">Translate Audio</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#long-audio">Long Audio</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
