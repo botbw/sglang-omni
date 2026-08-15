@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 14, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 15, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -686,6 +686,11 @@ for a full Python raw PCM consumer.</p>
 streaming for both this HTTP endpoint and <code class="docutils literal notranslate"><span class="pre">/v1/audio/speech/stream</span></code> WebSocket
 sessions with <code class="docutils literal notranslate"><span class="pre">stream_audio=true</span></code>. CustomVoice and VoiceDesign remain
 non-streaming.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code> is omitted, Qwen3-TTS Base defaults to <code class="docutils literal notranslate"><span class="pre">8</span></code>
+codec frames for the first vocoder chunk so concurrent streams stay continuous.
+Pass a smaller value only when trading continuity for lower time-to-first-audio.
+Utterances that finish in fewer than <code class="docutils literal notranslate"><span class="pre">8</span></code> generated codec frames never reach the
+first chunk, so their audio arrives complete in a single final flush.</p>
 </section>
 </section>
 <section id="generation-parameters">
@@ -749,6 +754,10 @@ non-streaming.</p>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stream</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
 <td><p>Stream raw PCM audio chunks</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">8</span></code> (model default when omitted)</p></td>
+<td><p>First Base streaming vocoder chunk size in codec frames. Smaller values lower TTFA but underrun more easily; <code class="docutils literal notranslate"><span class="pre">0</span></code> uses the steady stride from the start</p></td>
 </tr>
 </tbody>
 </table>
@@ -935,7 +944,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 14, 2026.
+  Last updated on Aug 15, 2026.
   <br/>
 </p>
   </div>
