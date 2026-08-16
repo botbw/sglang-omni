@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.1" />
-    <meta name="docbuild:last-update" content="Aug 15, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 16, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -498,6 +498,10 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#audio-handling">Audio Handling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dtype">dtype</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#marker-token-suppression">Marker-Token Suppression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pre-lm-audio-encoder">Pre-LM Audio Encoder</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-this-relates-to-encoder-max-batch-size">How this relates to <code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#known-limitations">Known Limitations</a></li>
 </ul>
@@ -696,6 +700,80 @@ adversarial / OOD audio. The request builder defensively suppresses every reserv
 marker (all special + <code class="docutils literal notranslate"><span class="pre">&lt;...&gt;</span></code>-added ids except EOS) at sampling via <code class="docutils literal notranslate"><span class="pre">logit_bias</span></code>
 and strips them on decode. This is a verified no-op on clean speech.</p>
 </section>
+<section id="pre-lm-audio-encoder">
+<h2>Pre-LM Audio Encoder<a class="headerlink" href="#pre-lm-audio-encoder" title="Link to this heading">#</a></h2>
+<p>Audio encoding runs <strong>before LM admission</strong>, not inside the LM forward. The
+audio encoder executes at request-build time on a dedicated worker thread and
+CUDA stream, and a request is admitted only once its complete LM-ready
+embedding is attached (<code class="docutils literal notranslate"><span class="pre">MultimodalDataItem.precomputed_embeddings</span></code>). Without
+this, every admission stalls the running decode batch for the whole encoder
+forward on the scheduler thread and the default stream.</p>
+<p>Encoded embeddings are cached in a bounded CPU LRU keyed on the audio
+fingerprint plus a namespace digest of the encoder pipeline (checkpoint path,
+model config including <code class="docutils literal notranslate"><span class="pre">merge_factor</span></code>, mel front-end fields, dtype, attention
+backend). Changing any of those re-keys the cache rather than serving a stale
+embedding. Concurrent requests for identical audio are deduplicated
+single-flight, so the clip is encoded once.</p>
+<p>Request building submits encoder work without waiting for the GPU. The
+scheduler holds the built LM request outside its waiting queue until that
+request’s encoder future completes, then performs normal admission on the
+scheduler thread. A bounded encoder queue applies backpressure before mel
+tensors can accumulate without limit.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>knob</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">enable_pre_lm_encoder</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td><p>Off falls back to encoding inside the LM forward.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pre_lm_cache_max_entries</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">4096</span></code></p></td>
+<td><p>Max cached embeddings.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pre_lm_cache_size_bytes</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">GiB</span></code></p></td>
+<td><p>Byte budget; LRU evicts past it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pre_lm_max_batch_size</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">8</span></code></p></td>
+<td><p>Max queued requests drained into one <code class="docutils literal notranslate"><span class="pre">get_audio_feature</span></code> call.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">pre_lm_max_batch_wait_ms</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+<td><p>Batch-formation window. <code class="docutils literal notranslate"><span class="pre">0</span></code> is a greedy drain: items queued while the previous group encoded are taken instantly, so an idle-arrival request pays no batching latency.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pre_lm_max_pending</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">32</span></code></p></td>
+<td><p>Max encoder items waiting behind the active batch.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="how-this-relates-to-encoder-max-batch-size">
+<h3>How this relates to <code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code><a class="headerlink" href="#how-this-relates-to-encoder-max-batch-size" title="Link to this heading">#</a></h3>
+<p>The two batch knobs act at different levels and both stay in force:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pre_lm_max_batch_size</span></code> decides <strong>how many queued requests are handed to one
+<code class="docutils literal notranslate"><span class="pre">get_audio_feature</span></code> call</strong>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code> decides <strong>how that call is executed</strong> — it pads and
+masks the group, then splits it into sequential microbatches to bound
+encoder activation memory.</p></li>
+</ul>
+<p>Both default to <code class="docutils literal notranslate"><span class="pre">8</span></code>, so one drained group is exactly one encoder microbatch.
+Raising <code class="docutils literal notranslate"><span class="pre">pre_lm_max_batch_size</span></code> above <code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code> turns a group
+into several bounded forwards; it never widens a single forward, so it does
+not change peak encoder activation memory.</p>
+<p><code class="docutils literal notranslate"><span class="pre">request_build_max_workers</span></code> defaults to <strong>2</strong> and
+<code class="docutils literal notranslate"><span class="pre">request_build_max_pending</span></code> to <strong>16</strong>. These workers only perform CPU request
+construction; encoder concurrency and backpressure are owned by the separate
+pre-LM queue.</p>
+</section>
+</section>
 <section id="benchmarking">
 <h2>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">#</a></h2>
 <p>Use <code class="docutils literal notranslate"><span class="pre">benchmarks/eval/benchmark_asr_seedtts.py</span></code> to sweep ASR concurrency on
@@ -782,6 +860,10 @@ ARK-ASR currently ignores it (the transcription instruction is fixed).</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#audio-handling">Audio Handling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dtype">dtype</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#marker-token-suppression">Marker-Token Suppression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pre-lm-audio-encoder">Pre-LM Audio Encoder</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-this-relates-to-encoder-max-batch-size">How this relates to <code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#known-limitations">Known Limitations</a></li>
 </ul>
@@ -817,7 +899,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 15, 2026.
+  Last updated on Aug 16, 2026.
   <br/>
 </p>
   </div>
