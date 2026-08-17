@@ -576,19 +576,19 @@
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;tests/data/query_to_cars.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"tests/data/query_to_cars.wav"</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-        <span class="s2">&quot;http://localhost:8000/v1/audio/transcriptions&quot;</span><span class="p">,</span>
+        <span class="s2">"http://localhost:8000/v1/audio/transcriptions"</span><span class="p">,</span>
         <span class="n">data</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;openai/whisper-large-v3&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;response_format&quot;</span><span class="p">:</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span>
+            <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"openai/whisper-large-v3"</span><span class="p">,</span>
+            <span class="s2">"response_format"</span><span class="p">:</span> <span class="s2">"json"</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="n">files</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;query_to_cars.wav&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="s2">&quot;audio/wav&quot;</span><span class="p">)},</span>
+        <span class="n">files</span><span class="o">=</span><span class="p">{</span><span class="s2">"file"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"query_to_cars.wav"</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="s2">"audio/wav"</span><span class="p">)},</span>
         <span class="n">timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
     <span class="p">)</span>
 
 <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;text&quot;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">"text"</span><span class="p">])</span>
 </pre></div>
 </div>
 </section>
@@ -709,16 +709,16 @@ declares in code (<code class="docutils literal notranslate"><span class="pre">W
 </div>
 <p>To reproduce the async-decode comparison below, resolve the pinned checkpoint and start each mode separately on the same GPU:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL_REVISION</span><span class="o">=</span>06f233fe06e710322aca913c1bc4249a0d71fce1
-<span class="nv">MODEL_PATH</span><span class="o">=</span><span class="k">$(</span>hf<span class="w"> </span>download<span class="w"> </span>openai/whisper-large-v3<span class="w"> </span>--revision<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MODEL_REVISION</span><span class="s2">&quot;</span><span class="k">)</span>
+<span class="nv">MODEL_PATH</span><span class="o">=</span><span class="k">$(</span>hf<span class="w"> </span>download<span class="w"> </span>openai/whisper-large-v3<span class="w"> </span>--revision<span class="w"> </span><span class="s2">"</span><span class="nv">$MODEL_REVISION</span><span class="s2">"</span><span class="k">)</span>
 
 <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--model-path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MODEL_PATH</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span><span class="s2">"</span><span class="nv">$MODEL_PATH</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.30<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 
 <span class="c1"># Replace the command above with this one for the synchronous baseline.</span>
 <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--model-path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$MODEL_PATH</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span><span class="s2">"</span><span class="nv">$MODEL_PATH</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.30<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--decode-mode<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>

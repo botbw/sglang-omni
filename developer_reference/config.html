@@ -528,43 +528,43 @@ belongs in stages, schedulers, model runners, and model-local payload logic.</p>
 <span class="c1"># `Qwen3OmniSpeechColocatedPipelineConfig` for that pattern).</span>
 <span class="n">stages</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">StageConfig</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;preprocessing&quot;</span><span class="p">,</span>
-        <span class="n">process</span><span class="o">=</span><span class="s2">&quot;preprocessing&quot;</span><span class="p">,</span>
-        <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_preprocessing_executor&quot;</span><span class="p">,</span>
-        <span class="nb">next</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;audio_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;mm_aggregate&quot;</span><span class="p">],</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"preprocessing"</span><span class="p">,</span>
+        <span class="n">process</span><span class="o">=</span><span class="s2">"preprocessing"</span><span class="p">,</span>
+        <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_preprocessing_executor"</span><span class="p">,</span>
+        <span class="nb">next</span><span class="o">=</span><span class="p">[</span><span class="s2">"image_encoder"</span><span class="p">,</span> <span class="s2">"audio_encoder"</span><span class="p">,</span> <span class="s2">"mm_aggregate"</span><span class="p">],</span>
         <span class="n">project_payload</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;image_encoder&quot;</span><span class="p">:</span> <span class="s2">&quot;...project_preprocessing_to_image_encoder&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;audio_encoder&quot;</span><span class="p">:</span> <span class="s2">&quot;...project_preprocessing_to_audio_encoder&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;mm_aggregate&quot;</span><span class="p">:</span> <span class="s2">&quot;...project_preprocessing_to_mm_aggregate&quot;</span><span class="p">,</span>
+            <span class="s2">"image_encoder"</span><span class="p">:</span> <span class="s2">"...project_preprocessing_to_image_encoder"</span><span class="p">,</span>
+            <span class="s2">"audio_encoder"</span><span class="p">:</span> <span class="s2">"...project_preprocessing_to_audio_encoder"</span><span class="p">,</span>
+            <span class="s2">"mm_aggregate"</span><span class="p">:</span> <span class="s2">"...project_preprocessing_to_mm_aggregate"</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">),</span>
     <span class="n">StageConfig</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mm_aggregate&quot;</span><span class="p">,</span>
-        <span class="n">process</span><span class="o">=</span><span class="s2">&quot;mm_aggregate&quot;</span><span class="p">,</span>
-        <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_aggregate_executor&quot;</span><span class="p">,</span>
-        <span class="n">wait_for</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;preprocessing&quot;</span><span class="p">,</span> <span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;audio_encoder&quot;</span><span class="p">],</span>
-        <span class="n">merge_fn</span><span class="o">=</span><span class="s2">&quot;...merge_for_thinker&quot;</span><span class="p">,</span>
-        <span class="nb">next</span><span class="o">=</span><span class="s2">&quot;thinker&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"mm_aggregate"</span><span class="p">,</span>
+        <span class="n">process</span><span class="o">=</span><span class="s2">"mm_aggregate"</span><span class="p">,</span>
+        <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_aggregate_executor"</span><span class="p">,</span>
+        <span class="n">wait_for</span><span class="o">=</span><span class="p">[</span><span class="s2">"preprocessing"</span><span class="p">,</span> <span class="s2">"image_encoder"</span><span class="p">,</span> <span class="s2">"audio_encoder"</span><span class="p">],</span>
+        <span class="n">merge_fn</span><span class="o">=</span><span class="s2">"...merge_for_thinker"</span><span class="p">,</span>
+        <span class="nb">next</span><span class="o">=</span><span class="s2">"thinker"</span><span class="p">,</span>
     <span class="p">),</span>
     <span class="n">StageConfig</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;thinker&quot;</span><span class="p">,</span>
-        <span class="n">process</span><span class="o">=</span><span class="s2">&quot;thinker&quot;</span><span class="p">,</span>
-        <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_sglang_thinker_executor_from_config&quot;</span><span class="p">,</span>
-        <span class="n">factory_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;speech_enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"thinker"</span><span class="p">,</span>
+        <span class="n">process</span><span class="o">=</span><span class="s2">"thinker"</span><span class="p">,</span>
+        <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_sglang_thinker_executor_from_config"</span><span class="p">,</span>
+        <span class="n">factory_args</span><span class="o">=</span><span class="p">{</span><span class="s2">"speech_enabled"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
         <span class="n">gpu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="nb">next</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;decode&quot;</span><span class="p">,</span> <span class="s2">&quot;talker_ar&quot;</span><span class="p">],</span>
-        <span class="n">stream_to</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;talker_ar&quot;</span><span class="p">],</span>
+        <span class="nb">next</span><span class="o">=</span><span class="p">[</span><span class="s2">"decode"</span><span class="p">,</span> <span class="s2">"talker_ar"</span><span class="p">],</span>
+        <span class="n">stream_to</span><span class="o">=</span><span class="p">[</span><span class="s2">"talker_ar"</span><span class="p">],</span>
     <span class="p">),</span>
     <span class="n">StageConfig</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;decode&quot;</span><span class="p">,</span>
-        <span class="n">process</span><span class="o">=</span><span class="s2">&quot;decode&quot;</span><span class="p">,</span>
-        <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_decode_executor&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"decode"</span><span class="p">,</span>
+        <span class="n">process</span><span class="o">=</span><span class="s2">"decode"</span><span class="p">,</span>
+        <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_decode_executor"</span><span class="p">,</span>
         <span class="n">terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">),</span>
     <span class="n">StageConfig</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;code2wav&quot;</span><span class="p">,</span>
-        <span class="n">process</span><span class="o">=</span><span class="s2">&quot;code2wav&quot;</span><span class="p">,</span>
-        <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_code2wav_scheduler&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"code2wav"</span><span class="p">,</span>
+        <span class="n">process</span><span class="o">=</span><span class="s2">"code2wav"</span><span class="p">,</span>
+        <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_code2wav_scheduler"</span><span class="p">,</span>
         <span class="n">gpu</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">),</span>
@@ -824,8 +824,8 @@ runs one or more non-TP stages in the same event loop.</p>
 <p>Tensor parallelism inside a stage is orthogonal to pipeline parallelism between
 stages.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">StageConfig</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;thinker&quot;</span><span class="p">,</span>
-    <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"thinker"</span><span class="p">,</span>
+    <span class="n">factory</span><span class="o">=</span><span class="s2">"..."</span><span class="p">,</span>
     <span class="n">gpu</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
     <span class="n">tp_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
 <span class="p">)</span>

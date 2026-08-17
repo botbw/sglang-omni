@@ -611,7 +611,7 @@ selects <code class="docutils literal notranslate"><span class="pre">+xpu</span>
 <section id="verify">
 <h2>Verify<a class="headerlink" href="#verify" title="Link to this heading">#</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># import works from anywhere now (package installed, not just cwd-on-path)</span>
-python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import sglang_omni, torch; print(sglang_omni.__file__, torch.__version__)&quot;</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import sglang_omni, torch; print(sglang_omni.__file__, torch.__version__)"</span>
 which<span class="w"> </span>sgl-omni
 
 <span class="c1"># device-layer unit tests (CPU, no GPU) — needs pytest, which ships in the</span>
@@ -630,7 +630,7 @@ on the library path, conflicting with the bundled <code class="docutils literal 
 <p>No extra environment variables are needed — the XPU backend is auto-detected. If a Triton JIT
 build reports <code class="docutils literal notranslate"><span class="pre">fatal</span> <span class="pre">error:</span> <span class="pre">sycl/sycl.hpp:</span> <span class="pre">No</span> <span class="pre">such</span> <span class="pre">file</span> <span class="pre">or</span> <span class="pre">directory</span></code>, point the compiler at the
 <code class="docutils literal notranslate"><span class="pre">intel-sycl-rt</span></code> wheel’s headers:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CPATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import sysconfig; print(sysconfig.get_paths()[&quot;include&quot;])&#39;</span><span class="k">)</span><span class="s2">&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">CPATH</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'import sysconfig; print(sysconfig.get_paths()["include"])'</span><span class="k">)</span><span class="s2">"</span>
 </pre></div>
 </div>
 </section>
@@ -639,7 +639,7 @@ build reports <code class="docutils literal notranslate"><span class="pre">fatal
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>/path/to/Qwen3-ASR-1.7B<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
 <span class="c1"># transcribe:</span>
 curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/transcriptions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;file=@sample.wav&quot;</span><span class="w"> </span>-F<span class="w"> </span><span class="s2">&quot;model=/path/to/Qwen3-ASR-1.7B&quot;</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="s2">"file=@sample.wav"</span><span class="w"> </span>-F<span class="w"> </span><span class="s2">"model=/path/to/Qwen3-ASR-1.7B"</span>
 </pre></div>
 </div>
 </section>
@@ -659,10 +659,10 @@ pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>/path/to/Qwen3-TTS-12Hz-1.7B-Base<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
 <span class="c1"># Base checkpoint clones a reference voice — pass ref_audio (+ ref_text):</span>
 curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;model&quot;:&quot;/path/to/Qwen3-TTS-12Hz-1.7B-Base&quot;,&quot;input&quot;:&quot;Hello from Intel XPU.&quot;,</span>
-<span class="s1">       &quot;voice&quot;:&quot;default&quot;,&quot;ref_audio&quot;:&quot;/path/to/ref.wav&quot;,&quot;ref_text&quot;:&quot;reference transcript&quot;,</span>
-<span class="s1">       &quot;response_format&quot;:&quot;wav&quot;}&#39;</span><span class="w"> </span>-o<span class="w"> </span>out.wav
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"model":"/path/to/Qwen3-TTS-12Hz-1.7B-Base","input":"Hello from Intel XPU.",</span>
+<span class="s1">       "voice":"default","ref_audio":"/path/to/ref.wav","ref_text":"reference transcript",</span>
+<span class="s1">       "response_format":"wav"}'</span><span class="w"> </span>-o<span class="w"> </span>out.wav
 </pre></div>
 </div>
 </section>
@@ -678,9 +678,9 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span c
 <span class="w">  </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
 <span class="c1"># chat:</span>
 curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/chat/completions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;model&quot;:&quot;/path/to/Qwen3-Omni-30B-A3B-Instruct&quot;,</span>
-<span class="s1">       &quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:&quot;What is Intel XPU?&quot;}],&quot;max_tokens&quot;:64}&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"model":"/path/to/Qwen3-Omni-30B-A3B-Instruct",</span>
+<span class="s1">       "messages":[{"role":"user","content":"What is Intel XPU?"}],"max_tokens":64}'</span>
 </pre></div>
 </div>
 <p>Health check for any of the above: <code class="docutils literal notranslate"><span class="pre">curl</span> <span class="pre">http://localhost:8000/v1/models</span></code>.</p>

@@ -530,13 +530,13 @@ deeper kernel investigation.</p>
 <p>Every instrumentation point appends a single line of JSON to a per-process
 JSONL file. The shape:</p>
 <div class="highlight-jsonc notranslate"><div class="highlight"><pre><span></span>{
-  &quot;request_id&quot;: &quot;req-123&quot;,
-  &quot;stage&quot;: &quot;thinker&quot;,
-  &quot;event_name&quot;: &quot;scheduler_first_emit&quot;,
-  &quot;timestamp_ns&quot;: 1717000000123456789,
-  &quot;run_id&quot;: &quot;demo-run&quot;,
-  &quot;pid&quot;: 42,
-  &quot;metadata&quot;: {&quot;chunk_id&quot;: 0}
+  "request_id": "req-123",
+  "stage": "thinker",
+  "event_name": "scheduler_first_emit",
+  "timestamp_ns": 1717000000123456789,
+  "run_id": "demo-run",
+  "pid": 42,
+  "metadata": {"chunk_id": 0}
 }
 </pre></div>
 </div>
@@ -697,7 +697,7 @@ consulted when the caller passes <code class="docutils literal notranslate"><spa
 <p>To bind / unbind manually from your own thread:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sglang_omni.profiler.event_recorder</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_active_stage</span><span class="p">,</span> <span class="n">reset_active_stage</span>
 
-<span class="n">token</span> <span class="o">=</span> <span class="n">set_active_stage</span><span class="p">(</span><span class="s2">&quot;my_stage&quot;</span><span class="p">)</span>
+<span class="n">token</span> <span class="o">=</span> <span class="n">set_active_stage</span><span class="p">(</span><span class="s2">"my_stage"</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="o">...</span>
 <span class="k">finally</span><span class="p">:</span>
@@ -738,8 +738,8 @@ paying for a kernel trace.</p>
 <h2>Generating reports<a class="headerlink" href="#generating-reports" title="Link to this heading">#</a></h2>
 <p>Use the views module directly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sglang_omni.profiler.views</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_report</span>
-<span class="n">report</span> <span class="o">=</span> <span class="n">build_report</span><span class="p">(</span><span class="s2">&quot;/tmp/profiles/demo-run/events&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="p">[</span><span class="s2">&quot;request_count&quot;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">report</span><span class="p">[</span><span class="s2">&quot;stage_breakdown&quot;</span><span class="p">]))</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">build_report</span><span class="p">(</span><span class="s2">"/tmp/profiles/demo-run/events"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">report</span><span class="p">[</span><span class="s2">"request_count"</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">report</span><span class="p">[</span><span class="s2">"stage_breakdown"</span><span class="p">]))</span>
 </pre></div>
 </div>
 <p>…or via the CLI:</p>
@@ -837,9 +837,9 @@ multi-GB trace — only opt in when you need that specific information.</p>
 </div>
 <p>Example: record cheap events on every request without a kernel trace:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/start_request_profile<span class="w"> </span><span class="se">\</span>
-<span class="w">     </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;run_id&quot;:&quot;demo&quot;,&quot;event_dir&quot;:&quot;/tmp/profiles/demo/events&quot;}&#39;</span>
+<span class="w">     </span>-d<span class="w"> </span><span class="s1">'{"run_id":"demo","event_dir":"/tmp/profiles/demo/events"}'</span>
 <span class="c1"># … run traffic …</span>
-curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/stop_request_profile<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;{}&#39;</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/stop_request_profile<span class="w"> </span>-d<span class="w"> </span><span class="s1">'{}'</span>
 python<span class="w"> </span>-m<span class="w"> </span>sglang_omni.profiler<span class="w"> </span>/tmp/profiles/demo/events<span class="w"> </span>--format<span class="w"> </span>table
 </pre></div>
 </div>

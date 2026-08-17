@@ -646,12 +646,12 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\<
 <li><p>Use curl</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;Hello, how are you?&quot;</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "Hello, how are you?"</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -661,15 +661,15 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\<
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s2">&quot;http://localhost:8000/v1/audio/speech&quot;</span><span class="p">,</span>
+    <span class="s2">"http://localhost:8000/v1/audio/speech"</span><span class="p">,</span>
     <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;bosonai/higgs-audio-v3-tts-4b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;voice&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, how are you?&quot;</span><span class="p">,</span>
+        <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"bosonai/higgs-audio-v3-tts-4b"</span><span class="p">,</span>
+        <span class="s2">"voice"</span><span class="p">:</span> <span class="s2">"default"</span><span class="p">,</span>
+        <span class="s2">"input"</span><span class="p">:</span> <span class="s2">"Hello, how are you?"</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">)</span>
 <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;output.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"output.wav"</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -685,19 +685,19 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\<
 <li><p>Use curl</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;Have a nice day and enjoy south california sunshine.&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/male-voice.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;Hey, Adam here. Let&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;s create something that feels real, sounds human, and connects every time.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "Have a nice day and enjoy south california sunshine.",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "docs/_static/audio/male-voice.wav",</span>
+<span class="s1">      "text": "Hey, Adam here. Let'</span><span class="se">\'</span><span class="s1">'s create something that feels real, sounds human, and connects every time."</span>
 <span class="s1">    }],</span>
-<span class="s1">    &quot;temperature&quot;: 0.8,</span>
-<span class="s1">    &quot;top_k&quot;: 50,</span>
-<span class="s1">    &quot;max_new_tokens&quot;: 1024</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">    "temperature": 0.8,</span>
+<span class="s1">    "top_k": 50,</span>
+<span class="s1">    "max_new_tokens": 1024</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -707,22 +707,22 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\<
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s2">&quot;http://localhost:8000/v1/audio/speech&quot;</span><span class="p">,</span>
+    <span class="s2">"http://localhost:8000/v1/audio/speech"</span><span class="p">,</span>
     <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;bosonai/higgs-audio-v3-tts-4b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;voice&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;Have a nice day and enjoy south california sunshine.&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[{</span>
-            <span class="s2">&quot;audio_path&quot;</span><span class="p">:</span> <span class="s2">&quot;docs/_static/audio/male-voice.wav&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hey, Adam here. Let&#39;s create something that feels real, sounds human, and connects every time.&quot;</span><span class="p">,</span>
+        <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"bosonai/higgs-audio-v3-tts-4b"</span><span class="p">,</span>
+        <span class="s2">"voice"</span><span class="p">:</span> <span class="s2">"default"</span><span class="p">,</span>
+        <span class="s2">"input"</span><span class="p">:</span> <span class="s2">"Have a nice day and enjoy south california sunshine."</span><span class="p">,</span>
+        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[{</span>
+            <span class="s2">"audio_path"</span><span class="p">:</span> <span class="s2">"docs/_static/audio/male-voice.wav"</span><span class="p">,</span>
+            <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Hey, Adam here. Let's create something that feels real, sounds human, and connects every time."</span><span class="p">,</span>
         <span class="p">}],</span>
-        <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
-        <span class="s2">&quot;top_k&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
-        <span class="s2">&quot;max_new_tokens&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="s2">"temperature"</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="s2">"top_k"</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+        <span class="s2">"max_new_tokens"</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">)</span>
 <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;output.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"output.wav"</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -749,18 +749,18 @@ headers.</p>
 </ol>
 <p>Set <code class="docutils literal notranslate"><span class="pre">&quot;stream&quot;:</span> <span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;response_format&quot;:</span> <span class="pre">&quot;pcm&quot;</span></code> in your request body:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/male-voice.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;Hey, Adam here. Let&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;s create something that feels real, sounds human, and connects every time.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "Get the trust fund to the bank early.",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "docs/_static/audio/male-voice.wav",</span>
+<span class="s1">      "text": "Hey, Adam here. Let'</span><span class="se">\'</span><span class="s1">'s create something that feels real, sounds human, and connects every time."</span>
 <span class="s1">    }],</span>
-<span class="s1">    &quot;stream&quot;: true,</span>
-<span class="s1">    &quot;response_format&quot;: &quot;pcm&quot;</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">    "stream": true,</span>
+<span class="s1">    "response_format": "pcm"</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.pcm
 </pre></div>
 </div>
@@ -783,35 +783,35 @@ would pipe the chunks directly to an audio player (e.g., via <code class="docuti
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="n">REFERENCE_AUDIO</span> <span class="o">=</span> <span class="s2">&quot;docs/_static/audio/male-voice.wav&quot;</span>
-<span class="n">REFERENCE_TEXT</span> <span class="o">=</span> <span class="s2">&quot;Hey, Adam here. Let&#39;s create something that feels real, sounds human, and connects every time.&quot;</span>
-<span class="n">SPEECH_INPUT</span> <span class="o">=</span> <span class="s2">&quot;Get the trust fund to the bank early.&quot;</span>
+<span class="n">REFERENCE_AUDIO</span> <span class="o">=</span> <span class="s2">"docs/_static/audio/male-voice.wav"</span>
+<span class="n">REFERENCE_TEXT</span> <span class="o">=</span> <span class="s2">"Hey, Adam here. Let's create something that feels real, sounds human, and connects every time."</span>
+<span class="n">SPEECH_INPUT</span> <span class="o">=</span> <span class="s2">"Get the trust fund to the bank early."</span>
 
 <span class="k">with</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s2">&quot;http://localhost:8000/v1/audio/speech&quot;</span><span class="p">,</span>
+    <span class="s2">"http://localhost:8000/v1/audio/speech"</span><span class="p">,</span>
     <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;bosonai/higgs-audio-v3-tts-4b&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;voice&quot;</span><span class="p">:</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="n">SPEECH_INPUT</span><span class="p">,</span>
-        <span class="s2">&quot;references&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;audio_path&quot;</span><span class="p">:</span> <span class="n">REFERENCE_AUDIO</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">REFERENCE_TEXT</span><span class="p">}],</span>
-        <span class="s2">&quot;stream&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="s2">&quot;response_format&quot;</span><span class="p">:</span> <span class="s2">&quot;pcm&quot;</span><span class="p">,</span>
+        <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"bosonai/higgs-audio-v3-tts-4b"</span><span class="p">,</span>
+        <span class="s2">"voice"</span><span class="p">:</span> <span class="s2">"default"</span><span class="p">,</span>
+        <span class="s2">"input"</span><span class="p">:</span> <span class="n">SPEECH_INPUT</span><span class="p">,</span>
+        <span class="s2">"references"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"audio_path"</span><span class="p">:</span> <span class="n">REFERENCE_AUDIO</span><span class="p">,</span> <span class="s2">"text"</span><span class="p">:</span> <span class="n">REFERENCE_TEXT</span><span class="p">}],</span>
+        <span class="s2">"stream"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">"response_format"</span><span class="p">:</span> <span class="s2">"pcm"</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
     <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
     <span class="n">chunks</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">sample_rate</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;x-sample-rate&quot;</span><span class="p">,</span> <span class="mi">24000</span><span class="p">))</span>
+    <span class="n">sample_rate</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"x-sample-rate"</span><span class="p">,</span> <span class="mi">24000</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">resp</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">chunk</span><span class="p">:</span>
             <span class="n">chunks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
             <span class="c1"># In a real app: feed `chunk` to your audio player here</span>
 
-<span class="k">with</span> <span class="n">wave</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;output_streaming.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="n">wave</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"output_streaming.wav"</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">setnchannels</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">f</span><span class="o">.</span><span class="n">setsampwidth</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">f</span><span class="o">.</span><span class="n">setframerate</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">)</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">writeframes</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chunks</span><span class="p">))</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">writeframes</span><span class="p">(</span><span class="sa">b</span><span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chunks</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Reference output:</p>
@@ -855,15 +855,15 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <li><p>Emotion: amusement + laughter</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:amusement|&gt;&lt;|prosody:expressive_high|&gt;Wait, wait, that was kind of hilarious. &lt;|sfx:laughter|&gt;Hehe, no, seriously, I was not ready for that.&quot;,</span>
-<span class="s1">    &quot;temperature&quot;: 0.8,</span>
-<span class="s1">    &quot;top_k&quot;: 50,</span>
-<span class="s1">    &quot;max_new_tokens&quot;: 1024</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "&lt;|emotion:amusement|&gt;&lt;|prosody:expressive_high|&gt;Wait, wait, that was kind of hilarious. &lt;|sfx:laughter|&gt;Hehe, no, seriously, I was not ready for that.",</span>
+<span class="s1">    "temperature": 0.8,</span>
+<span class="s1">    "top_k": 50,</span>
+<span class="s1">    "max_new_tokens": 1024</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -875,15 +875,15 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <li><p>Emotion: anger + shouting</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:anger|&gt;&lt;|style:shouting|&gt;No, that is not okay! We cannot ship something that sounds broken, delayed, and unnatural.&quot;,</span>
-<span class="s1">    &quot;temperature&quot;: 0.8,</span>
-<span class="s1">    &quot;top_k&quot;: 50,</span>
-<span class="s1">    &quot;max_new_tokens&quot;: 1024</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "&lt;|emotion:anger|&gt;&lt;|style:shouting|&gt;No, that is not okay! We cannot ship something that sounds broken, delayed, and unnatural.",</span>
+<span class="s1">    "temperature": 0.8,</span>
+<span class="s1">    "top_k": 50,</span>
+<span class="s1">    "max_new_tokens": 1024</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -895,19 +895,19 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <li><p>Emotion: sadness + sniff</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:sadness|&gt;&lt;|sfx:crying|&gt;I... I’m sorry. &lt;|sfx:sniff|&gt;Sff, We really tried. after all those late nights, I thought the whole thing had failed.&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/ref_voice.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;It was the night before my birthday. Hooray! It’s almost here! It may not be a holiday, but it’s the best day of the year.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "&lt;|emotion:sadness|&gt;&lt;|sfx:crying|&gt;I... I’m sorry. &lt;|sfx:sniff|&gt;Sff, We really tried. after all those late nights, I thought the whole thing had failed.",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "docs/_static/audio/ref_voice.wav",</span>
+<span class="s1">      "text": "It was the night before my birthday. Hooray! It’s almost here! It may not be a holiday, but it’s the best day of the year."</span>
 <span class="s1">    }],</span>
-<span class="s1">    &quot;temperature&quot;: 0.8,</span>
-<span class="s1">    &quot;top_k&quot;: 50,</span>
-<span class="s1">    &quot;max_new_tokens&quot;: 1024</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">    "temperature": 0.8,</span>
+<span class="s1">    "top_k": 50,</span>
+<span class="s1">    "max_new_tokens": 1024</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -919,19 +919,19 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <li><p>Emotion: confusion + humming + sigh</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:confusion|&gt;&lt;|sfx:humming|&gt;Hmm... wait. &lt;|sfx:sigh|&gt;Uh, I’m not sure I understand. Do you mean the voice should speak faster, or the system should respond earlier?&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/ref_voice.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;It was the night before my birthday. Hooray! It’s almost here! It may not be a holiday, but it’s the best day of the year.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "&lt;|emotion:confusion|&gt;&lt;|sfx:humming|&gt;Hmm... wait. &lt;|sfx:sigh|&gt;Uh, I’m not sure I understand. Do you mean the voice should speak faster, or the system should respond earlier?",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "docs/_static/audio/ref_voice.wav",</span>
+<span class="s1">      "text": "It was the night before my birthday. Hooray! It’s almost here! It may not be a holiday, but it’s the best day of the year."</span>
 <span class="s1">    }],</span>
-<span class="s1">    &quot;temperature&quot;: 0.8,</span>
-<span class="s1">    &quot;top_k&quot;: 50,</span>
-<span class="s1">    &quot;max_new_tokens&quot;: 1024</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">    "temperature": 0.8,</span>
+<span class="s1">    "top_k": 50,</span>
+<span class="s1">    "max_new_tokens": 1024</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -943,19 +943,19 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <li><p>Emotion: surprise + screaming</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:surprise|&gt;&lt;|prosody:pitch_high|&gt;&lt;|sfx:screaming|&gt;Ah! Wait, I almost forgot! Higgs Audio v3 also supports over one hundred languages.&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/ref_voice.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;It was the night before my birthday. Hooray! It’s almost here! It may not be a holiday, but it’s the best day of the year.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "&lt;|emotion:surprise|&gt;&lt;|prosody:pitch_high|&gt;&lt;|sfx:screaming|&gt;Ah! Wait, I almost forgot! Higgs Audio v3 also supports over one hundred languages.",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "docs/_static/audio/ref_voice.wav",</span>
+<span class="s1">      "text": "It was the night before my birthday. Hooray! It’s almost here! It may not be a holiday, but it’s the best day of the year."</span>
 <span class="s1">    }],</span>
-<span class="s1">    &quot;temperature&quot;: 0.8,</span>
-<span class="s1">    &quot;top_k&quot;: 50,</span>
-<span class="s1">    &quot;max_new_tokens&quot;: 1024</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">    "temperature": 0.8,</span>
+<span class="s1">    "top_k": 50,</span>
+<span class="s1">    "max_new_tokens": 1024</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -971,55 +971,55 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <summary>Commands</summary>
 <p>Part 1 — she asks about the missed class:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:contemplation|&gt;Hi David, I missed the biology class today because I caught a cold. &lt;|sfx:cough|&gt;Ahem! Sorry, Could you tell me what the teacher covered?&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/female-voice.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;By repeating what students say, teachers can demonstrate that they are listening. By extending what students say.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "&lt;|emotion:contemplation|&gt;Hi David, I missed the biology class today because I caught a cold. &lt;|sfx:cough|&gt;Ahem! Sorry, Could you tell me what the teacher covered?",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "docs/_static/audio/female-voice.wav",</span>
+<span class="s1">      "text": "By repeating what students say, teachers can demonstrate that they are listening. By extending what students say."</span>
 <span class="s1">    }],</span>
-<span class="s1">    &quot;temperature&quot;: 0.8,</span>
-<span class="s1">    &quot;top_k&quot;: 50,</span>
-<span class="s1">    &quot;max_new_tokens&quot;: 1024</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">    "temperature": 0.8,</span>
+<span class="s1">    "top_k": 50,</span>
+<span class="s1">    "max_new_tokens": 1024</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>part1.wav
 </pre></div>
 </div>
 <p>Part 2 — he explains what was covered:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:enthusiasm|&gt;Sure, no problem! We learned how plants make food through photosynthesis, and &lt;|prosody:long_pause|&gt; there will be a quiz this Friday.&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/male-voice.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;Hey, Adam here. Let&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;s create something that feels real, sounds human, and connects every time.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "&lt;|emotion:enthusiasm|&gt;Sure, no problem! We learned how plants make food through photosynthesis, and &lt;|prosody:long_pause|&gt; there will be a quiz this Friday.",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "docs/_static/audio/male-voice.wav",</span>
+<span class="s1">      "text": "Hey, Adam here. Let'</span><span class="se">\'</span><span class="s1">'s create something that feels real, sounds human, and connects every time."</span>
 <span class="s1">    }],</span>
-<span class="s1">    &quot;temperature&quot;: 0.8,</span>
-<span class="s1">    &quot;top_k&quot;: 50,</span>
-<span class="s1">    &quot;max_new_tokens&quot;: 1024</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">    "temperature": 0.8,</span>
+<span class="s1">    "top_k": 50,</span>
+<span class="s1">    "max_new_tokens": 1024</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>part2.wav
 </pre></div>
 </div>
 <p>Part 3 — she reads the result:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;bosonai/higgs-audio-v3-tts-4b&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;&lt;|emotion:relief|&gt;Oh, that is really helpful. Thank you!&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;docs/_static/audio/female-voice.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;By repeating what students say, teachers can demonstrate that they are listening. By extending what students say.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "bosonai/higgs-audio-v3-tts-4b",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "&lt;|emotion:relief|&gt;Oh, that is really helpful. Thank you!",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "docs/_static/audio/female-voice.wav",</span>
+<span class="s1">      "text": "By repeating what students say, teachers can demonstrate that they are listening. By extending what students say."</span>
 <span class="s1">    }],</span>
-<span class="s1">    &quot;temperature&quot;: 0.8,</span>
-<span class="s1">    &quot;top_k&quot;: 50,</span>
-<span class="s1">    &quot;max_new_tokens&quot;: 1024</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">    "temperature": 0.8,</span>
+<span class="s1">    "top_k": 50,</span>
+<span class="s1">    "max_new_tokens": 1024</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>part3.wav
 </pre></div>
 </div>
@@ -1028,7 +1028,7 @@ onomatopoeia gives the model the acoustic cue to realize the effect.</p></li>
 <span class="w">  </span>-i<span class="w"> </span>part1.wav<span class="w"> </span>-f<span class="w"> </span>lavfi<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span>.6<span class="w"> </span>-i<span class="w"> </span><span class="nv">anullsrc</span><span class="o">=</span><span class="nv">r</span><span class="o">=</span><span class="m">24000</span>:cl<span class="o">=</span>mono<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-i<span class="w"> </span>part2.wav<span class="w"> </span>-f<span class="w"> </span>lavfi<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span>.6<span class="w"> </span>-i<span class="w"> </span><span class="nv">anullsrc</span><span class="o">=</span><span class="nv">r</span><span class="o">=</span><span class="m">24000</span>:cl<span class="o">=</span>mono<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-i<span class="w"> </span>part3.wav<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-filter_complex<span class="w"> </span><span class="s2">&quot;[0:a][1:a][2:a][3:a][4:a]concat=n=5:v=0:a=1&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-filter_complex<span class="w"> </span><span class="s2">"[0:a][1:a][2:a][3:a][4:a]concat=n=5:v=0:a=1"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>gaokao_listening.wav
 </pre></div>
 </div>

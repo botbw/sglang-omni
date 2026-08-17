@@ -514,8 +514,8 @@
 <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> package. From the SGLang-Omni repository root, install its
 model-specific dependencies:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s2">&quot;descript-audiotools==0.7.2&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s2">&quot;descript-audio-codec==1.0.0&quot;</span>
+<span class="w">  </span><span class="s2">"descript-audiotools==0.7.2"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"descript-audio-codec==1.0.0"</span>
 </pre></div>
 </div>
 <p>Then download the model:</p>
@@ -536,44 +536,44 @@ model-specific dependencies:</p>
 <h2>Synthesize Speech<a class="headerlink" href="#synthesize-speech" title="Link to this heading">#</a></h2>
 <p>Plain TTS:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;fishaudio/s2-pro&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;Hello, how are you?&quot;</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "fishaudio/s2-pro",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "Hello, how are you?"</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
 <p>Voice cloning:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;fishaudio/s2-pro&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;We asked over twenty different people, and they all said it was his.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "fishaudio/s2-pro",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "Get the trust fund to the bank early.",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",</span>
+<span class="s1">      "text": "We asked over twenty different people, and they all said it was his."</span>
 <span class="s1">    }]</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
 <p>Streaming:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;fishaudio/s2-pro&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;We asked over twenty different people, and they all said it was his.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "fishaudio/s2-pro",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "input": "Get the trust fund to the bank early.",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",</span>
+<span class="s1">      "text": "We asked over twenty different people, and they all said it was his."</span>
 <span class="s1">    }],</span>
-<span class="s1">    &quot;stream&quot;: true,</span>
-<span class="s1">    &quot;response_format&quot;: &quot;pcm&quot;</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">    "stream": true,</span>
+<span class="s1">    "response_format": "pcm"</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.pcm
 </pre></div>
 </div>

@@ -534,8 +534,8 @@ SGLang-Omni it runs as a <code class="docutils literal notranslate"><span class=
 <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> package. From the SGLang-Omni repository root, install its
 model-specific dependencies:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s2">&quot;descript-audiotools==0.7.2&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s2">&quot;descript-audio-codec==1.0.0&quot;</span>
+<span class="w">  </span><span class="s2">"descript-audiotools==0.7.2"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"descript-audio-codec==1.0.0"</span>
 </pre></div>
 </div>
 <p>Then download the model:</p>
@@ -567,14 +567,14 @@ server’s <code class="docutils literal notranslate"><span class="pre">PATH</sp
 The shared speech API accepts the transcript, but ZONOS2 currently conditions only on
 the reference audio.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;input&quot;: &quot;SGLang-Omni is a great project!&quot;,</span>
-<span class="s1">    &quot;references&quot;: [{</span>
-<span class="s1">      &quot;audio_path&quot;: &quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;,</span>
-<span class="s1">      &quot;text&quot;: &quot;We asked over twenty different people, and they all said it was his.&quot;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "input": "SGLang-Omni is a great project!",</span>
+<span class="s1">    "references": [{</span>
+<span class="s1">      "audio_path": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",</span>
+<span class="s1">      "text": "We asked over twenty different people, and they all said it was his."</span>
 <span class="s1">    }]</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.wav
 </pre></div>
 </div>
@@ -585,15 +585,15 @@ the reference audio.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s2">&quot;http://localhost:8000/v1/audio/speech&quot;</span><span class="p">,</span>
+    <span class="s2">"http://localhost:8000/v1/audio/speech"</span><span class="p">,</span>
     <span class="n">json</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="s2">&quot;Get the trust fund to the bank early.&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ref_audio&quot;</span><span class="p">:</span> <span class="s2">&quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ref_text&quot;</span><span class="p">:</span> <span class="s2">&quot;We asked over twenty different people, and they all said it was his.&quot;</span><span class="p">,</span>
+        <span class="s2">"input"</span><span class="p">:</span> <span class="s2">"Get the trust fund to the bank early."</span><span class="p">,</span>
+        <span class="s2">"ref_audio"</span><span class="p">:</span> <span class="s2">"https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav"</span><span class="p">,</span>
+        <span class="s2">"ref_text"</span><span class="p">:</span> <span class="s2">"We asked over twenty different people, and they all said it was his."</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">)</span>
 <span class="n">resp</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;output.wav&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"output.wav"</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -603,7 +603,7 @@ the reference audio.</p>
 <h3>Reference Audio Sources<a class="headerlink" href="#reference-audio-sources" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">audio_path</span></code> / <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> may be a local filesystem path readable by the server, an HTTP(S)
 URL, or a base64 <strong>data URI</strong> (<code class="docutils literal notranslate"><span class="pre">data:audio/wav;base64,&lt;...&gt;</span></code>, transcoded via <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code>):</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;ref_audio&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data:audio/wav;base64,UklGR.....&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ref_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Transcript of the clip.&quot;</span><span class="p">}</span>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">"ref_audio"</span><span class="p">:</span><span class="w"> </span><span class="s2">"data:audio/wav;base64,UklGR....."</span><span class="p">,</span><span class="w"> </span><span class="nt">"ref_text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Transcript of the clip."</span><span class="p">}</span>
 </pre></div>
 </div>
 </section>
@@ -614,14 +614,14 @@ little-endian PCM bytes. The response is not SSE or base64. ZONOS2 returns mono 
 audio with <code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">audio/pcm</span></code> and the <code class="docutils literal notranslate"><span class="pre">X-Sample-Rate</span></code>, <code class="docutils literal notranslate"><span class="pre">X-Channels</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">X-Bit-Depth</span></code> headers.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-sS<span class="w"> </span>-D<span class="w"> </span>output.headers<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;input&quot;: &quot;Get the trust fund to the bank early.&quot;,</span>
-<span class="s1">    &quot;ref_audio&quot;: &quot;https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav&quot;,</span>
-<span class="s1">    &quot;ref_text&quot;: &quot;We asked over twenty different people, and they all said it was his.&quot;,</span>
-<span class="s1">    &quot;response_format&quot;: &quot;pcm&quot;,</span>
-<span class="s1">    &quot;stream&quot;: true</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "input": "Get the trust fund to the bank early.",</span>
+<span class="s1">    "ref_audio": "https://huggingface.co/datasets/zhaochenyang20/seed-tts-eval-mini/resolve/main/en/prompt-wavs/common_voice_en_10119832.wav",</span>
+<span class="s1">    "ref_text": "We asked over twenty different people, and they all said it was his.",</span>
+<span class="s1">    "response_format": "pcm",</span>
+<span class="s1">    "stream": true</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>output.pcm
 
 ffmpeg<span class="w"> </span>-f<span class="w"> </span>s16le<span class="w"> </span>-ar<span class="w"> </span><span class="m">44100</span><span class="w"> </span>-ac<span class="w"> </span><span class="m">1</span><span class="w"> </span>-i<span class="w"> </span>output.pcm<span class="w"> </span>output.wav
@@ -637,9 +637,9 @@ keep the input unchanged; accepted languages without a NeMo package, such as
 <code class="docutils literal notranslate"><span class="pre">Russian</span></code>, also pass through unchanged. The model infers the spoken language
 from the resulting text.</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;input&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;今天天气不错，就该出去晒晒太阳。&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;ref_audio&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;ref_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Chinese&quot;</span>
+<span class="w">  </span><span class="nt">"input"</span><span class="p">:</span><span class="w"> </span><span class="s2">"今天天气不错，就该出去晒晒太阳。"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"ref_audio"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"ref_text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"language"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Chinese"</span>
 <span class="p">}</span>
 </pre></div>
 </div>

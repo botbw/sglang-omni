@@ -568,7 +568,7 @@ and then start the router after all managed workers pass <code class="docutils l
 <span class="w">  </span><span class="nt">num_gpus_per_worker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">  </span><span class="nt">worker_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span>
 <span class="w">  </span><span class="nt">worker_base_port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8011</span>
-<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--config</span><span class="nv"> </span><span class="s">examples/configs/qwen3_omni_colocated_h20.yaml</span><span class="nv"> </span><span class="s">--colocate&quot;</span>
+<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">"--config</span><span class="nv"> </span><span class="s">examples/configs/qwen3_omni_colocated_h20.yaml</span><span class="nv"> </span><span class="s">--colocate"</span>
 <span class="w">  </span><span class="nt">wait_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span>
 </pre></div>
 </div>
@@ -605,7 +605,7 @@ speech or audio-output support:</p>
 <span class="w">  </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">qwen3-omni</span>
 <span class="w">  </span><span class="nt">num_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 <span class="w">  </span><span class="nt">num_gpus_per_worker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--text-only&quot;</span>
+<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">"--text-only"</span>
 <span class="w">  </span><span class="nt">worker_capabilities</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chat</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">streaming</span>
@@ -625,7 +625,7 @@ text-path Qwen3-Omni config instead of the default speech-colocated worker:</p>
 <span class="w">  </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">qwen3-omni</span>
 <span class="w">  </span><span class="nt">num_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 <span class="w">  </span><span class="nt">num_gpus_per_worker</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;--config</span><span class="nv"> </span><span class="s">examples/configs/qwen3_omni_mmsu.yaml</span><span class="nv"> </span><span class="s">--text-only&quot;</span>
+<span class="w">  </span><span class="nt">worker_extra_args</span><span class="p">:</span><span class="w"> </span><span class="s">"--config</span><span class="nv"> </span><span class="s">examples/configs/qwen3_omni_mmsu.yaml</span><span class="nv"> </span><span class="s">--text-only"</span>
 </pre></div>
 </div>
 <p>This keeps preprocessing, encoders, aggregation, thinker, and decode in one
@@ -785,16 +785,16 @@ requests, then round-robins among ties.</p></li>
 <code class="docutils literal notranslate"><span class="pre">--worker-config</span></code>. Use <code class="docutils literal notranslate"><span class="pre">--worker-config</span></code> when workers serve different models or
 only a subset of Omni capabilities:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;workers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">"workers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8011&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;qwen3-omni&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;capabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;chat&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;image_input&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;video_input&quot;</span><span class="p">]</span>
+<span class="w">      </span><span class="nt">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://127.0.0.1:8011"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"qwen3-omni"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"capabilities"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"chat"</span><span class="p">,</span><span class="w"> </span><span class="s2">"image_input"</span><span class="p">,</span><span class="w"> </span><span class="s2">"video_input"</span><span class="p">]</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8012&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;qwen3-omni&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;capabilities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;chat&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;audio_input&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;audio_output&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;speech&quot;</span><span class="p">]</span>
+<span class="w">      </span><span class="nt">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://127.0.0.1:8012"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"qwen3-omni"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"capabilities"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"chat"</span><span class="p">,</span><span class="w"> </span><span class="s2">"audio_input"</span><span class="p">,</span><span class="w"> </span><span class="s2">"audio_output"</span><span class="p">,</span><span class="w"> </span><span class="s2">"speech"</span><span class="p">]</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
@@ -840,29 +840,29 @@ counters, and last error.</p></li>
 is the same OpenAI-compatible schema used by each worker server.</p>
 <p>Image input with text output:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-i<span class="w"> </span>http://127.0.0.1:8008/v1/chat/completions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;x-request-id: router-image-1&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;qwen3-omni&quot;,</span>
-<span class="s1">    &quot;messages&quot;: [</span>
-<span class="s1">      {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;How many cars are there in the image? Answer briefly.&quot;}</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"x-request-id: router-image-1"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "qwen3-omni",</span>
+<span class="s1">    "messages": [</span>
+<span class="s1">      {"role": "user", "content": "How many cars are there in the image? Answer briefly."}</span>
 <span class="s1">    ],</span>
-<span class="s1">    &quot;images&quot;: [&quot;tests/data/cars.jpg&quot;],</span>
-<span class="s1">    &quot;modalities&quot;: [&quot;text&quot;],</span>
-<span class="s1">    &quot;max_tokens&quot;: 16</span>
-<span class="s1">  }&#39;</span>
+<span class="s1">    "images": ["tests/data/cars.jpg"],</span>
+<span class="s1">    "modalities": ["text"],</span>
+<span class="s1">    "max_tokens": 16</span>
+<span class="s1">  }'</span>
 </pre></div>
 </div>
 <p>Streaming text:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>http://127.0.0.1:8008/v1/chat/completions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;x-request-id: router-stream-1&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;qwen3-omni&quot;,</span>
-<span class="s1">    &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Say hello briefly.&quot;}],</span>
-<span class="s1">    &quot;stream&quot;: true,</span>
-<span class="s1">    &quot;max_tokens&quot;: 16</span>
-<span class="s1">  }&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"x-request-id: router-stream-1"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "qwen3-omni",</span>
+<span class="s1">    "messages": [{"role": "user", "content": "Say hello briefly."}],</span>
+<span class="s1">    "stream": true,</span>
+<span class="s1">    "max_tokens": 16</span>
+<span class="s1">  }'</span>
 </pre></div>
 </div>
 <p>The router preserves the original request body. For ordinary JSON requests, it
@@ -873,26 +873,26 @@ the original bytes to the selected worker.</p>
 <h2>Manage Workers<a class="headerlink" href="#manage-workers" title="Link to this heading">#</a></h2>
 <p>Add a worker at runtime:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:8008/workers<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;url&quot;:&quot;http://127.0.0.1:8013&quot;,&quot;model&quot;:&quot;qwen3-omni&quot;}&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"url":"http://127.0.0.1:8013","model":"qwen3-omni"}'</span>
 </pre></div>
 </div>
 <p>Disable a worker without deleting it:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>http://127.0.0.1:8008/workers/http%3A%2F%2F127.0.0.1%3A8013<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;disabled&quot;:true}&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"disabled":true}'</span>
 </pre></div>
 </div>
 <p>Mark a worker dead for manual quarantine:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>http://127.0.0.1:8008/workers/http%3A%2F%2F127.0.0.1%3A8013<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;is_dead&quot;:true}&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"is_dead":true}'</span>
 </pre></div>
 </div>
 <p>Recover a manually dead worker:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span>http://127.0.0.1:8008/workers/http%3A%2F%2F127.0.0.1%3A8013<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;is_dead&quot;:false}&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"is_dead":false}'</span>
 </pre></div>
 </div>
 <p>Delete a worker:</p>
@@ -1091,8 +1091,8 @@ durable while a reboot silently dropped the record.</p>
 every weight update stays blocked with <code class="docutils literal notranslate"><span class="pre">409</span></code>. Verify the pool’s weight
 versions, then drop the record explicitly:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://127.0.0.1:8000/weight_update_journal/resolve<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Authorization: Bearer </span><span class="nv">$SGLANG_OMNI_ADMIN_KEY</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;acknowledge&quot;: true}&#39;</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="nv">$SGLANG_OMNI_ADMIN_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"acknowledge": true}'</span>
 </pre></div>
 </div>
 <p>The call is admin-authenticated, requires <code class="docutils literal notranslate"><span class="pre">acknowledge</span></code> so the record cannot be
@@ -1262,19 +1262,19 @@ worker health, see <a class="reference internal" href="#failure-handling"><span 
 <p>Print the fields used to determine routability. <code class="docutils literal notranslate"><span class="pre">worker_id</span></code> is the
 percent-encoded identifier the admin routes expect; <code class="docutils literal notranslate"><span class="pre">display_id</span></code> is the
 host and port shown in logs:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:8008/workers<span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>http://127.0.0.1:8008/workers<span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">'</span>
 <span class="s1">import json, sys</span>
-<span class="s1">for worker in json.load(sys.stdin)[&quot;workers&quot;]:</span>
+<span class="s1">for worker in json.load(sys.stdin)["workers"]:</span>
 <span class="s1">    print(</span>
-<span class="s1">        &quot;worker_id=&quot; + worker[&quot;worker_id&quot;],</span>
-<span class="s1">        &quot;display_id=&quot; + worker[&quot;display_id&quot;],</span>
-<span class="s1">        &quot;state=&quot; + worker[&quot;health_state&quot;],</span>
-<span class="s1">        &quot;disabled=&quot; + str(worker[&quot;disabled&quot;]),</span>
-<span class="s1">        &quot;routable=&quot; + str(worker[&quot;routable&quot;]),</span>
-<span class="s1">        &quot;failures=&quot; + str(worker[&quot;consecutive_failures&quot;]),</span>
-<span class="s1">        &quot;last_error=&quot; + str(worker[&quot;last_error&quot;]),</span>
+<span class="s1">        "worker_id=" + worker["worker_id"],</span>
+<span class="s1">        "display_id=" + worker["display_id"],</span>
+<span class="s1">        "state=" + worker["health_state"],</span>
+<span class="s1">        "disabled=" + str(worker["disabled"]),</span>
+<span class="s1">        "routable=" + str(worker["routable"]),</span>
+<span class="s1">        "failures=" + str(worker["consecutive_failures"]),</span>
+<span class="s1">        "last_error=" + str(worker["last_error"]),</span>
 <span class="s1">    )</span>
-<span class="s1">&#39;</span>
+<span class="s1">'</span>
 </pre></div>
 </div>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -1314,41 +1314,41 @@ advertises a model, the Router stops filtering by model.</p>
 <p>Disable the worker first so it receives no new requests, wait for
 <code class="docutils literal notranslate"><span class="pre">active_requests</span></code> to reach zero, and then delete it:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="w">  </span><span class="c1"># subshell: a failed step exits the procedure, not your shell</span>
-<span class="nv">worker_id</span><span class="o">=</span><span class="s1">&#39;http%3A%2F%2F127.0.0.1%3A8013&#39;</span>
+<span class="nv">worker_id</span><span class="o">=</span><span class="s1">'http%3A%2F%2F127.0.0.1%3A8013'</span>
 <span class="nv">max_wait_secs</span><span class="o">=</span><span class="m">1800</span>
 <span class="nv">deadline</span><span class="o">=</span><span class="k">$((</span><span class="nv">SECONDS</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nv">max_wait_secs</span><span class="k">))</span>
 
-curl<span class="w"> </span>-fsS<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8008/workers/</span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;disabled&quot;:true}&#39;</span><span class="w"> </span><span class="o">||</span>
+curl<span class="w"> </span>-fsS<span class="w"> </span>-X<span class="w"> </span>PUT<span class="w"> </span><span class="s2">"http://127.0.0.1:8008/workers/</span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"disabled":true}'</span><span class="w"> </span><span class="o">||</span>
 <span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
 
 <span class="k">while</span><span class="w"> </span>true<span class="p">;</span><span class="w"> </span><span class="k">do</span>
 <span class="w">  </span><span class="nv">active_requests</span><span class="o">=</span><span class="k">$(</span>
 <span class="w">    </span>curl<span class="w"> </span>-fsS<span class="w"> </span>http://127.0.0.1:8008/workers<span class="w"> </span><span class="p">|</span>
-<span class="w">      </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;</span>
+<span class="w">      </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">'</span>
 <span class="s1">import json, sys</span>
 <span class="s1">target = sys.argv[1]</span>
-<span class="s1">workers = json.load(sys.stdin)[&quot;workers&quot;]</span>
-<span class="s1">worker = next((item for item in workers if item[&quot;worker_id&quot;] == target), None)</span>
-<span class="s1">print(worker[&quot;active_requests&quot;] if worker else &quot;missing&quot;)</span>
-<span class="s1">&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="s1">workers = json.load(sys.stdin)["workers"]</span>
+<span class="s1">worker = next((item for item in workers if item["worker_id"] == target), None)</span>
+<span class="s1">print(worker["active_requests"] if worker else "missing")</span>
+<span class="s1">'</span><span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2">"</span>
 <span class="w">  </span><span class="k">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
-<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">active_requests</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="k">in</span>
+<span class="w">  </span><span class="k">case</span><span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">active_requests</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="k">in</span>
 <span class="w">    </span><span class="m">0</span><span class="o">)</span><span class="w"> </span><span class="k">break</span><span class="w"> </span><span class="p">;;</span>
 <span class="w">    </span>missing<span class="o">)</span>
-<span class="w">      </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;worker </span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2"> is not registered; check /workers&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+<span class="w">      </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"worker </span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2"> is not registered; check /workers"</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
 <span class="w">      </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
 <span class="w">      </span><span class="p">;;</span>
 <span class="w">  </span><span class="k">esac</span>
 <span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="o">((</span><span class="w"> </span>SECONDS<span class="w"> </span>&gt;<span class="o">=</span><span class="w"> </span>deadline<span class="w"> </span><span class="o">))</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;timed out waiting for </span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2"> to drain&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"timed out waiting for </span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2"> to drain"</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
 <span class="w">    </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
 <span class="w">  </span><span class="k">fi</span>
 <span class="w">  </span>sleep<span class="w"> </span><span class="m">2</span>
 <span class="k">done</span>
 
-curl<span class="w"> </span>-fsS<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">&quot;http://127.0.0.1:8008/workers/</span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2">&quot;</span>
+curl<span class="w"> </span>-fsS<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">"http://127.0.0.1:8008/workers/</span><span class="si">${</span><span class="nv">worker_id</span><span class="si">}</span><span class="s2">"</span>
 <span class="o">)</span>
 </pre></div>
 </div>

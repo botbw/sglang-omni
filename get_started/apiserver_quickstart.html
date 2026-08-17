@@ -582,8 +582,8 @@ detection is not enabled yet; select the backend explicitly with
 </div>
 <p>Example response:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;healthy&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;running&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"healthy"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"running"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -605,15 +605,15 @@ detection is not enabled yet; select the backend explicitly with
 <h2>Send a Minimal Chat Request<a class="headerlink" href="#send-a-minimal-chat-request" title="Link to this heading">#</a></h2>
 <p>The core endpoint is <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/chat/completions</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8000/v1/chat/completions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;qwen3-omni&quot;,</span>
-<span class="s1">    &quot;messages&quot;: [</span>
-<span class="s1">      {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Hello!&quot;}</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "qwen3-omni",</span>
+<span class="s1">    "messages": [</span>
+<span class="s1">      {"role": "user", "content": "Hello!"}</span>
 <span class="s1">    ],</span>
-<span class="s1">    &quot;max_tokens&quot;: 128,</span>
-<span class="s1">    &quot;stream&quot;: false</span>
-<span class="s1">  }&#39;</span>
+<span class="s1">    "max_tokens": 128,</span>
+<span class="s1">    "stream": false</span>
+<span class="s1">  }'</span>
 </pre></div>
 </div>
 <p>The response follows the OpenAI chat completion shape. In the common case, the text is in <code class="docutils literal notranslate"><span class="pre">choices[0].message.content</span></code>.</p>
@@ -633,14 +633,14 @@ detection is not enabled yet; select the backend explicitly with
 <h3>Streaming<a class="headerlink" href="#streaming" title="Link to this heading">#</a></h3>
 <p>Set <code class="docutils literal notranslate"><span class="pre">stream</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> to receive Server-Sent Events (SSE):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>http://localhost:8000/v1/chat/completions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;qwen3-omni&quot;,</span>
-<span class="s1">    &quot;messages&quot;: [</span>
-<span class="s1">      {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Write a short greeting.&quot;}</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "qwen3-omni",</span>
+<span class="s1">    "messages": [</span>
+<span class="s1">      {"role": "user", "content": "Write a short greeting."}</span>
 <span class="s1">    ],</span>
-<span class="s1">    &quot;stream&quot;: true</span>
-<span class="s1">  }&#39;</span>
+<span class="s1">    "stream": true</span>
+<span class="s1">  }'</span>
 </pre></div>
 </div>
 <p>A few details matter here:</p>
@@ -665,17 +665,17 @@ detection is not enabled yet; select the backend explicitly with
 </ul>
 <p>For example, a video request with text output looks like this:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8000/v1/chat/completions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;qwen3-omni&quot;,</span>
-<span class="s1">    &quot;messages&quot;: [</span>
-<span class="s1">      {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;What is happening in this video?&quot;}</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "qwen3-omni",</span>
+<span class="s1">    "messages": [</span>
+<span class="s1">      {"role": "user", "content": "What is happening in this video?"}</span>
 <span class="s1">    ],</span>
-<span class="s1">    &quot;videos&quot;: [&quot;/absolute/path/to/demo.mp4&quot;],</span>
-<span class="s1">    &quot;modalities&quot;: [&quot;text&quot;],</span>
-<span class="s1">    &quot;max_tokens&quot;: 128,</span>
-<span class="s1">    &quot;stream&quot;: false</span>
-<span class="s1">  }&#39;</span>
+<span class="s1">    "videos": ["/absolute/path/to/demo.mp4"],</span>
+<span class="s1">    "modalities": ["text"],</span>
+<span class="s1">    "max_tokens": 128,</span>
+<span class="s1">    "stream": false</span>
+<span class="s1">  }'</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">videos</span></code>, <code class="docutils literal notranslate"><span class="pre">images</span></code>, and <code class="docutils literal notranslate"><span class="pre">audios</span></code> fields accept either local file paths or HTTP(S) URLs.</p>
@@ -685,13 +685,13 @@ detection is not enabled yet; select the backend explicitly with
 <h2>Text-to-Speech<a class="headerlink" href="#text-to-speech" title="Link to this heading">#</a></h2>
 <p>The server also exposes <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/audio/speech</span></code>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">    &quot;model&quot;: &quot;qwen3-omni&quot;,</span>
-<span class="s1">    &quot;input&quot;: &quot;Hello from SGLang-Omni.&quot;,</span>
-<span class="s1">    &quot;voice&quot;: &quot;default&quot;,</span>
-<span class="s1">    &quot;response_format&quot;: &quot;wav&quot;</span>
-<span class="s1">  }&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "qwen3-omni",</span>
+<span class="s1">    "input": "Hello from SGLang-Omni.",</span>
+<span class="s1">    "voice": "default",</span>
+<span class="s1">    "response_format": "wav"</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-o<span class="w"> </span>speech.wav
 </pre></div>
 </div>

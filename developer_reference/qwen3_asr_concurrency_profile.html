@@ -547,7 +547,7 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 <span class="w">  </span>--sample-util<span class="w"> </span>--util-gpu-ids<span class="w"> </span>&lt;gpu&gt;<span class="w"> </span>--fingerprint<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--save-raw-dir<span class="w"> </span>raw-current<span class="w"> </span>--output<span class="w"> </span>asr_en_current.json
 
-<span class="c1"># baseline: point the same client at the baseline server&#39;s port</span>
+<span class="c1"># baseline: point the same client at the baseline server's port</span>
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span>&lt;baseline-port&gt;<span class="w"> </span>--concurrencies<span class="w"> </span><span class="m">1</span>,8,16,32,64<span class="w"> </span>--repeats<span class="w"> </span><span class="m">3</span><span class="w"> </span>--warmup<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--sample-util<span class="w"> </span>--util-gpu-ids<span class="w"> </span>&lt;gpu&gt;<span class="w"> </span>--fingerprint<span class="w"> </span><span class="se">\</span>

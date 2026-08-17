@@ -1332,12 +1332,12 @@ Python object references for LOCAL_OBJECT payloads and stream chunks</p></li>
 <h3>Message Types<a class="headerlink" href="#message-types" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">IncomingMessage</span><span class="p">:</span>
     <span class="n">request_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;new_request&quot;</span> <span class="o">|</span> <span class="s2">&quot;stream_chunk&quot;</span> <span class="o">|</span> <span class="s2">&quot;stream_done&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="s2">"new_request"</span> <span class="o">|</span> <span class="s2">"stream_chunk"</span> <span class="o">|</span> <span class="s2">"stream_done"</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">Any</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">OutgoingMessage</span><span class="p">:</span>
     <span class="n">request_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="nb">type</span><span class="p">:</span> <span class="s2">&quot;result&quot;</span> <span class="o">|</span> <span class="s2">&quot;stream&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="s2">"result"</span> <span class="o">|</span> <span class="s2">"stream"</span>
     <span class="n">data</span><span class="p">:</span> <span class="n">Any</span>
     <span class="n">target</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># for stream: downstream stage name</span>
 </pre></div>
@@ -1562,29 +1562,29 @@ Python object references for LOCAL_OBJECT payloads and stream chunks</p></li>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stages</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;preprocessing&quot;</span><span class="p">,</span>
-                <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_preprocessing_executor&quot;</span><span class="p">,</span>
-                <span class="n">route_fn</span><span class="o">=</span><span class="s2">&quot;...routing.preprocessing_next&quot;</span><span class="p">),</span>
+    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"preprocessing"</span><span class="p">,</span>
+                <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_preprocessing_executor"</span><span class="p">,</span>
+                <span class="n">route_fn</span><span class="o">=</span><span class="s2">"...routing.preprocessing_next"</span><span class="p">),</span>
 
-    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span>
-                <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_image_encoder_executor&quot;</span><span class="p">,</span>
-                <span class="n">gpu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">next</span><span class="o">=</span><span class="s2">&quot;mm_aggregate&quot;</span><span class="p">),</span>
+    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"image_encoder"</span><span class="p">,</span>
+                <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_image_encoder_executor"</span><span class="p">,</span>
+                <span class="n">gpu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">next</span><span class="o">=</span><span class="s2">"mm_aggregate"</span><span class="p">),</span>
 
-    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;mm_aggregate&quot;</span><span class="p">,</span>
-                <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_aggregate_executor&quot;</span><span class="p">,</span>
-                <span class="n">wait_for</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;preprocessing&quot;</span><span class="p">,</span> <span class="s2">&quot;image_encoder&quot;</span><span class="p">,</span> <span class="s2">&quot;audio_encoder&quot;</span><span class="p">],</span>
-                <span class="n">merge_fn</span><span class="o">=</span><span class="s2">&quot;...merge_for_thinker&quot;</span><span class="p">,</span>
-                <span class="nb">next</span><span class="o">=</span><span class="s2">&quot;thinker&quot;</span><span class="p">),</span>
+    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"mm_aggregate"</span><span class="p">,</span>
+                <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_aggregate_executor"</span><span class="p">,</span>
+                <span class="n">wait_for</span><span class="o">=</span><span class="p">[</span><span class="s2">"preprocessing"</span><span class="p">,</span> <span class="s2">"image_encoder"</span><span class="p">,</span> <span class="s2">"audio_encoder"</span><span class="p">],</span>
+                <span class="n">merge_fn</span><span class="o">=</span><span class="s2">"...merge_for_thinker"</span><span class="p">,</span>
+                <span class="nb">next</span><span class="o">=</span><span class="s2">"thinker"</span><span class="p">),</span>
 
-    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;thinker&quot;</span><span class="p">,</span>
-                <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_thinker_executor&quot;</span><span class="p">,</span>
-                <span class="n">factory_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;speech_enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-                <span class="n">gpu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">next</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;decode&quot;</span><span class="p">,</span> <span class="s2">&quot;talker_ar&quot;</span><span class="p">],</span>
-                <span class="n">stream_to</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;talker_ar&quot;</span><span class="p">,</span> <span class="s2">&quot;decode&quot;</span><span class="p">]),</span>
+    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"thinker"</span><span class="p">,</span>
+                <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_thinker_executor"</span><span class="p">,</span>
+                <span class="n">factory_args</span><span class="o">=</span><span class="p">{</span><span class="s2">"speech_enabled"</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+                <span class="n">gpu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">next</span><span class="o">=</span><span class="p">[</span><span class="s2">"decode"</span><span class="p">,</span> <span class="s2">"talker_ar"</span><span class="p">],</span>
+                <span class="n">stream_to</span><span class="o">=</span><span class="p">[</span><span class="s2">"talker_ar"</span><span class="p">,</span> <span class="s2">"decode"</span><span class="p">]),</span>
 
-    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;decode&quot;</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_decode&quot;</span><span class="p">,</span> <span class="n">terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"decode"</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_decode"</span><span class="p">,</span> <span class="n">terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
 
-    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;code2wav&quot;</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...create_code2wav&quot;</span><span class="p">,</span> <span class="n">gpu</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"code2wav"</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="s2">"...create_code2wav"</span><span class="p">,</span> <span class="n">gpu</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">terminal</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
 <span class="p">]</span>
 </pre></div>
 </div>
@@ -1752,7 +1752,7 @@ Python object references for LOCAL_OBJECT payloads and stream chunks</p></li>
 <p>TP within a stage is orthogonal to pipeline parallelism between stages. For a TP stage, its <code class="docutils literal notranslate"><span class="pre">StageGroup</span></code> spawns <code class="docutils literal notranslate"><span class="pre">tp_size</span></code> processes. Each process runs a full <code class="docutils literal notranslate"><span class="pre">OmniScheduler</span></code> + <code class="docutils literal notranslate"><span class="pre">ModelWorker</span></code> with a different <code class="docutils literal notranslate"><span class="pre">tp_rank</span></code> and <code class="docutils literal notranslate"><span class="pre">gpu_id</span></code>. NCCL collectives inside the model forward keep TP ranks in lockstep. The Coordinator is TP-unaware and only talks to rank 0 inside the TP group.</p>
 <p>Within a TP group, rank 0 receives from the control plane and broadcasts to peer ranks. All ranks make identical scheduling decisions. Only rank 0 sends results downstream. Each stage gets its own NCCL port (<code class="docutils literal notranslate"><span class="pre">_NcclPortAllocator</span></code> in <code class="docutils literal notranslate"><span class="pre">mp_runner.py</span></code>).</p>
 <p>Declaring TP in a stage:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;thinker&quot;</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">gpu</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">tp_size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">StageConfig</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"thinker"</span><span class="p">,</span> <span class="n">factory</span><span class="o">=</span><span class="s2">"..."</span><span class="p">,</span> <span class="n">gpu</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">tp_size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">StageGroup</span></code> spawns 4 processes. NCCL collectives inside the model forward keep them in lockstep. The coordinator only talks to rank 0. Each stage gets its own NCCL port.</p>
