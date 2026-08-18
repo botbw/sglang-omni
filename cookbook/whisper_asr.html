@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.2" />
-    <meta name="docbuild:last-update" content="Aug 17, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 18, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -558,7 +558,7 @@
 </section>
 <section id="async-decode">
 <h2>Async Decode<a class="headerlink" href="#async-decode" title="Link to this heading">#</a></h2>
-<p>Whisper enables the shared one-step-lookahead decode path at batch size 2 and above. It overlaps the current decode step’s GPU work with the previous step’s host-side result processing, while batch size 1 remains on the synchronous path. The default running-request limit is 32. Use the shared decode-mode option to compare against synchronous decode or diagnose a request lifecycle issue:</p>
+<p>Whisper enables the shared one-step-lookahead decode path at batch size 2 and above. It overlaps the current decode step’s GPU work with the previous step’s host-side result processing, while batch size 1 remains on the synchronous path. The default running-request limit is 64. Use the shared decode-mode option to compare against synchronous decode or diagnose a request lifecycle issue:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>openai/whisper-large-v3<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--decode-mode<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
@@ -731,13 +731,13 @@ declares in code (<code class="docutils literal notranslate"><span class="pre">W
 <span class="w">  </span>--model-revision<span class="w"> </span>06f233fe06e710322aca913c1bc4249a0d71fce1<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--dataset-revision<span class="w"> </span>27f4c1adee83b5b29b7c4b375f6b976324bda308<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--max-samples<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--concurrencies<span class="w"> </span><span class="m">1</span>,2,4,8,16,32<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--concurrencies<span class="w"> </span><span class="m">1</span>,2,4,8,16,32,64<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--repeats<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--warmup<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--dtype<span class="w"> </span>float16<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--cuda-graph<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--torch-compile<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--max-running-requests<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-running-requests<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.30<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--fingerprint<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>whisper_async.json
@@ -1051,7 +1051,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 17, 2026.
+  Last updated on Aug 18, 2026.
   <br/>
 </p>
   </div>

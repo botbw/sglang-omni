@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.2" />
-    <meta name="docbuild:last-update" content="Aug 17, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 18, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -656,6 +656,7 @@ numactl<span class="w"> </span>-H<span class="w"> </span><span class="p">|</span
 </tbody>
 </table>
 </div>
+<p>Validation update for #1401 Part 1: at code revision <a class="reference external" href="https://github.com/sgl-project/sglang-omni/pull/1557/commits/5e7a8c717b9ec85b1f72aa7d3444f9f5ff7ec72e"><code class="docutils literal notranslate"><span class="pre">5e7a8c7</span></code></a>, MOSS TTS local and MOSS TTS delay passed <code class="docutils literal notranslate"><span class="pre">N=2</span></code>, <code class="docutils literal notranslate"><span class="pre">WEIGHT_SHARE=1</span></code> health, MPS attachment, leader/follower byte-identity, request completion, and clean teardown on H200. Other Supported rows were not revalidated.</p>
 <p>Each supported model launches with its config from <code class="docutils literal notranslate"><span class="pre">examples/mps_dp/configs/</span></code> and the same command shape, for example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CONFIG</span><span class="o">=</span>examples/mps_dp/configs/moss_delay_h100_dp2.yaml<span class="w"> </span><span class="nv">N</span><span class="o">=</span><span class="m">2</span><span class="w"> </span><span class="nv">WEIGHT_SHARE</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">CORE_BLOCKS</span><span class="o">=</span><span class="s2">"0-7 8-15"</span><span class="w"> </span>bash<span class="w"> </span>examples/mps_dp/launch.sh<span class="w"> </span>up
 </pre></div>
@@ -994,7 +995,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 17, 2026.
+  Last updated on Aug 18, 2026.
   <br/>
 </p>
   </div>
