@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.2" />
-    <meta name="docbuild:last-update" content="Aug 18, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 19, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -664,7 +664,8 @@ numactl<span class="w"> </span>-H<span class="w"> </span><span class="p">|</span
 <p>Everything else is <strong>not supported</strong> and is rejected in preflight, before the MPS daemon, state directory, handle file, or any replica process exists. For these, a completed architecture audit is recorded where one exists, but support is still in progress:</p>
 <ul class="simple">
 <li><p>Ming TTS (<code class="docutils literal notranslate"><span class="pre">MingTTSSGLangModel</span></code>): audit complete; blocked on VRAM (the 16.8B leader alone reaches the 80 GB card edge), pending an H200 pass.</p></li>
-<li><p>Voxtral TTS (<code class="docutils literal notranslate"><span class="pre">VoxtralSGLangTTSModel</span></code>), Fish S2-Pro (<code class="docutils literal notranslate"><span class="pre">S2ProSGLangTextModel</span></code>), Qwen3-TTS (<code class="docutils literal notranslate"><span class="pre">Qwen3TTSTalker</span></code>): audit complete; shared boots were observed in exploratory runs, but concurrent-request correctness needs each model’s own client, which this validation does not have yet.</p></li>
+<li><p>Voxtral TTS (<code class="docutils literal notranslate"><span class="pre">VoxtralSGLangTTSModel</span></code>), Fish S2-Pro (<code class="docutils literal notranslate"><span class="pre">S2ProSGLangTextModel</span></code>): audit complete; shared boots were observed in exploratory runs, but concurrent-request correctness needs each model’s own client, which this validation does not have yet.</p></li>
+<li><p>Qwen3-TTS (<code class="docutils literal notranslate"><span class="pre">Qwen3TTSTalker</span></code>): audit complete. At code revision <a class="reference external" href="https://github.com/sgl-project/sglang-omni/commit/cd45a47a1838017c89fb2178f167aac0cd7412a3"><code class="docutils literal notranslate"><span class="pre">cd45a47</span></code></a>, deterministic inference passed the <code class="docutils literal notranslate"><span class="pre">N=2</span></code>, <code class="docutils literal notranslate"><span class="pre">WEIGHT_SHARE=1</span></code> concurrent byte-identity qualification on H200 with a 30,000-token cap. It remains not supported because that result requires <code class="docutils literal notranslate"><span class="pre">enable_deterministic_inference:</span> <span class="pre">true</span></code>, which serializes preprocessing and vocoder decoding and disables Talker compilation and the initial vocoder CUDA graph, materially reducing throughput. Default-mode inference has not passed the byte-identity contract, so the launcher continues to reject weight sharing for this pipeline.</p></li>
 <li><p>LLaDA2 (<code class="docutils literal notranslate"><span class="pre">LLaDA2MoeModelLM</span></code>): audit complete; its pipeline declares no generation SGLang stage, so the launcher cannot drive it at any <code class="docutils literal notranslate"><span class="pre">N</span></code>.</p></li>
 <li><p>Qwen3-Omni (<code class="docutils literal notranslate"><span class="pre">Qwen3OmniThinkerForCausalLM</span></code>, <code class="docutils literal notranslate"><span class="pre">Qwen3OmniTalker</span></code>): audit of both engines complete; the speech pipeline runs two SGLang engines and the text pipeline declares no generation stage, so the launcher cannot drive either.</p></li>
 <li><p>Ming-Omni thinker (<code class="docutils literal notranslate"><span class="pre">BailingMoeV2ForCausalLM</span></code>) and every other architecture: no completed audit; adding one requires a post-load mutation audit, a policy entry, and the full launcher validation above.</p></li>
@@ -995,7 +996,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 18, 2026.
+  Last updated on Aug 19, 2026.
   <br/>
 </p>
   </div>
