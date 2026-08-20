@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="../_static/documentation_options.js?v=0deb7d70"></script>
+    <script src="../_static/documentation_options.js?v=b617ff6d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
     <link rel="prev" title="Audio Translations" href="audio_translations.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.2" />
+  <meta name="docsearch:version" content="0.1.3" />
     <meta name="docbuild:last-update" content="Aug 20, 2026"/>
   
     
@@ -208,7 +208,6 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../get_started/installation.html">🚀 Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../get_started/installation_xpu.html">🚀 Installation — Intel XPU</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../get_started/release_notes.html">Release Notes</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook</span></p>
 <ul class="nav bd-sidenav">
@@ -580,23 +579,27 @@ for details.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/ming_omni_tts.yaml</span></code></p></td>
 <td><p>Text-only synthesis or one local reference clip with its transcript; streaming; the provided config uses TP1</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../cookbook/moss_tts.html"><span class="std std-doc">MOSS-TTS</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../cookbook/fun_cosyvoice3.html"><span class="std std-doc">Fun-CosyVoice3</span></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/fun_cosyvoice3_0_5b.yaml</span></code></p></td>
+<td><p>Requires one reference audio clip via <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> or <code class="docutils literal notranslate"><span class="pre">references</span></code>. Supports zero-shot cloning, cross-lingual, instruct mode, and buffered speed control</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../cookbook/moss_tts.html"><span class="std std-doc">MOSS-TTS</span></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/moss_tts.yaml</span></code></p></td>
 <td><p>Voice cloning via <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> or <code class="docutils literal notranslate"><span class="pre">references[0].audio_path</span></code> (+ <code class="docutils literal notranslate"><span class="pre">text</span></code>). Duration via <code class="docutils literal notranslate"><span class="pre">${token:N}</span></code> or <code class="docutils literal notranslate"><span class="pre">token_count</span></code>. Benchmark at <code class="docutils literal notranslate"><span class="pre">--max-concurrency</span> <span class="pre">8</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../cookbook/moss_tts_local.html"><span class="std std-doc">MOSS-TTS Local</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../cookbook/moss_tts_local.html"><span class="std std-doc">MOSS-TTS Local</span></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/moss_tts_local.yaml</span></code></p></td>
 <td><p>48 kHz stereo local-transformer MOSS-TTS; voice cloning / reference-less; streaming</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../cookbook/higgs_tts.html"><span class="std std-doc">Higgs TTS</span></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../cookbook/higgs_tts.html"><span class="std std-doc">Higgs TTS</span></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">--model-path</span></code> only</p></td>
 <td><p>Voice cloning, streaming; no example YAML required</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../cookbook/dots_tts.html"><span class="std std-doc">dots.tts</span></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../cookbook/dots_tts.html"><span class="std std-doc">dots.tts</span></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts.yaml</span></code> (MeanFlow), <code class="docutils literal notranslate"><span class="pre">examples/configs/dots_tts_soar.yaml</span></code> (SOAR)</p></td>
 <td><p>48 kHz continuous-latent TTS with reference audio. MeanFlow (<code class="docutils literal notranslate"><span class="pre">dots.tts-mf</span></code>) uses continuous batching (<code class="docutils literal notranslate"><span class="pre">max_running_requests=16</span></code> by default) with engine-wide <code class="docutils literal notranslate"><span class="pre">num_steps=4</span></code> and Euler. SOAR (<code class="docutils literal notranslate"><span class="pre">dots.tts-soar</span></code>) and base (<code class="docutils literal notranslate"><span class="pre">dots.tts-base</span></code>) are flow matching and run the single-request solver with CFG at <code class="docutils literal notranslate"><span class="pre">max_running_requests=1</span></code>; both use the SOAR config. All require <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> + <code class="docutils literal notranslate"><span class="pre">ref_text</span></code>. TP1 only</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../cookbook/zonos2.html"><span class="std std-doc">ZONOS2</span></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../cookbook/zonos2.html"><span class="std std-doc">ZONOS2</span></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">--model-path</span> <span class="pre">Zyphra/zonos2</span></code></p></td>
 <td><p>MoE TTS, 9 DAC codebooks, voice cloning; needs Descript DAC extras (see cookbook)</p></td>
 </tr>
@@ -705,6 +708,16 @@ MeanFlow-only for now. <code class="docutils literal notranslate"><span class="p
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>inclusionAI/Ming-omni-tts-16.8B-A3B<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--config<span class="w"> </span>examples/configs/ming_omni_tts.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p>For Fun-CosyVoice3:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-CosyVoice3-0.5B-2512<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/fun_cosyvoice3_0_5b.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--allowed-media-domain<span class="w"> </span>huggingface.co<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--allowed-media-domain<span class="w"> </span>cas-bridge.xethub.hf.co<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--allowed-media-domain<span class="w"> </span>us.aws.cdn.hf.co<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
