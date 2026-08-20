@@ -940,6 +940,13 @@ Graph. Validate the selected buckets before production use.</p></li>
 (<code class="docutils literal notranslate"><span class="pre">pre_lm_max_batch_size=8</span></code>, <code class="docutils literal notranslate"><span class="pre">request_build_max_workers=8</span></code>). Set
 <code class="docutils literal notranslate"><span class="pre">enable_pre_lm_encoder:</span> <span class="pre">false</span></code> under <code class="docutils literal notranslate"><span class="pre">runtime_overrides.asr</span></code> to run the
 encoder inside prefill again.</p></li>
+<li><p>The pre-LM encoder cache (<code class="docutils literal notranslate"><span class="pre">pre_lm_cache_max_entries=1024</span></code>) keeps its
+entries in page-locked (pinned) host memory so device-to-host and
+host-to-device copies run asynchronously on the DMA path instead of
+blocking a worker thread through a pageable bounce buffer. The whole
+budget (<code class="docutils literal notranslate"><span class="pre">entries</span> <span class="pre">×</span> <span class="pre">3.84</span> <span class="pre">MB</span></code> for large-v3, <code class="docutils literal notranslate"><span class="pre">≈3.9</span> <span class="pre">GB</span></code>) is locked at start-up
+and cannot be swapped; size container memory limits accordingly, or set
+<code class="docutils literal notranslate"><span class="pre">pre_lm_cache_pin_host_memory:</span> <span class="pre">false</span></code> to fall back to pageable memory.</p></li>
 <li><p>Prefill budget defaults to 6,144 tokens (<code class="docutils literal notranslate"><span class="pre">⌊6144/1500⌋=4</span></code>) under atomic
 admission (<code class="docutils literal notranslate"><span class="pre">chunked_prefill_size=0</span></code>). This caps LM-side prefill batching
 independently of the pre-LM encoder batch limit.</p></li>
