@@ -236,6 +236,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/audio_translations.html">Audio Translations</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts.html">TTS Model Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/tts_process_topology.html">TTS Process Topology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usage/process_topology_migration.html">Process Topology Migration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/omni_router.html">Omni Router Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../basic_usage/mps_dp.html">Same-GPU Data Parallelism with CUDA MPS</a></li>
 </ul>
@@ -490,7 +491,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#declarative-config">Declarative Config</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stageconfig-reference"><code class="docutils literal notranslate"><span class="pre">StageConfig</span></code> Reference</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pipelineconfig-reference"><code class="docutils literal notranslate"><span class="pre">PipelineConfig</span></code> Reference</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stage-fusion">Stage Fusion</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logical-processes-and-replicas">Logical Processes and Replicas</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime-prep-and-runner">Runtime Prep and Runner</a></li>
@@ -625,7 +626,7 @@ belongs in stages, schedulers, model runners, and model-local payload logic.</p>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">process</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">str</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
-<td><p>OS process group identifier. Non-TP stages with the same <code class="docutils literal notranslate"><span class="pre">process</span></code> value share a single OS process; today every non-TP stage must declare one explicitly (see also <code class="docutils literal notranslate"><span class="pre">_validate_general</span></code>). For TP stages, <code class="docutils literal notranslate"><span class="pre">process</span></code> is optional and acts as a prefix for the derived rank-process names (<code class="docutils literal notranslate"><span class="pre">{process}_tp{rank}</span></code>); if unset, the stage name is used as the prefix.</p></td>
+<td><p>OS process group identifier. Non-TP stages with the same <code class="docutils literal notranslate"><span class="pre">process</span></code> value share a single OS process; today every non-TP stage must declare one explicitly (see also <code class="docutils literal notranslate"><span class="pre">_validate_general</span></code>). For TP stages, <code class="docutils literal notranslate"><span class="pre">process</span></code> is optional, must not be shared with another stage, and acts as a prefix for the derived rank-process names (<code class="docutils literal notranslate"><span class="pre">{process}_tp{rank}</span></code>); if unset, the stage name is used as the prefix.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">wait_for</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">list[str]</span></code> or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
@@ -717,10 +718,10 @@ runtime prep derives stream receivers and same-GPU stream paths from it.</p>
 <td><p>first stage</p></td>
 <td><p>Optional override for the stage that receives new requests.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fused_stages</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">list[list[str]]</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">[]</span></code></p></td>
-<td><p>Adjacent linear stage groups to colocate in one runtime process, enabling Stage-level local dispatch while preserving normal Stage ownership.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">processes</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">ProcessConfig]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">{}</span></code></p></td>
+<td><p>Sparse replica policy keyed by Process Name. Member stages come from <code class="docutils literal notranslate"><span class="pre">StageConfig.process</span></code>, so this never repeats them. Unlisted processes run one replica.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">runtime_overrides</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">dict[str,</span> <span class="pre">dict[str,</span> <span class="pre">Any]]</span></code></p></td>
@@ -759,22 +760,84 @@ runtime prep derives stream receivers and same-GPU stream paths from it.</p>
 <p><code class="docutils literal notranslate"><span class="pre">CommConfig</span></code> is the per-stage communication tuning block. It contains
 <code class="docutils literal notranslate"><span class="pre">slot_size_mb</span></code>, <code class="docutils literal notranslate"><span class="pre">credits</span></code>, <code class="docutils literal notranslate"><span class="pre">mooncake_protocol</span></code>, <code class="docutils literal notranslate"><span class="pre">mooncake_hostname</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">mooncake_device_name</span></code>. It does not select a transport backend.</p>
-<section id="stage-fusion">
-<h3>Stage Fusion<a class="headerlink" href="#stage-fusion" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">fused_stages</span></code> is a framework-level colocation hint. It keeps every listed
-logical stage as a normal <code class="docutils literal notranslate"><span class="pre">Stage</span></code>; it does not create a synthetic scheduler or
-move routing, relay, fan-in, streaming, abort, or terminal completion into the
-scheduler layer.</p>
-<p>At runtime prep, each fused group adds a process-colocation constraint. The
-process topology planner merges the process groups that contain those stages.
-Once colocated, ordinary Stage routing can use process-local object dispatch for
-eligible full-payload hops and process-local stream dispatch for same-process
-stream edges. Cross-process or unsafe fan-out edges still use the relay/control
-plane path.</p>
-<p>The first supported fusion form is conservative: a group must be adjacent,
-linear, non-TP, and fit on at most one GPU. Internal stages must route only to
-the next stage in the group. Existing explicit <code class="docutils literal notranslate"><span class="pre">process</span></code> groups are not split;
-if fusion connects two process groups, those groups are merged.</p>
+<section id="logical-processes-and-replicas">
+<h3>Logical Processes and Replicas<a class="headerlink" href="#logical-processes-and-replicas" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">StageConfig.process</span></code> is the only declaration of process membership. Stages that
+name the same process share one OS process; different names produce different
+processes. A TP stage owns its process outright: it falls back to the stage name
+when <code class="docutils literal notranslate"><span class="pre">process</span></code> is unset, and it cannot be shared with another stage.</p>
+<p>The config compiler groups stages by Process Name, attaches the sparse
+<code class="docutils literal notranslate"><span class="pre">processes</span></code> replica policy, and validates the resulting topology once. A
+cross-process edge derived from <code class="docutils literal notranslate"><span class="pre">next</span></code>, <code class="docutils literal notranslate"><span class="pre">stream_to</span></code>, or <code class="docutils literal notranslate"><span class="pre">wait_for</span></code> is rejected
+only when the model lists it in <code class="docutils literal notranslate"><span class="pre">process_local_edges()</span></code>. Membership is final
+after this step; GPU memory fractions remain explicit stage configuration.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ProcessConfig</span></code> is the value type of that mapping:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">num_replicas</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">&gt;=</span> <span class="pre">1</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p>Number of whole-process instances.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">replica_devices</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code>, <code class="docutils literal notranslate"><span class="pre">list[int]</span></code>, comma-separated <code class="docutils literal notranslate"><span class="pre">str</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Device ids for every replica, replica 0 included. A non-TP process with GPU stages needs one id per replica; a TP process needs <code class="docutils literal notranslate"><span class="pre">num_replicas</span> <span class="pre">x</span> <span class="pre">tp_size</span></code> ids. A pure CPU process must leave this unset.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>For example:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">decode</span>
+<span class="w">    </span><span class="nt">process</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tail</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postprocess</span>
+<span class="w">    </span><span class="nt">process</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tail</span>
+
+<span class="nt">processes</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tail</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">num_replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</pre></div>
+</div>
+<p>A replica copies a whole Process. With <code class="docutils literal notranslate"><span class="pre">num_replicas:</span> <span class="pre">N</span></code>, each member stage gets
+N instances, and instances with the same index form one complete Process replica
+named <code class="docutils literal notranslate"><span class="pre">P&#64;rN</span></code> (<code class="docutils literal notranslate"><span class="pre">decode&#64;r0</span></code> and <code class="docutils literal notranslate"><span class="pre">postprocess&#64;r0</span></code> in <code class="docutils literal notranslate"><span class="pre">tail&#64;r0</span></code>). TP rank processes
+are named <code class="docutils literal notranslate"><span class="pre">P&#64;rN_tpM</span></code>. The <code class="docutils literal notranslate"><span class="pre">&#64;rN</span></code> suffix is reserved: user-declared stage and
+process names must not use it.</p>
+<p><code class="docutils literal notranslate"><span class="pre">replica_devices</span></code> covers every replica including index 0, and overrides
+<code class="docutils literal notranslate"><span class="pre">StageConfig.gpu</span></code> for the GPU stages of that process. This holds at
+<code class="docutils literal notranslate"><span class="pre">num_replicas:</span> <span class="pre">1</span></code> as well: the process keeps its unsuffixed names and produces
+no replica bindings, but its GPU stages still move to the declared device. A
+non-TP process with GPU stages needs one device id per replica; a TP process
+with size T needs N x T ids, split into per-replica rank groups. A pure CPU
+process must not declare devices.</p>
+<p>Every GPU-stage factory governed by <code class="docutils literal notranslate"><span class="pre">replica_devices</span></code> must accept an explicit
+<code class="docutils literal notranslate"><span class="pre">gpu_id</span></code> keyword argument. Runtime preparation rejects factories without that
+contract instead of translating placement into a legacy <code class="docutils literal notranslate"><span class="pre">device</span></code> argument.</p>
+<p>Because a replicated process resolves its devices here rather than from
+<code class="docutils literal notranslate"><span class="pre">StageConfig.gpu</span></code>, replica placement is included in GPU colocation validation.
+When <code class="docutils literal notranslate"><span class="pre">require_memory_fraction_for_colocation</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code>, every GPU shared by
+multiple process groups requires explicit
+<code class="docutils literal notranslate"><span class="pre">runtime.resources.total_gpu_memory_fraction</span></code> values. Setting it to <code class="docutils literal notranslate"><span class="pre">false</span></code>
+disables that requirement only for colocation declared by <code class="docutils literal notranslate"><span class="pre">StageConfig.gpu</span></code>.
+Sharing involving final placement from <code class="docutils literal notranslate"><span class="pre">replica_devices</span></code> always requires
+fractions, including when <code class="docutils literal notranslate"><span class="pre">num_replicas:</span> <span class="pre">1</span></code>. Fractions that are provided still
+count toward <code class="docutils literal notranslate"><span class="pre">max_total_gpu_memory_fraction_per_gpu</span></code>.</p>
+<p>At admission the coordinator picks one replica per replicated Process and
+projects that index onto the Process’s member stages, so members always agree
+and different processes choose independently. The default round-robin policy
+advances every replicated Process once per admission, so Processes with equal
+replica counts stay index-aligned. Unequal counts are legal, but their selected
+indices periodically diverge; stream-connected stages may then route across
+GPUs through the relay even when equal-index replicas are placed on the same
+GPU. Use equal counts when a topology relies on same-index, same-GPU pairing.</p>
 </section>
 </section>
 <section id="runtime-prep-and-runner">
@@ -794,19 +857,24 @@ factory when the factory accepts them</p></li>
 <li><p>wire stream targets and same-GPU stream fast paths</p></li>
 </ul>
 <p>Serving uses <code class="docutils literal notranslate"><span class="pre">MultiProcessPipelineRunner</span></code> for both single-process and
-multi-process topologies. Runtime prep first resolves GPU placement, then
-process topology:</p>
+multi-process topologies. Runtime prep compiles the logical process plan first,
+expands process replicas, then resolves GPU placement, and finally builds the
+physical process topology:</p>
 <ul class="simple">
 <li><p>every non-TP stage must declare <code class="docutils literal notranslate"><span class="pre">process</span></code> explicitly — there is no implicit
 default. Configs saved before this refactor are not auto-migrated: set
 <code class="docutils literal notranslate"><span class="pre">process=&quot;pipeline&quot;</span></code> on every non-TP stage to recover the historical
 single-process behavior, or use any other shared/distinct process name to
-opt into the declarative multi-stage-per-process layout;</p></li>
+opt into the declarative multi-stage-per-process layout. See
+<a class="reference internal" href="../basic_usage/process_topology_migration.html"><span class="std std-doc">Process Topology Migration</span></a> for
+replacements for the removed CLI and config entries;</p></li>
 <li><p>explicit <code class="docutils literal notranslate"><span class="pre">stage.process</span></code> groups non-TP stages declaratively.</p></li>
 </ul>
-<p>A process group may contain CPU stages and stages on at most one GPU. Multiple
-process groups may share the same GPU only when GPU-stage memory budgets are
-explicit and fit the configured placement limit.</p>
+<p>A process group may contain CPU stages and stages on at most one GPU. When
+<code class="docutils literal notranslate"><span class="pre">require_memory_fraction_for_colocation</span></code> is enabled, multiple process groups may
+share the same GPU only when GPU-stage memory budgets are explicit. Disabling
+that requirement permits missing budgets; any budgets that are provided must
+still fit the configured placement limit.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>pipeline/
 |-- stage_workers.py    # StageLaunchConfig, subprocess entrypoint, StageGroup
 |-- runtime_config.py   # endpoint/runtime-dir/placement prep
@@ -833,11 +901,11 @@ stages.</p>
 <p>For <code class="docutils literal notranslate"><span class="pre">tp_size</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>, the runner derives one process per TP rank. Each process runs
 the stage scheduler and model worker with a different <code class="docutils literal notranslate"><span class="pre">tp_rank</span></code> and GPU. NCCL
 collectives inside model forward keep TP ranks in lockstep. <code class="docutils literal notranslate"><span class="pre">StageConfig.process</span></code>
-is optional for TP stages; if set, it acts as the prefix for the derived
-per-rank process names (<code class="docutils literal notranslate"><span class="pre">{process}_tp{rank}</span></code>); if unset, the stage name is used
-as the prefix. TP ranks always own their OS process exclusively — a TP stage’s
-process group cannot host any other stage, regardless of whether <code class="docutils literal notranslate"><span class="pre">process</span></code> is
-set or unset.</p>
+is optional for TP stages; if set, it names the logical TP process and acts as
+the prefix for the derived per-rank process names (<code class="docutils literal notranslate"><span class="pre">{process}_tp{rank}</span></code>); if
+unset, the stage name is used for both. TP ranks always own their OS process
+exclusively — a TP stage’s process group cannot host any other stage, regardless
+of whether <code class="docutils literal notranslate"><span class="pre">process</span></code> is set or unset.</p>
 <p>Only rank 0 owns external stage IO:</p>
 <ul class="simple">
 <li><p>rank 0 receives ZMQ messages from the coordinator or previous stage</p></li>
@@ -900,7 +968,7 @@ inside one pipeline.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#declarative-config">Declarative Config</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stageconfig-reference"><code class="docutils literal notranslate"><span class="pre">StageConfig</span></code> Reference</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pipelineconfig-reference"><code class="docutils literal notranslate"><span class="pre">PipelineConfig</span></code> Reference</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stage-fusion">Stage Fusion</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#logical-processes-and-replicas">Logical Processes and Replicas</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime-prep-and-runner">Runtime Prep and Runner</a></li>
