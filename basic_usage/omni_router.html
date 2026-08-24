@@ -933,6 +933,15 @@ does not support streaming)</p></li>
 plus <code class="docutils literal notranslate"><span class="pre">audio_input</span></code> when configured with reference audio</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">/v1/audio/voices</span></code> management and synthesis using an uploaded voice require
 the owner worker, which has both <code class="docutils literal notranslate"><span class="pre">speech</span></code> and <code class="docutils literal notranslate"><span class="pre">audio_input</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code> and <code class="docutils literal notranslate"><span class="pre">/v1/audio/translations</span></code> require
+<code class="docutils literal notranslate"><span class="pre">audio_input</span></code> (also for <code class="docutils literal notranslate"><span class="pre">streaming</span></code> when the <code class="docutils literal notranslate"><span class="pre">stream</span></code> form field is true.) are multipart uploads, so the router reads the <code class="docutils literal notranslate"><span class="pre">model</span></code> and <code class="docutils literal notranslate"><span class="pre">stream</span></code> form
+fields with a single linear pass that skips the uploaded file to avoid cpu
+overhead, so in a pool that mixes ASR models the request lands on a worker
+registered with that model name. When the router cannot read a field it
+falls back to <code class="docutils literal notranslate"><span class="pre">X-SGLang-Omni-Route-Model</span></code> and <code class="docutils literal notranslate"><span class="pre">X-SGLang-Omni-Route-Stream</span></code>;
+when a field and its header are both present they must agree or the router
+answers <code class="docutils literal notranslate"><span class="pre">400</span></code>. Translation support is per model, and a worker that does not
+support it answers <code class="docutils literal notranslate"><span class="pre">400</span></code>.</p></li>
 </ul>
 <p>Register narrower worker capabilities only when a worker cannot serve one of
 those request classes.</p>
@@ -1131,7 +1140,7 @@ them.</p>
 <li><p>A <strong>supervisor</strong> binds the public port once and passes the listening socket
 to <code class="docutils literal notranslate"><span class="pre">N</span></code> <strong>data-plane (DP)</strong> processes, which accept from the shared queue and
 relay the model routes (<code class="docutils literal notranslate"><span class="pre">/generate</span></code>, <code class="docutils literal notranslate"><span class="pre">/v1/chat/completions</span></code>,
-<code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code>, <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>).</p></li>
+<code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code>, <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>, <code class="docutils literal notranslate"><span class="pre">/v1/audio/translations</span></code>).</p></li>
 <li><p>One <strong>control plane (CP)</strong> owns the worker registry, health checks, and the
 admin surface. DPs learn the routable-worker set from a snapshot file the CP
 republishes on every state change and on a fixed keepalive cadence. Admin
