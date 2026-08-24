@@ -645,7 +645,7 @@ for response formats and other ASR models.</p>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">response_format</span></code></p></td>
 <td><p>string</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">json</span></code>, <code class="docutils literal notranslate"><span class="pre">verbose_json</span></code>, or raw <code class="docutils literal notranslate"><span class="pre">text</span></code>; translation <code class="docutils literal notranslate"><span class="pre">srt</span></code>/<code class="docutils literal notranslate"><span class="pre">vtt</span></code> require segment timestamps and return HTTP 400</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">json</span></code>, <code class="docutils literal notranslate"><span class="pre">verbose_json</span></code>, raw <code class="docutils literal notranslate"><span class="pre">text</span></code>, <code class="docutils literal notranslate"><span class="pre">srt</span></code>, or <code class="docutils literal notranslate"><span class="pre">vtt</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p>float</p></td>
@@ -659,6 +659,9 @@ for response formats and other ASR models.</p>
 or <code class="docutils literal notranslate"><span class="pre">translate</span></code>); it is not a public form field. The route uses the ASR stage
 default unless the pipeline is configured another way. For smoke tests, keep
 the request minimal and use <code class="docutils literal notranslate"><span class="pre">response_format=json</span></code>.</p>
+<p>For both transcription and translation, <code class="docutils literal notranslate"><span class="pre">srt</span></code> and <code class="docutils literal notranslate"><span class="pre">vtt</span></code> request Whisper’s
+model-derived segment timestamps. Non-streaming subtitle requests are
+supported; <code class="docutils literal notranslate"><span class="pre">stream=true</span></code> with either subtitle format returns HTTP 400.</p>
 </section>
 <section id="long-audio">
 <h2>Long Audio<a class="headerlink" href="#long-audio" title="Link to this heading">#</a></h2>

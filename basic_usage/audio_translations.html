@@ -591,13 +591,14 @@ translation target is English in both APIs.</p>
 <td><p>Raw translated text with <code class="docutils literal notranslate"><span class="pre">text/plain</span></code> content type</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">srt</span></code>, <code class="docutils literal notranslate"><span class="pre">vtt</span></code></p></td>
-<td><p>Not supported; HTTP 400</p></td>
+<td><p>Whisper subtitles with model-derived segment timestamps</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">verbose_json</span></code> returns a single segment spanning the audio duration, matching
-<code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>. Subtitle formats require a model adapter with real
+segment timestamps; unsupported models return HTTP 400 before inference.</p>
 <p>Streaming is available with <code class="docutils literal notranslate"><span class="pre">stream=true</span></code> for <code class="docutils literal notranslate"><span class="pre">json</span></code> and <code class="docutils literal notranslate"><span class="pre">text</span></code>, using the same
 SSE lifecycle as transcriptions: <code class="docutils literal notranslate"><span class="pre">transcript.text.delta</span></code> events, one
 <code class="docutils literal notranslate"><span class="pre">transcript.text.done</span></code> event, then <code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">[DONE]</span></code>.</p>
