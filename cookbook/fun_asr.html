@@ -657,11 +657,12 @@ python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmar
 </section>
 <section id="benchmark-results">
 <h2>Benchmark Results<a class="headerlink" href="#benchmark-results" title="Link to this heading">#</a></h2>
-<p>Measured on a single H100 80 GB (bf16, DP=1, default server settings)
-against the full SeedTTS sets. Each row is the mean of 3 runs with one
-discarded warmup pass per level. RTF is processing time divided by audio
-duration (lower is better). RTFx is successful input-audio seconds divided by
-wall-clock seconds (higher is better).</p>
+<p>Measured on a single H100 80 GB (bf16, DP=1) against the full SeedTTS sets,
+with the pre-coalescing stage defaults (<code class="docutils literal notranslate"><span class="pre">max_running_requests=32</span></code>,
+<code class="docutils literal notranslate"><span class="pre">request_build_max_pending=16</span></code>, prefill coalescing off). Each row is the mean
+of 3 runs with one discarded warmup pass per level. RTF is processing time
+divided by audio duration (lower is better). RTFx is successful input-audio
+seconds divided by wall-clock seconds (higher is better).</p>
 <p>SeedTTS EN (1088 clips, mean clip length 4.69 s). Corpus WER was 0.0171 at
 every level through concurrency 32:</p>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -793,11 +794,13 @@ concurrency 32:</p>
 </tbody>
 </table>
 </div>
-<p>At concurrency 64 a single worker rejects roughly 2 to 5 percent of
-requests with HTTP 500 by design, because the request-build backlog admits
-at most 16 pending builds per worker. Qwen3-ASR shows the same shedding
-behavior at this level. For higher client concurrency, serve behind the
-DP=2 managed router, matching the ASR CI topology.</p>
+<p>A single worker sheds requests with HTTP 500 by design once the
+request-build backlog is full; the current default admits at most 32 pending
+builds per worker. Under the pre-coalescing defaults above (16 pending
+builds) that cost roughly 2 to 5 percent of requests at concurrency 64.
+Qwen3-ASR shows the same shedding behavior at this level. For higher client
+concurrency, serve behind the DP=2 managed router, matching the ASR CI
+topology.</p>
 </section>
 <section id="known-limitations">
 <h2>Known Limitations<a class="headerlink" href="#known-limitations" title="Link to this heading">#</a></h2>
