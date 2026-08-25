@@ -417,7 +417,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.3" />
-    <meta name="docbuild:last-update" content="Aug 24, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 25, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -976,12 +976,14 @@ movement.</p>
 </tbody>
 </table>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">DataReadyMessage.data_ref</span></code> carries either a direct PyTorch CUDA IPC envelope or
-a typed relay <code class="docutils literal notranslate"><span class="pre">DataRef</span></code>. A direct envelope contains a pickled payload header or
-stream metadata together with PyTorch CUDA storage handles. A relay <code class="docutils literal notranslate"><span class="pre">DataRef</span></code>
-contains the object id, data kind, transport, layout, backend buffer reference,
-tensor layout, and optional stream metadata. Backend-owned details from
-<code class="docutils literal notranslate"><span class="pre">RelayOperation.metadata</span></code> live under <code class="docutils literal notranslate"><span class="pre">DataRef.buffer.info</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DataReadyMessage.data_ref</span></code> carries a direct PyTorch CUDA IPC envelope, an inline
+CPU stream envelope, or a typed relay <code class="docutils literal notranslate"><span class="pre">DataRef</span></code>. A direct envelope contains a
+pickled payload header or stream metadata together with PyTorch CUDA storage
+handles. An inline CPU stream envelope contains a serialized tensor and its
+tensor-free metadata. A relay <code class="docutils literal notranslate"><span class="pre">DataRef</span></code> contains the object id, data kind,
+transport, layout, backend buffer reference, tensor layout, and optional stream
+metadata. Backend-owned details from <code class="docutils literal notranslate"><span class="pre">RelayOperation.metadata</span></code> live under
+<code class="docutils literal notranslate"><span class="pre">DataRef.buffer.info</span></code>.</p>
 </section>
 <section id="normal-payload-flow">
 <h2>Normal Payload Flow<a class="headerlink" href="#normal-payload-flow" title="Link to this heading">#</a></h2>
@@ -1064,6 +1066,10 @@ metadata admission limit</p></li>
 </ul>
 <p>For nonlocal stream targets:</p>
 <ul class="simple">
+<li><p>a CPU tensor whose serialized tensor-and-metadata payload is at most 16 KiB
+and whose metadata contains no tensors may ride directly in <code class="docutils literal notranslate"><span class="pre">DataReadyMessage</span></code></p></li>
+<li><p>inline envelopes own their bytes and therefore require no relay ACK; chunks
+that exceed the limit continue through the selected relay</p></li>
 <li><p>the chunk is written with <code class="docutils literal notranslate"><span class="pre">write_tensor()</span></code></p></li>
 <li><p>tensor-valued metadata is extracted and written as separate <code class="docutils literal notranslate"><span class="pre">DataRef</span></code>s</p></li>
 <li><p>the control message is sent before waiting for pending put operations</p></li>
@@ -1246,7 +1252,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 24, 2026.
+  Last updated on Aug 25, 2026.
   <br/>
 </p>
   </div>
