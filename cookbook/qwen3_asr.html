@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'cookbook/qwen3_asr';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -530,8 +531,8 @@ the checkpoint configuration (BF16 for Qwen3-ASR-1.7B); pass
 <code class="docutils literal notranslate"><span class="pre">--stages.asr.factory-args.dtype</span> <span class="pre">float16</span></code> to force FP16.
 Async decode is enabled by default for all decode batch sizes, allowing the
 shared one-step-lookahead path to overlap host-side result processing with the
-next GPU decode forward even for a single request. Use <code class="docutils literal notranslate"><span class="pre">--decode-mode</span> <span class="pre">sync</span></code> to
-disable it, or tune the crossover with <code class="docutils literal notranslate"><span class="pre">--async-lookahead-min-batch-size</span></code>.
+next GPU decode forward even for a single request. Use <code class="docutils literal notranslate"><span class="pre">--asr.factory.enable_async_decode</span> <span class="pre">false</span></code> to
+disable it, or tune the crossover with <code class="docutils literal notranslate"><span class="pre">--asr.factory.async_decode_min_batch_size</span></code>.
 The request builders also use the shared LM prefill-admission gate: prefill
 starts when 16 built requests are ready or after the oldest ready request waits
 40 ms. Once request-build work drains, a ready prefill is released immediately
@@ -556,7 +557,7 @@ qualified profile on other GPU architectures.</p>
 <p>For example, force synchronous decode when comparing modes:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--decode-mode<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--asr.factory.enable_async_decode<span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
@@ -894,7 +895,7 @@ requests/s, zero shedding), at the price of larger CUDA-graph and KV memory.
 On memory-constrained GPUs, use the memory-conservative override:</p></li>
 </ul>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--max-running-requests<span class="w"> </span><span class="m">32</span>
+<span class="w">  </span>--asr.engine.max_running_requests<span class="w"> </span><span class="m">32</span>
 </pre></div>
 </div>
 <ul class="simple">

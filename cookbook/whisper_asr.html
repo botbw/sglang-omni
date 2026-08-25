@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'cookbook/whisper_asr';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -537,9 +538,10 @@
 <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">whisper</span>
 <span class="nt">model_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai/whisper-large-v3-turbo</span>
 
-<span class="nt">runtime_overrides</span><span class="p">:</span>
+<span class="nt">stages</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">asr</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">enable_encoder_cuda_graph</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">factory</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">enable_encoder_cuda_graph</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </pre></div>
 </div>
 <p>The graph is captured after SGLang’s generation graphs. With pre-LM off, raise <code class="docutils literal notranslate"><span class="pre">max_prefill_tokens</span></code> before configuring larger LM-side buckets (12/16). Each request uses the smallest captured bucket that fits its batch. Requests larger than every captured bucket, with a different feature shape, or without a successful capture run eagerly. Startup and first-replay logs identify the captured and executed buckets.</p>
@@ -549,19 +551,20 @@
 <p>Whisper builds requests with eight worker threads by default, matching other pre-LM ASR pipelines. The coalescing gate targets two requests, while the default 6,144-token atomic budget lets the LM scheduler admit up to four 1,504-token Whisper requests together. A partial batch waits for at most 6 ms only while another request build is pending; a single request and a partial batch with no remaining build work are released immediately.</p>
 <p><code class="docutils literal notranslate"><span class="pre">request_build_max_pending</span></code> bounds submitted request-build futures, not the request backlog. When <code class="docutils literal notranslate"><span class="pre">max_queued_requests</span></code> is unset, requests beyond that pending-build limit remain queued for later construction. Setting <code class="docutils literal notranslate"><span class="pre">max_queued_requests</span></code> retains the configured finite-queue rejection behavior.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">prefill_coalesce_requests</span></code> and <code class="docutils literal notranslate"><span class="pre">prefill_coalesce_wait_ms</span></code> to tune the gate. Set <code class="docutils literal notranslate"><span class="pre">prefill_coalesce_requests:</span> <span class="pre">0</span></code> to disable only coalescing, or also set <code class="docutils literal notranslate"><span class="pre">request_build_max_workers:</span> <span class="pre">1</span></code> to restore the pre-optimization request-build path:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runtime_overrides</span><span class="p">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">asr</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">request_build_max_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<span class="w">    </span><span class="nt">prefill_coalesce_requests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">    </span><span class="nt">factory</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">request_build_max_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">      </span><span class="nt">prefill_coalesce_requests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 </pre></div>
 </div>
 </section>
 <section id="async-decode">
 <h2>Async Decode<a class="headerlink" href="#async-decode" title="Link to this heading">#</a></h2>
-<p>Whisper enables the shared one-step-lookahead decode path at batch size 2 and above. It overlaps the current decode step’s GPU work with the previous step’s host-side result processing, while batch size 1 remains on the synchronous path. The default running-request limit is 64. Use the shared decode-mode option to compare against synchronous decode or diagnose a request lifecycle issue:</p>
+<p>Whisper enables the shared one-step-lookahead decode path at batch size 2 and above. It overlaps the current decode step’s GPU work with the previous step’s host-side result processing, while batch size 1 remains on the synchronous path. The default running-request limit is 64. Disable async decode on the stage to compare against synchronous decode or diagnose a request lifecycle issue:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>openai/whisper-large-v3<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--decode-mode<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--asr.factory.enable_async_decode<span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
@@ -739,7 +742,7 @@ declares in code (<code class="docutils literal notranslate"><span class="pre">W
 <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span><span class="s2">"</span><span class="nv">$MODEL_PATH</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.30<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--decode-mode<span class="w"> </span>sync<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--asr.factory.enable_async_decode<span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
@@ -957,7 +960,7 @@ and <code class="docutils literal notranslate"><span class="pre">vtt</span></cod
 Graph. Validate the selected buckets before production use.</p></li>
 <li><p>Audio encoding runs before LM admission by default
 (<code class="docutils literal notranslate"><span class="pre">pre_lm_max_batch_size=8</span></code>, <code class="docutils literal notranslate"><span class="pre">request_build_max_workers=8</span></code>). Set
-<code class="docutils literal notranslate"><span class="pre">enable_pre_lm_encoder:</span> <span class="pre">false</span></code> under <code class="docutils literal notranslate"><span class="pre">runtime_overrides.asr</span></code> to run the
+<code class="docutils literal notranslate"><span class="pre">enable_pre_lm_encoder:</span> <span class="pre">false</span></code> under <code class="docutils literal notranslate"><span class="pre">stages.asr.factory</span></code> to run the
 encoder inside prefill again.</p></li>
 <li><p>The pre-LM encoder cache (<code class="docutils literal notranslate"><span class="pre">pre_lm_cache_max_entries=1024</span></code>) keeps its
 entries in page-locked (pinned) host memory so device-to-host and

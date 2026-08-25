@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_usage/tts_process_topology';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -488,10 +489,8 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#changing-placement-without-editing-the-model-config">Changing Placement Without Editing the Model Config</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-a-topology-is-validated">How a Topology Is Validated</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#applicability-by-model">Applicability by Model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#process-replicas">Process Replicas</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#changing-placement-at-launch">Changing Placement at Launch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-a-placement-is-validated">How a Placement Is Validated</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resource-and-performance-trade-offs">Resource and Performance Trade-offs</a></li>
 </ul>
             </nav>
@@ -506,31 +505,39 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="tts-process-topology">
 <h1>TTS Process Topology<a class="headerlink" href="#tts-process-topology" title="Link to this heading">#</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">StageConfig.process</span></code> is the only source of truth for process topology. Stages
-that name the same process share one OS process; stages with different names run
-in different processes. There is no CLI override — a deployment that needs a
-different topology declares it in YAML.</p>
-<p>For example, a config can make vocoder isolation persistent:</p>
+<p><code class="docutils literal notranslate"><span class="pre">StageConfig.process</span></code> is the source of truth for process topology. It is plain
+per-stage configuration: the model’s config class declares the default, and a
+config file or a dotted CLI flag overrides it like any other stage field.
+Omitting it preserves the topology declared by the selected model or YAML
+config.</p>
+<p>A config file can make vocoder isolation persistent:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vocoder</span>
+<span class="w">  </span><span class="nt">vocoder</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">process</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vocoder</span>
 </pre></div>
 </div>
-<p>Or it can keep the vocoder in a shared process:</p>
+<p>Or keep the vocoder in a shared process:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vocoder</span>
+<span class="w">  </span><span class="nt">vocoder</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">process</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pipeline</span>
 </pre></div>
 </div>
-<section id="changing-placement-without-editing-the-model-config">
-<h2>Changing Placement Without Editing the Model Config<a class="headerlink" href="#changing-placement-without-editing-the-model-config" title="Link to this heading">#</a></h2>
-<p>A YAML config or a dotted override sets <code class="docutils literal notranslate"><span class="pre">process</span></code> on individual stages. The
-following reproduces the topology the built-in Higgs-TTS config already
-declares:</p>
+<section id="changing-placement-at-launch">
+<h2>Changing Placement at Launch<a class="headerlink" href="#changing-placement-at-launch" title="Link to this heading">#</a></h2>
+<p>The same field is set from the command line with the dotted spelling, without
+editing the source config:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># put the vocoder in its own process</span>
+python<span class="w"> </span>-m<span class="w"> </span>sglang_omni.cli<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>MODEL<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--vocoder.process<span class="w"> </span>vocoder
+</pre></div>
+</div>
+<p>Repeating one process name colocates stages in it. The following override
+produces the topology already declared by the built-in Higgs-TTS config:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sglang_omni.cli<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>bosonai/higgs-tts-3-4b<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stages.preprocessing.process<span class="w"> </span>tts_frontend<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stages.audio_encoder.process<span class="w"> </span>tts_frontend
+<span class="w">  </span>--preprocessing.process<span class="w"> </span>tts_frontend<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--audio_encoder.process<span class="w"> </span>tts_frontend
 </pre></div>
 </div>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>tts_frontend : preprocessing, audio_encoder
@@ -538,98 +545,31 @@ pipeline     : tts_engine
 vocoder      : vocoder
 </pre></div>
 </div>
-<p>Running a stage alone means giving it a process name nothing else uses.</p>
+<p>Setting a stage to the process it already runs in is an idempotent no-op.
+Writing one stage’s <code class="docutils literal notranslate"><span class="pre">process</span></code> twice with different values is refused as a
+conflict, like any other doubly-written path.</p>
 </section>
-<section id="how-a-topology-is-validated">
-<h2>How a Topology Is Validated<a class="headerlink" href="#how-a-topology-is-validated" title="Link to this heading">#</a></h2>
-<p>The compiler enumerates every cross-process edge of the final topology from
-<code class="docutils literal notranslate"><span class="pre">next</span></code>, <code class="docutils literal notranslate"><span class="pre">stream_to</span></code>, and <code class="docutils literal notranslate"><span class="pre">wait_for</span></code>, and applies the model’s correctness
-contract:</p>
+<section id="how-a-placement-is-validated">
+<h2>How a Placement Is Validated<a class="headerlink" href="#how-a-placement-is-validated" title="Link to this heading">#</a></h2>
+<p>Process topology is validated by the placement and topology planners before
+startup:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">process_local_edges()</span></code> — which handoffs must stay inside one process because
-the payload does not carry required process-local state, or because the model
-retains an established compatibility boundary. Edges are splittable by
-default. The exception is declared per <strong>edge</strong>, not per stage, because grouping
-<code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> with <code class="docutils literal notranslate"><span class="pre">audio_encoder</span></code> leaves their shared handoff local while
-still permitting <code class="docutils literal notranslate"><span class="pre">audio_encoder</span> <span class="pre">-&gt;</span> <span class="pre">tts_engine</span></code> to cross processes.</p></li>
+<li><p>Every non-TP stage must declare a <code class="docutils literal notranslate"><span class="pre">process</span></code>; TP stages derive one process
+per rank.</p></li>
+<li><p>A process group may span CPU stages and stages on at most one GPU.</p></li>
+<li><p>When multiple process groups share one GPU, every GPU stage involved must
+declare <code class="docutils literal notranslate"><span class="pre">gpu_memory_fraction</span></code>, and the per-GPU total must fit
+<code class="docutils literal notranslate"><span class="pre">placement.max_total_gpu_memory_fraction_per_gpu</span></code>. Validation names the
+stages whose fractions are missing.</p></li>
+<li><p>TP rank process names must not collide with other process groups.</p></li>
 </ul>
-<p>The contract is checked once while compiling the config, including for edges
-that tensor parallelism creates by putting a TP stage in its own process.</p>
-</section>
-<section id="applicability-by-model">
-<h2>Applicability by Model<a class="headerlink" href="#applicability-by-model" title="Link to this heading">#</a></h2>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Model</p></th>
-<th class="head"><p>Process-local edges</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Higgs-TTS</p></td>
-<td><p>—</p></td>
-</tr>
-<tr class="row-odd"><td><p>FishAudio S2-Pro</p></td>
-<td><p>—</p></td>
-</tr>
-<tr class="row-even"><td><p>Voxtral TTS</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">-&gt;</span> <span class="pre">tts_generation</span></code> — compatibility guard preserving the previous process-split allowlist</p></td>
-</tr>
-<tr class="row-odd"><td><p>Ming-Omni-TTS</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">-&gt;</span> <span class="pre">reference_encode</span></code>, <code class="docutils literal notranslate"><span class="pre">reference_encode</span> <span class="pre">-&gt;</span> <span class="pre">tts_engine</span></code> — compatibility guards preserving the previous process-split allowlist</p></td>
-</tr>
-<tr class="row-even"><td><p>MOSS-TTS Local (single-GPU)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">-&gt;</span> <span class="pre">tts_engine</span></code> — preprocessing publishes into a process-local <code class="docutils literal notranslate"><span class="pre">PreparedRequestQueue</span></code> the AR stage pops</p></td>
-</tr>
-<tr class="row-odd"><td><p>MOSS-TTS Local (split)</p></td>
-<td><p>all pipeline edges; placement declares GPU 0 while the codec runs on <code class="docutils literal notranslate"><span class="pre">cuda:1</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p>Qwen3-TTS</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">-&gt;</span> <span class="pre">tts_engine</span></code> — prepared requests live in <code class="docutils literal notranslate"><span class="pre">_PREPROCESSING_CONTEXT</span></code> / <code class="docutils literal notranslate"><span class="pre">_PREPARED_REQUESTS</span></code>, read in-process by the AR engine builder</p></td>
-</tr>
-<tr class="row-odd"><td><p>MOSS-TTS Delay</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">-&gt;</span> <span class="pre">tts_engine</span></code> — same process-local <code class="docutils literal notranslate"><span class="pre">PreparedRequestQueue</span></code> handoff</p></td>
-</tr>
-<tr class="row-even"><td><p>Audar-TTS</p></td>
-<td><p>—</p></td>
-</tr>
-<tr class="row-odd"><td><p>Fun-CosyVoice3</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">-&gt;</span> <span class="pre">tts_engine</span></code> — prepared requests live in <code class="docutils literal notranslate"><span class="pre">_PREPROCESSING_CONTEXT</span></code> / <code class="docutils literal notranslate"><span class="pre">_PREPARED_REQUESTS</span></code>, read in-process by the AR engine builder</p></td>
-</tr>
-<tr class="row-even"><td><p>Zonos2</p></td>
-<td><p>—</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>Higgs-TTS already groups <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">audio_encoder</span></code> in a
-<code class="docutils literal notranslate"><span class="pre">tts_frontend</span></code> process and places <code class="docutils literal notranslate"><span class="pre">vocoder</span></code> in its own process by default.
-Redeclaring either placement is a no-op; the stages can still be fully separated
-or regrouped under another process name.</p>
-<p>Audar-TTS and Zonos2 carry stage state in <code class="docutils literal notranslate"><span class="pre">StagePayload.data</span></code>, so neither
-declares a process-local edge.</p>
-<p>Voxtral carries the preprocessing output (<code class="docutils literal notranslate"><span class="pre">input_ids</span></code>, <code class="docutils literal notranslate"><span class="pre">voice</span></code>, and generation
-limits) in <code class="docutils literal notranslate"><span class="pre">StagePayload.data</span></code> before <code class="docutils literal notranslate"><span class="pre">tts_generation</span></code>. Ming does the same for
-its preprocessing fields, then serializes the reference encoder’s <code class="docutils literal notranslate"><span class="pre">spk_emb</span></code> and
-<code class="docutils literal notranslate"><span class="pre">prompt_latent</span></code> tensors with the <code class="docutils literal notranslate"><span class="pre">typed_tensor</span></code> wire codec before <code class="docutils literal notranslate"><span class="pre">tts_engine</span></code>.
-The unit suite verifies those wire contracts in separate spawned workers through
-the production control plane and SHM relay. The model configs still reject these
-splits so this change does not expand the previously supported topology surface;
-they can be enabled separately after model-level rollout validation.</p>
-</section>
-<section id="process-replicas">
-<h2>Process Replicas<a class="headerlink" href="#process-replicas" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">PipelineConfig.processes</span></code> gives a Process more than one instance. A replica
-copies the whole Process, so members never end up in different replicas:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">processes</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">vocoder</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">num_replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<span class="w">    </span><span class="nt">replica_devices</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">2</span><span class="p p-Indicator">]</span>
-</pre></div>
-</div>
-<p>Each request picks one replica per replicated Process at admission and keeps it
-for its lifetime. See
-<a class="reference internal" href="../developer_reference/config.html"><span class="std std-doc"><code class="docutils literal notranslate"><span class="pre">config.md</span></code></span></a> for the naming, device, and
-memory-fraction rules.</p>
+<p>Not every handoff tolerates a process boundary: some stages exchange state
+through process-local registries a second process cannot read (for example,
+MOSS-TTS pipelines hand prepared requests from preprocessing to the AR engine
+through a process-local queue, and Qwen3-TTS keeps prepared requests in
+process-local module state). Splitting such an edge fails at serving time
+rather than at config validation — keep those stages in one process as the
+shipped configs do.</p>
 </section>
 <section id="resource-and-performance-trade-offs">
 <h2>Resource and Performance Trade-offs<a class="headerlink" href="#resource-and-performance-trade-offs" title="Link to this heading">#</a></h2>
@@ -637,26 +577,17 @@ memory-fraction rules.</p>
 context. It can improve throughput by overlapping vocoder scheduling and GPU
 work with generation, but it also changes IPC and serialization paths, can
 increase idle VRAM, and may duplicate process-local caches or runtime state.
-Grouping stages that share a cache or a local handoff keeps that cost down,
-which is what a shared process name expresses.</p>
+Grouping stages that share a cache or a local handoff keeps that cost down.</p>
 <p>When multiple processes share one GPU, all affected GPU stages must declare
-compatible <code class="docutils literal notranslate"><span class="pre">runtime.resources.total_gpu_memory_fraction</span></code> values, and their total
-must fit the placement limit. A model may opt out of that requirement with
-<code class="docutils literal notranslate"><span class="pre">require_memory_fraction_for_colocation:</span> <span class="pre">false</span></code> only when the sharing is declared
-entirely by <code class="docutils literal notranslate"><span class="pre">StageConfig.gpu</span></code>. Final placement from <code class="docutils literal notranslate"><span class="pre">replica_devices</span></code> always
-requires fractions, including with <code class="docutils literal notranslate"><span class="pre">num_replicas:</span> <span class="pre">1</span></code>. Explicitly configured
-fractions still count toward the placement limit. Fractions must be declared
-directly on the stages; compiling a process topology does not infer or rewrite
-them.</p>
-<p>These fractions are placement-accounting declarations, not proof of an
-allocator-enforced runtime limit. A factory receives
-<code class="docutils literal notranslate"><span class="pre">total_gpu_memory_fraction</span></code> only when its signature accepts that argument, and
-an SGLang <code class="docutils literal notranslate"><span class="pre">mem_fraction_static</span></code> override can represent a different runtime
-value. Keep runtime overrides consistent with the placement declaration.
-Unsafe declared same-GPU topologies are rejected before startup.</p>
+compatible <code class="docutils literal notranslate"><span class="pre">gpu_memory_fraction</span></code> values, and their total must fit the
+placement limit. These fractions are placement-accounting declarations, not
+proof of an allocator-enforced runtime limit: a factory receives
+<code class="docutils literal notranslate"><span class="pre">total_gpu_memory_fraction</span></code> only when its signature accepts that argument,
+and an <code class="docutils literal notranslate"><span class="pre">engine.mem_fraction_static</span></code> override can represent a different
+runtime value. Keep the two consistent.</p>
 <p>Performance depends on the model, hardware, concurrency, request shape, and
-streaming mode. Measure the target workload before making a topology change
-persistent in model or YAML configuration.</p>
+streaming mode. Measure the target workload before making isolation persistent
+in model or YAML configuration.</p>
 </section>
 </section>
 
@@ -707,10 +638,8 @@ persistent in model or YAML configuration.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#changing-placement-without-editing-the-model-config">Changing Placement Without Editing the Model Config</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-a-topology-is-validated">How a Topology Is Validated</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#applicability-by-model">Applicability by Model</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#process-replicas">Process Replicas</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#changing-placement-at-launch">Changing Placement at Launch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-a-placement-is-validated">How a Placement Is Validated</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resource-and-performance-trade-offs">Resource and Performance Trade-offs</a></li>
 </ul>
   </nav></div>

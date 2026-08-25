@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'cookbook/qwen3_omni';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -871,7 +872,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <ul class="simple">
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">modalities:</span> <span class="pre">[&quot;text&quot;,</span> <span class="pre">&quot;audio&quot;]</span></code> has no effect on a text-only server.</strong> No error is raised — the response simply contains no audio. Use a speech-mode server (without <code class="docutils literal notranslate"><span class="pre">--text-only</span></code>) to get audio output.</p></li>
 <li><p><strong><code class="docutils literal notranslate"><span class="pre">content</span></code> must be <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> when the query is entirely in <code class="docutils literal notranslate"><span class="pre">audios</span></code>, <code class="docutils literal notranslate"><span class="pre">videos</span></code>, or <code class="docutils literal notranslate"><span class="pre">images</span></code>.</strong> Leaving a text query in <code class="docutils literal notranslate"><span class="pre">content</span></code> alongside audio causes the model to process both, which is usually not what you want.</p></li>
-<li><p><strong>Colocated topology does not support <code class="docutils literal notranslate"><span class="pre">--thinker-tp-size</span> <span class="pre">2</span></code>.</strong> The server raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> at startup (“Qwen Phase 1 colocation does not support thinker TP”). Use disaggregated topology for TP=2.</p></li>
+<li><p><strong>Colocated topology does not support <code class="docutils literal notranslate"><span class="pre">--thinker.tp_size</span> <span class="pre">2</span></code>.</strong> The server raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> at startup (“Qwen Phase 1 colocation does not support thinker TP”). Use disaggregated topology for TP=2.</p></li>
 <li><p><strong>Requests that exceed the model’s context length are rejected with an error.</strong> The preprocessor raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> when the prompt token count alone meets or exceeds <code class="docutils literal notranslate"><span class="pre">max_seq_len</span></code>, or when <code class="docutils literal notranslate"><span class="pre">prompt</span> <span class="pre">tokens</span> <span class="pre">+</span> <span class="pre">max_new_tokens</span> <span class="pre">≥</span> <span class="pre">max_seq_len</span></code>. Reduce input length or lower <code class="docutils literal notranslate"><span class="pre">max_tokens</span></code> to stay within the limit.</p></li>
 </ul>
 </section>

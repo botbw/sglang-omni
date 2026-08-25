@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'cookbook/qwen3_tts';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -611,29 +612,29 @@ compilation and the initial vocoder CUDA Graph, so it is disabled by default.</p
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--max-running-requests</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--tts_engine.engine.max_running_requests</span></code></p></td>
 <td><p>Concurrent running slots</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">16</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--max-queued-requests</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--tts_engine.engine.max_queued_requests</span></code></p></td>
 <td><p>Waiting-queue depth before fast-reject</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">16</span></code></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Every request enters the waiting queue first, so <code class="docutils literal notranslate"><span class="pre">--max-queued-requests</span></code>
+<p>Every request enters the waiting queue first, so <code class="docutils literal notranslate"><span class="pre">max_queued_requests</span></code>
 must be <strong>≥ 1</strong>. Capacity is about <code class="docutils literal notranslate"><span class="pre">running</span> <span class="pre">+</span> <span class="pre">queued</span></code>. Extra arrivals get
 HTTP <strong>503</strong> (<code class="docutils literal notranslate"><span class="pre">The</span> <span class="pre">request</span> <span class="pre">queue</span> <span class="pre">is</span> <span class="pre">full.</span></code>) before preprocessing, or later
 if the AR waiting queue or request-build backlog is full. Qwen3-TTS
 defaults to 4 request-build workers with pending depth 16.</p>
-<p>Raising <code class="docutils literal notranslate"><span class="pre">--max-running-requests</span></code> does <strong>not</strong> automatically raise the waiting
+<p>Raising <code class="docutils literal notranslate"><span class="pre">max_running_requests</span></code> does <strong>not</strong> automatically raise the waiting
 bound. For a ceiling-32 experiment:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-TTS-12Hz-0.6B-Base<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_tts_0_6b.yaml<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--max-running-requests<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--max-queued-requests<span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tts_engine.engine.max_running_requests<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tts_engine.engine.max_queued_requests<span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>

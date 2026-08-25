@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'cookbook/ming_tts';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -555,8 +556,8 @@ eager, and requests are non-streaming unless <code class="docutils literal notra
 <p>For non-streaming requests, <code class="docutils literal notranslate"><span class="pre">audio_decode</span></code> sends the complete generated latent sequence through
 one full-sequence AudioVAE decode. Streaming requests use the separate incremental AudioVAE path
 with request-local cache and overlap state. Older configs need three changes, all enforced
-during config loading: remove <code class="docutils literal notranslate"><span class="pre">decode_mode</span></code> from <code class="docutils literal notranslate"><span class="pre">audio_decode.factory_args</span></code> or
-<code class="docutils literal notranslate"><span class="pre">runtime_overrides.audio_decode</span></code>, because non-streaming chunked decode is no longer supported;
+during config loading: remove <code class="docutils literal notranslate"><span class="pre">decode_mode</span></code> from the audio_decode stage’s
+<code class="docutils literal notranslate"><span class="pre">factory</span></code> group, because non-streaming chunked decode is no longer supported;
 set <code class="docutils literal notranslate"><span class="pre">tts_engine.stream_to</span></code> to <code class="docutils literal notranslate"><span class="pre">[audio_decode]</span></code> to declare the latent stream edge; and set
 <code class="docutils literal notranslate"><span class="pre">audio_decode.can_accept_stream_before_payload</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> so the consumer accepts latents that
 arrive while generation is still running. The provided YAML already carries all three.</p>
@@ -614,7 +615,7 @@ server with access to the directory containing the clip:</p>
 <code class="docutils literal notranslate"><span class="pre">Content-Type:</span> <span class="pre">audio/pcm</span></code>. The <code class="docutils literal notranslate"><span class="pre">X-Sample-Rate</span></code>, <code class="docutils literal notranslate"><span class="pre">X-Channels</span></code>, and <code class="docutils literal notranslate"><span class="pre">X-Bit-Depth</span></code> headers report the
 sample rate, channel count, and bit depth; HTTP EOF ends the stream.</p>
 <p>Ming AudioVAE uses separate initial and steady cadence settings. Its first non-terminal call
-buffers <code class="docutils literal notranslate"><span class="pre">audio_decode.factory_args.initial_chunk_patches</span></code> latent patches and emits no PCM; a
+buffers <code class="docutils literal notranslate"><span class="pre">stages.audio_decode.factory.initial_chunk_patches</span></code> latent patches and emits no PCM; a
 later call supplies the right-hand context needed to emit that initial group. Subsequent calls
 consume <code class="docutils literal notranslate"><span class="pre">steady_chunk_patches</span></code> at a time. The provided configuration uses two initial patches and
 four steady patches, and the terminal step flushes any remainder. Pipe the response to <code class="docutils literal notranslate"><span class="pre">ffplay</span></code>

@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_usage/omni_router';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -592,7 +593,7 @@ workers.</p>
 <code class="docutils literal notranslate"><span class="pre">worker_extra_args:</span> <span class="pre">&quot;--text-only&quot;</span></code> only if you intentionally want text-output
 workers instead of speech-output workers.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">worker_extra_args</span></code> for public Omni V1 serve options that are specific to
-the worker process, such as <code class="docutils literal notranslate"><span class="pre">--mem-fraction-static</span></code>, <code class="docutils literal notranslate"><span class="pre">--thinker-tp-size</span></code>, or
+the worker process, such as <code class="docutils literal notranslate"><span class="pre">--mem-fraction-static</span></code>, <code class="docutils literal notranslate"><span class="pre">--thinker.tp_size</span></code>, or
 <code class="docutils literal notranslate"><span class="pre">--text-only</span></code>. These arguments are passed to <code class="docutils literal notranslate"><span class="pre">sgl-omni</span> <span class="pre">serve</span></code>
 after the launcher-owned flags. When no memory flags are provided, Omni V1 uses
 its normal auto-sizing path.</p>

@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_usage/tts';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -611,7 +612,7 @@ for details.</p>
 <section id="launch-the-server">
 <h2>Launch the Server<a class="headerlink" href="#launch-the-server" title="Link to this heading">#</a></h2>
 <p>See <a class="reference internal" href="tts_process_topology.html"><span class="std std-doc">TTS Process Topology</span></a> for model defaults,
-declaring a different process topology, and same-GPU memory requirements.</p>
+per-stage <code class="docutils literal notranslate"><span class="pre">process</span></code> overrides, and same-GPU memory requirements.</p>
 <p>The reference-audio examples below fetch clips from Hugging Face, so the
 commands include the Hugging Face host and its current download redirect host.
 Omit those flags when your requests use only text, uploaded voices, local/file
@@ -826,7 +827,7 @@ terminal sentinel. When the client does not set <code class="docutils literal no
 the model selects a continuity-safe first vocoder chunk. Set the field explicitly
 to override that default, or set it to <code class="docutils literal notranslate"><span class="pre">0</span></code> to use the model’s steady chunk size
 from the start. Ming-Omni-TTS is the only model that rejects the field: its
-initial and steady cadence are pipeline-level <code class="docutils literal notranslate"><span class="pre">audio_decode.factory_args</span></code>, so a
+initial and steady cadence are the audio_decode stage’s <code class="docutils literal notranslate"><span class="pre">factory</span></code> settings, so a
 request that sets it fails.</p>
 </section>
 <section id="batch-speech">

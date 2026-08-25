@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'get_started/installation_xpu';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -674,8 +675,8 @@ curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>
 <span class="c1"># startup more headroom than the default 600 s.</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">SGLANG_OMNI_STARTUP_TIMEOUT</span><span class="o">=</span><span class="m">1800</span>
 sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>/path/to/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--text-only<span class="w"> </span>--stages.thinker.process<span class="w"> </span>thinker<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--thinker-tp-size<span class="w"> </span><span class="m">8</span><span class="w"> </span>--thinker-gpus<span class="w"> </span><span class="m">0</span>,1,2,3,4,5,6,7<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--text-only<span class="w"> </span>--thinker.process<span class="w"> </span>thinker<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--thinker.tp_size<span class="w"> </span><span class="m">8</span><span class="w"> </span>--thinker.gpu<span class="w"> </span><span class="s2">"[0, 1, 2, 3, 4, 5, 6, 7]"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
 <span class="c1"># chat:</span>
 curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/chat/completions<span class="w"> </span><span class="se">\</span>

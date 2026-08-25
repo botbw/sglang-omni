@@ -51,8 +51,8 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_usage/qwen3_omni';</script>
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
-    <script src="../_static/js/qwen3_omni_server_generator.js?v=66f6ff63"></script>
-    <script src="../_static/js/ming_omni_server_generator.js?v=694b1473"></script>
+    <script src="../_static/js/qwen3_omni_server_generator.js?v=d7738e8a"></script>
+    <script src="../_static/js/ming_omni_server_generator.js?v=7979a72f"></script>
     <link rel="icon" href="../_static/logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -250,6 +250,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/apiserver_design.html">API Server Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/pipeline.html">Pipeline Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/config.html">Config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_reference/adding_parameters.html">Adding a Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/communication.html">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/reference_encode_service.html">Reference Encode Service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer_reference/profiler.html">Request-level profiler</a></li>
@@ -681,15 +682,16 @@ both text (from the thinker) and audio (from the talker) output.</p>
 <p>Exact-shape CUDA Graph replay is enabled by default for Qwen3-Omni Code2Wav.
 The default stage config supplies a 2% typed GPU memory budget; colocated
 example configs override it with their hardware-specific budget.</p>
-<p>To disable replay, add this runtime override to the YAML config:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runtime_overrides</span><span class="p">:</span>
+<p>To disable replay, set it on the stage in the YAML config:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">code2wav</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">enable_cuda_graph</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">factory</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">enable_cuda_graph</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </pre></div>
 </div>
 <p>When replay is enabled, a custom Code2Wav stage must define
-<code class="docutils literal notranslate"><span class="pre">runtime.resources.total_gpu_memory_fraction</span></code>; startup rejects a missing typed
-budget before loading the model.</p>
+<code class="docutils literal notranslate"><span class="pre">gpu_memory_fraction</span></code>; startup rejects a missing typed budget before loading
+the model.</p>
 <p>The feature derives the exact <code class="docutils literal notranslate"><span class="pre">B=1</span></code> threshold windows from
 <code class="docutils literal notranslate"><span class="pre">stream_chunk_size</span></code> and <code class="docutils literal notranslate"><span class="pre">left_context_size</span></code>; the defaults capture
 <code class="docutils literal notranslate"><span class="pre">T{10,20,30,35}</span></code>. Unsupported shapes and final stream tails run eagerly.
@@ -703,9 +705,10 @@ time-to-first-audio is unchanged. For successfully completed requests, audio
 bytes and message boundaries are identical to the synchronous path. A request
 that fails or is aborted can drop an un-emitted pending window while its
 in-flight staging buffer is retired. To disable it:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runtime_overrides</span><span class="p">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">code2wav</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">enable_output_overlap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">factory</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">enable_output_overlap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </pre></div>
 </div>
 <p>For manual multi-GPU placement, use the example script:</p>
@@ -737,8 +740,8 @@ the value globally or per AR stage:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8008</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--thinker-mem-fraction-static<span class="w"> </span><span class="m">0</span>.88<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--talker-mem-fraction-static<span class="w"> </span><span class="m">0</span>.88
+<span class="w">  </span>--thinker.engine.mem_fraction_static<span class="w"> </span><span class="m">0</span>.88<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--talker_ar.engine.mem_fraction_static<span class="w"> </span><span class="m">0</span>.88
 </pre></div>
 </div>
 <p>The speech server launcher exposes the same per-stage controls:</p>
@@ -753,23 +756,22 @@ the value globally or per AR stage:</p>
 <span class="w">  </span>--talker-mem-fraction-static<span class="w"> </span><span class="m">0</span>.88
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">--mem-fraction-static</span></code> applies to both Qwen AR stages. Per-stage flags override
-the global value for that stage. Values must be greater than <code class="docutils literal notranslate"><span class="pre">0</span></code> and less than
-<code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">--mem-fraction-static</span></code> applies to every SGLang engine stage. A dotted
+per-stage path overrides the global value for that stage. Values must be
+greater than <code class="docutils literal notranslate"><span class="pre">0</span></code> and less than <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 <p>The thinker admits up to 64 running requests by default. Use the
 thinker-specific flag to lower or raise that limit in either text-only or
 speech mode:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-Omni-30B-A3B-Instruct<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--thinker-max-running-requests<span class="w"> </span><span class="m">16</span>
+<span class="w">  </span>--thinker.engine.max_running_requests<span class="w"> </span><span class="m">16</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">--max-running-requests</span></code> continues to target the generation stage, which is the
-talker in the Qwen3-Omni speech pipeline. To configure the thinker through a
-pipeline YAML file instead, use the stage runtime override:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">runtime_overrides</span><span class="p">:</span>
+<p>To configure the thinker through a pipeline YAML file instead, set the same
+path under the stage entry:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">thinker</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">server_args_overrides</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">engine</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">max_running_requests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
 </pre></div>
 </div>
@@ -780,15 +782,15 @@ pipeline YAML file instead, use the stage runtime override:</p>
 at about 86% median utilization. Give it a GPU of its own. The code2wav
 vocoder is light by comparison (9–13% median utilization) and shares the
 thinker’s GPU by default. That default holds only when the thinker stays on
-its own default GPU — a <code class="docutils literal notranslate"><span class="pre">--thinker-gpus</span></code> override moves the thinker alone,
-not code2wav, so pass <code class="docutils literal notranslate"><span class="pre">--code2wav-gpu</span></code> explicitly too if you relocate the
+its own default GPU — a <code class="docutils literal notranslate"><span class="pre">--thinker.gpu</span></code> override moves the thinker alone,
+not code2wav, so pass <code class="docutils literal notranslate"><span class="pre">--code2wav.gpu</span></code> explicitly too if you relocate the
 thinker.</p>
 <p>This is the default topology for <code class="docutils literal notranslate"><span class="pre">sgl-omni</span> <span class="pre">serve</span></code> without GPU overrides:
 thinker alone, talker alone, code2wav on the thinker’s GPU. When code2wav
 shares the thinker’s GPU, the thinker’s auto-sized KV pool shrinks to make
 room for it — about 4.3 GiB smaller, measured on H200, since the vocoder
 itself needs roughly 1.4–1.6 GiB. That adjustment only happens for the
-auto-sized budget: an explicitly pinned <code class="docutils literal notranslate"><span class="pre">--thinker-mem-fraction-static</span></code>
+auto-sized budget: an explicitly pinned <code class="docutils literal notranslate"><span class="pre">--thinker.engine.mem_fraction_static</span></code>
 gets no automatic carve-out, so a tightly pinned fraction should leave
 headroom for code2wav.</p>
 <p>A concurrency-8 experiment held code2wav fixed on the thinker’s GPU and
