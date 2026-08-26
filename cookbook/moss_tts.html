@@ -571,9 +571,13 @@ download the model (public, no token required):</p>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
-<p>The default model-specific layout keeps the FP32 reference encoder on CPU and
-loads the GPU vocoder in BF16. This removes one codec copy from GPU and halves
-the parameter memory of the remaining codec.</p>
+<p>The default model-specific layout places the repository-local encoder and
+vocoder components on the configured pipeline GPU. The encoder and decoder
+weights materialize in BF16 according to <code class="docutils literal notranslate"><span class="pre">compute_dtype</span></code>; the quantizers and
+explicit FP32 norms remain in FP32. Each stage constructs only the codec
+components it uses instead of loading a complete codec copy.</p>
+<p>The bounded 24 GB and 32 GB configurations explicitly move preprocessing to
+CPU. They retain BF16 compute unless <code class="docutils literal notranslate"><span class="pre">compute_dtype</span></code> is overridden.</p>
 <p>For the bounded 32 GB qualification layout, use:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>OpenMOSS-Team/MOSS-TTS-v1.5<span class="w"> </span><span class="se">\</span>
