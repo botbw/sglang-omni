@@ -604,7 +604,7 @@ shared helpers do the heavy lifting:</p>
 <code class="docutils literal notranslate"><span class="pre">sglang_omni.scheduling.sglang_backend</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">create_sglang_infrastructure(server_args,</span> <span class="pre">gpu_id,</span> <span class="pre">*,</span> <span class="pre">model_arch_override=...)</span></code>
 from <code class="docutils literal notranslate"><span class="pre">sglang_omni.scheduling.bootstrap</span></code>, which returns the
-<code class="docutils literal notranslate"><span class="pre">(model_worker,</span> <span class="pre">tree_cache,</span> <span class="pre">req_to_token_pool,</span> <span class="pre">token_to_kv_pool_allocator,</span> <span class="pre">prefill_mgr,</span> <span class="pre">decode_mgr,</span> <span class="pre">model_config)</span></code> tuple that <code class="docutils literal notranslate"><span class="pre">OmniScheduler</span></code> expects</p></li>
+<code class="docutils literal notranslate"><span class="pre">(model_worker,</span> <span class="pre">tree_cache,</span> <span class="pre">req_to_token_pool,</span> <span class="pre">token_to_kv_pool_allocator,</span> <span class="pre">model_config)</span></code> tuple that <code class="docutils literal notranslate"><span class="pre">OmniScheduler</span></code> expects</p></li>
 </ul>
 <p>Two pieces of glue still have to be added by hand:</p>
 <ul class="simple">
@@ -659,7 +659,7 @@ relies on it:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">SimpleScheduler</span></code> - a single callable, optionally batched via
 <code class="docutils literal notranslate"><span class="pre">batch_compute_fn</span></code>. Right for preprocessing and most vocoders.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">OmniScheduler</span></code> - wraps SGLang’s prefill/decode managers, KV cache, and
+<li><p><code class="docutils literal notranslate"><span class="pre">OmniScheduler</span></code> - wraps SGLang’s scheduler methods, KV cache, and
 request-limit machinery. Use it for AR generation.</p></li>
 <li><p>A custom scheduler - when neither of the above fits (stateful streaming
 vocoder, custom detokenizer, etc.).</p></li>
