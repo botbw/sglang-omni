@@ -559,7 +559,10 @@ update fails, the scheduler remains paused because SGLang may have partially
 updated the model weights; recover by reloading or otherwise repairing the
 worker before calling <code class="docutils literal notranslate"><span class="pre">continue_generation</span></code>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">/update_weights_from_tensor</span></code> is still reserved for a future tensor data-plane
-integration and returns HTTP 501 from the worker and router HTTP APIs.</p>
+integration and returns HTTP 501 from the worker and router HTTP APIs. Once
+enabled, a failed tensor update leaves the scheduler paused because tensor
+loading is non-transactional; repair the worker before calling
+<code class="docutils literal notranslate"><span class="pre">continue_generation</span></code>.</p>
 </section>
 <section id="stage-and-tp-behavior">
 <h2>Stage and TP Behavior<a class="headerlink" href="#stage-and-tp-behavior" title="Link to this heading">#</a></h2>
