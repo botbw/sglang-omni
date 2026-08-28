@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.3" />
-    <meta name="docbuild:last-update" content="Aug 27, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 28, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -506,6 +506,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-this-relates-to-encoder-max-batch-size">How this relates to <code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#encoder-cuda-graph">Encoder CUDA Graph</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#known-limitations">Known Limitations</a></li>
 </ul>
@@ -794,6 +795,28 @@ construction; encoder concurrency and backpressure are owned by the separate
 pre-LM queue.</p>
 </section>
 </section>
+<section id="encoder-cuda-graph">
+<h2>Encoder CUDA Graph<a class="headerlink" href="#encoder-cuda-graph" title="Link to this heading">#</a></h2>
+<p>The audio encoder CUDA Graph is enabled by default. At startup it captures
+batch buckets derived from <code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code> (powers of two, plus the
+limit itself; the default of 8 yields <code class="docutils literal notranslate"><span class="pre">1/2/4/8</span></code>) and mel-frame buckets in
+64-frame steps up to about 10 s (1024 frames). Longer clips, any uncaptured
+bucket, and a failed capture or replay use the eager encoder; requests never
+trigger capture.</p>
+<p>The graphs are captured after SGLang’s generation CUDA graphs and before the
+pre-LM encoder service. To profile eager encoder execution:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--asr.factory.enable_encoder_cuda_graph<span class="w"> </span><span class="nb">false</span>
+</pre></div>
+</div>
+<p>Or in a pipeline config:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">asr</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">factory</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">enable_encoder_cuda_graph</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</pre></div>
+</div>
+</section>
 <section id="benchmarking">
 <h2>Benchmarking<a class="headerlink" href="#benchmarking" title="Link to this heading">#</a></h2>
 <p>Use <code class="docutils literal notranslate"><span class="pre">benchmarks/eval/benchmark_asr_seedtts.py</span></code> to sweep ASR concurrency on
@@ -887,6 +910,7 @@ ARK-ASR currently ignores it (the transcription instruction is fixed).</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-this-relates-to-encoder-max-batch-size">How this relates to <code class="docutils literal notranslate"><span class="pre">encoder_max_batch_size</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#encoder-cuda-graph">Encoder CUDA Graph</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#benchmarking">Benchmarking</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#known-limitations">Known Limitations</a></li>
 </ul>
@@ -922,7 +946,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 27, 2026.
+  Last updated on Aug 28, 2026.
   <br/>
 </p>
   </div>
