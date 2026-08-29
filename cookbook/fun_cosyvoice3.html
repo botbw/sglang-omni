@@ -59,7 +59,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.3" />
-    <meta name="docbuild:last-update" content="Aug 28, 2026"/>
+    <meta name="docbuild:last-update" content="Aug 29, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -490,7 +490,10 @@
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flow-decoder-batching">Flow Decoder Batching</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthesizing-speech">Synthesizing Speech</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#zero-shot-voice-cloning">Zero-shot Voice Cloning</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#python">Python</a></li>
@@ -568,6 +571,63 @@ minutes while the <code class="docutils literal notranslate"><span class="pre">t
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
+<section id="flow-decoder-batching">
+<h3>Flow Decoder Batching<a class="headerlink" href="#flow-decoder-batching" title="Link to this heading">#</a></h3>
+<p>The buffered vocoder uses the batch-capable <code class="docutils literal notranslate"><span class="pre">FunCosyVoice3Flow.inference</span></code> API for every
+request. <code class="docutils literal notranslate"><span class="pre">SimpleScheduler</span></code> collects up to 8 requests for at most 2 ms, then the vocoder
+groups requests by total mel length in 50-frame buckets. Every bucket, including a
+single-request bucket, calls the same built-in Flow inference method; packing, padding,
+masking, CFM Euler/CFG, and output unpadding are handled inside the Flow implementation.
+The 50-frame default matches the current DiT estimator’s static chunk size; a larger bucket
+can combine more requests at the cost of additional padding, compute, and peak GPU memory.</p>
+<p>The scheduler uses a bucket-rounded Flow admission budget, configured by
+<code class="docutils literal notranslate"><span class="pre">flow_batch_admission_frames</span></code> (2,000 by default). It controls whether a later request joins the
+current Flow batch; it is not a maximum supported request length. A request whose total
+prompt-plus-output mel length exceeds that budget runs as a B=1 Flow batch through the same
+adapter, and later requests wait for the next scheduler batch. This preserves valid long
+generations while preventing them from being combined with more work.</p>
+<p>HiFT still runs once per request. The built-in Flow implementation supports the pinned
+CosyVoice PyTorch estimator and buffered <code class="docutils literal notranslate"><span class="pre">streaming=False,</span> <span class="pre">finalize=True</span></code> inference only.
+TensorRT Flow is not supported by this integration and fails during vocoder initialization
+rather than falling back to another inference path.</p>
+<p>Change the mel-frame bucket size, for example to 100 frames:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-CosyVoice3-0.5B-2512<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/fun_cosyvoice3_0_5b.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--vocoder.factory.flow_batch_bucket_frames<span class="w"> </span><span class="m">100</span>
+</pre></div>
+</div>
+<p>The same setting can be written in the pipeline config under the vocoder’s
+<code class="docutils literal notranslate"><span class="pre">factory</span></code> group:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">vocoder</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">factory</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">flow_batch_bucket_frames</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+</pre></div>
+</div>
+<p>Increase the normal Flow batching budget only after measuring the target GPU. This changes the
+maximum aggregate padded work admitted into one scheduler batch; it does not reject a longer
+single request.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-CosyVoice3-0.5B-2512<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/fun_cosyvoice3_0_5b.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--vocoder.factory.flow_batch_admission_frames<span class="w"> </span><span class="m">4000</span>
+</pre></div>
+</div>
+<p>The YAML equivalent is:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">vocoder</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">factory</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">flow_batch_admission_frames</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4000</span>
+</pre></div>
+</div>
+<p>The built-in Flow implementation is tied to the Flow/CFM structure in the documented CosyVoice commit
+<code class="docutils literal notranslate"><span class="pre">074ca6dc9e80a2f424f1f74b48bdd7d3fea531cc</span></code>. It does not modify or monkey-patch the
+CosyVoice checkout; an incompatible Flow structure fails directly instead of using a
+fallback implementation.</p>
+</section>
 </section>
 <section id="synthesizing-speech">
 <h2>Synthesizing Speech<a class="headerlink" href="#synthesizing-speech" title="Link to this heading">#</a></h2>
@@ -791,6 +851,8 @@ on every request instead of being cached by URL alone.</p></li>
 <li><p><strong>Voice conversion.</strong> Voice conversion is outside the current zero-shot TTS scope.</p></li>
 <li><p><strong>Streaming decode.</strong> The current implementation buffers all speech tokens before Flow + HiFT
 decoding. Incremental PCM output is planned but is not yet available.</p></li>
+<li><p><strong>Flow batch scope.</strong> Flow batching currently supports only the PyTorch estimator. HiFT
+remains serial, and streaming Flow/HiFT batching is outside the current buffered decoder.</p></li>
 <li><p><strong>cosyvoice dependency.</strong> The <code class="docutils literal notranslate"><span class="pre">cosyvoice</span></code> package has no PyPI release and must be
 installed from GitHub. Matcha-TTS is a required submodule and must also be importable;
 only the CosyVoice Flow and HiFT paths are used by the buffered decoder.</p></li>
@@ -828,7 +890,10 @@ only the CosyVoice Flow and HiFT paths are used by the buffered decoder.</p></li
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flow-decoder-batching">Flow Decoder Batching</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthesizing-speech">Synthesizing Speech</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#zero-shot-voice-cloning">Zero-shot Voice Cloning</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#python">Python</a></li>
@@ -876,7 +941,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 28, 2026.
+  Last updated on Aug 29, 2026.
   <br/>
 </p>
   </div>
