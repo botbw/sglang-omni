@@ -493,6 +493,7 @@
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-sglang-omni">Install sglang-omni</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#torcodec-installation-for-tts-models">Torcodec installation for TTS models</a></li>
 </ul>
             </nav>
         </div>
@@ -593,6 +594,21 @@ small NPU matrix multiplication. Run <code class="docutils literal notranslate">
 for optional extras, non-editable installation, and environments where devices
 are intentionally not exposed during the build.</p>
 </section>
+<section id="torcodec-installation-for-tts-models">
+<h2>Torcodec installation for TTS models<a class="headerlink" href="#torcodec-installation-for-tts-models" title="Link to this heading">#</a></h2>
+<p>Models in the TTS models utilize <strong><code class="docutils literal notranslate"><span class="pre">torchcodec</span></code></strong> for high-efficiency, native-streaming audio decoding directly into PyTorch tensors.</p>
+<p>The helper script <code class="docutils literal notranslate"><span class="pre">scripts/npu/install_npu_torchcodec.sh</span></code> automatically installs:</p>
+<ul class="simple">
+<li><p><strong>Audio codec:</strong> <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code></p></li>
+<li><p><strong>CANN 9.1.0 stack:</strong> <code class="docutils literal notranslate"><span class="pre">toolkit</span></code>, <code class="docutils literal notranslate"><span class="pre">A3-ops</span></code>, <code class="docutils literal notranslate"><span class="pre">nnal</span></code></p></li>
+<li><p><strong>PyTorch 2.11 stack:</strong> <code class="docutils literal notranslate"><span class="pre">torch</span></code>, <code class="docutils literal notranslate"><span class="pre">torchvision</span></code>, <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>, <code class="docutils literal notranslate"><span class="pre">torch_npu</span></code>, <code class="docutils literal notranslate"><span class="pre">torchcodec</span></code></p></li>
+</ul>
+<p>To run the installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify your device type as the first argument (910b or A3)</span>
+bash<span class="w"> </span>scripts/npu/install_npu_torchcodec.sh<span class="w"> </span>A3
+</pre></div>
+</div>
+</section>
 </section>
 
 
@@ -644,6 +660,7 @@ are intentionally not exposed during the build.</p>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-sglang-omni">Install sglang-omni</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#torcodec-installation-for-tts-models">Torcodec installation for TTS models</a></li>
 </ul>
   </nav></div>
 
