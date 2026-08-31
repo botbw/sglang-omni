@@ -552,8 +552,9 @@ the checkpoint:</p>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
-<p>The provided configuration enables the AR and acoustic-tail CUDA graphs. AudioVAE decode remains
-eager, and requests are non-streaming unless <code class="docutils literal notranslate"><span class="pre">stream</span></code> is set.</p>
+<p>The provided configuration enables the AR and acoustic-tail CUDA graphs and a fixed-width CUDA
+graph for streaming AudioVAE transitions. Non-streaming full-sequence AudioVAE decode remains
+compact eager, and requests are non-streaming unless <code class="docutils literal notranslate"><span class="pre">stream</span></code> is set.</p>
 <p>For non-streaming requests, <code class="docutils literal notranslate"><span class="pre">audio_decode</span></code> sends the complete generated latent sequence through
 one full-sequence AudioVAE decode. Streaming requests use the separate incremental AudioVAE path
 with request-local cache and overlap state. Older configs need three changes, all enforced
@@ -562,10 +563,8 @@ during config loading: remove <code class="docutils literal notranslate"><span c
 set <code class="docutils literal notranslate"><span class="pre">tts_engine.stream_to</span></code> to <code class="docutils literal notranslate"><span class="pre">[audio_decode]</span></code> to declare the latent stream edge; and set
 <code class="docutils literal notranslate"><span class="pre">audio_decode.can_accept_stream_before_payload</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> so the consumer accepts latents that
 arrive while generation is still running. The provided YAML already carries all three.</p>
-<p>Cross-request AudioVAE batching is not implemented yet. The only supported audio-decode batch
-configuration is <code class="docutils literal notranslate"><span class="pre">max_batch_size:</span> <span class="pre">1</span></code> with <code class="docutils literal notranslate"><span class="pre">max_batch_wait_ms:</span> <span class="pre">0</span></code>, as shown in the provided YAML;
-other values are rejected before the server starts. A future batching change can expand this
-configuration only after it implements and validates a real multi-request AudioVAE decode.</p>
+<p>Cross-request non-streaming AudioVAE batching is not implemented yet. The only supported non-streaming batch configuration is <code class="docutils literal notranslate"><span class="pre">max_batch_size:</span> <span class="pre">1</span></code> with <code class="docutils literal notranslate"><span class="pre">max_batch_wait_ms:</span> <span class="pre">0</span></code>, as shown in the provided YAML; other values are rejected before the server starts.</p>
+<p><code class="docutils literal notranslate"><span class="pre">stream_slots</span></code> is the maximum number of streaming requests that the AudioVAE decoder can keep active at the same time. Each active stream uses one slot to preserve its decoding progress between audio chunks. If all slots are occupied, additional streams wait until a slot is released. The provided configuration uses <code class="docutils literal notranslate"><span class="pre">stream_slots:</span> <span class="pre">8</span></code> to match its concurrency-8 workload. Increasing it supports more simultaneous streams but uses more GPU memory and fixed-graph work; reducing it lowers those costs but also lowers streaming concurrency. It does not change non-streaming batching.</p>
 </section>
 <section id="synthesizing-speech">
 <h2>Synthesizing Speech<a class="headerlink" href="#synthesizing-speech" title="Link to this heading">#</a></h2>
@@ -774,10 +773,7 @@ flags used for generation:</p>
 <h2>Benchmark Results<a class="headerlink" href="#benchmark-results" title="Link to this heading">#</a></h2>
 <section id="recommended-single-h200-tp1">
 <h3>Recommended Single-H200 TP1<a class="headerlink" href="#recommended-single-h200-tp1" title="Link to this heading">#</a></h3>
-<p>The recommended TP1 configuration was evaluated on <strong>1× H200 141 GB</strong> with concurrency 8,
-eight warmup requests, and the full Seed-TTS-Eval EN and ZH splits. Streaming used two initial
-patches and four steady patches. AR and acoustic-tail CUDA graphs were enabled, while AudioVAE
-decode remained eager.</p>
+<p>The recommended TP1 configuration was evaluated on <strong>1× H200 141 GB</strong> with concurrency 8, eight warmup requests, and the full Seed-TTS-Eval EN and ZH splits. Streaming used two initial patches followed by four-patch steady groups, with the AR, acoustic-tail, and streaming AudioVAE CUDA graphs enabled. Non-streaming requests continued to use compact full-sequence AudioVAE eager decode.</p>
 <p>Streaming:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
@@ -798,45 +794,45 @@ decode remained eager.</p>
 <td><p>EN</p></td>
 <td class="text-right"><p>1088</p></td>
 <td class="text-right"><p>0</p></td>
-<td class="text-right"><p>0.90%</p></td>
-<td class="text-right"><p>0.2686</p></td>
-<td class="text-right"><p>1.236</p></td>
-<td class="text-right"><p>0.6208</p></td>
-<td class="text-right"><p>6.462</p></td>
-<td class="text-right"><p>30.617</p></td>
+<td class="text-right"><p>0.95%</p></td>
+<td class="text-right"><p>0.2323</p></td>
+<td class="text-right"><p>1.090</p></td>
+<td class="text-right"><p>0.4601</p></td>
+<td class="text-right"><p>7.325</p></td>
+<td class="text-right"><p>34.423</p></td>
 </tr>
 <tr class="row-odd"><td><p>text-only</p></td>
 <td><p>ZH</p></td>
 <td class="text-right"><p>2020</p></td>
 <td class="text-right"><p>0</p></td>
-<td class="text-right"><p>0.71%</p></td>
-<td class="text-right"><p>0.2592</p></td>
-<td class="text-right"><p>1.278</p></td>
-<td class="text-right"><p>0.6131</p></td>
-<td class="text-right"><p>6.253</p></td>
-<td class="text-right"><p>31.417</p></td>
+<td class="text-right"><p>0.68%</p></td>
+<td class="text-right"><p>0.2305</p></td>
+<td class="text-right"><p>1.154</p></td>
+<td class="text-right"><p>0.4649</p></td>
+<td class="text-right"><p>6.925</p></td>
+<td class="text-right"><p>34.715</p></td>
 </tr>
 <tr class="row-even"><td><p>reference</p></td>
 <td><p>EN</p></td>
 <td class="text-right"><p>1088</p></td>
 <td class="text-right"><p>0</p></td>
-<td class="text-right"><p>1.09%</p></td>
-<td class="text-right"><p>0.3107</p></td>
-<td class="text-right"><p>1.358</p></td>
-<td class="text-right"><p>0.7471</p></td>
-<td class="text-right"><p>5.883</p></td>
-<td class="text-right"><p>26.622</p></td>
+<td class="text-right"><p>1.00%</p></td>
+<td class="text-right"><p>0.2732</p></td>
+<td class="text-right"><p>1.224</p></td>
+<td class="text-right"><p>0.5948</p></td>
+<td class="text-right"><p>6.526</p></td>
+<td class="text-right"><p>29.586</p></td>
 </tr>
 <tr class="row-odd"><td><p>reference</p></td>
 <td><p>ZH</p></td>
 <td class="text-right"><p>2020</p></td>
 <td class="text-right"><p>0</p></td>
 <td class="text-right"><p>0.75%</p></td>
-<td class="text-right"><p>0.2670</p></td>
-<td class="text-right"><p>1.507</p></td>
-<td class="text-right"><p>0.7326</p></td>
-<td class="text-right"><p>5.303</p></td>
-<td class="text-right"><p>30.377</p></td>
+<td class="text-right"><p>0.2425</p></td>
+<td class="text-right"><p>1.388</p></td>
+<td class="text-right"><p>0.5502</p></td>
+<td class="text-right"><p>5.757</p></td>
+<td class="text-right"><p>33.006</p></td>
 </tr>
 </tbody>
 </table>
@@ -860,48 +856,46 @@ decode remained eager.</p>
 <td><p>EN</p></td>
 <td class="text-right"><p>1088</p></td>
 <td class="text-right"><p>0</p></td>
-<td class="text-right"><p>0.91%</p></td>
-<td class="text-right"><p>0.2035</p></td>
-<td class="text-right"><p>0.959</p></td>
-<td class="text-right"><p>8.328</p></td>
-<td class="text-right"><p>39.369</p></td>
+<td class="text-right"><p>0.93%</p></td>
+<td class="text-right"><p>0.2162</p></td>
+<td class="text-right"><p>1.019</p></td>
+<td class="text-right"><p>7.838</p></td>
+<td class="text-right"><p>37.071</p></td>
 </tr>
 <tr class="row-odd"><td><p>text-only</p></td>
 <td><p>ZH</p></td>
 <td class="text-right"><p>2020</p></td>
 <td class="text-right"><p>0</p></td>
-<td class="text-right"><p>0.69%</p></td>
-<td class="text-right"><p>0.1965</p></td>
-<td class="text-right"><p>0.983</p></td>
-<td class="text-right"><p>8.134</p></td>
-<td class="text-right"><p>40.790</p></td>
+<td class="text-right"><p>0.70%</p></td>
+<td class="text-right"><p>0.2096</p></td>
+<td class="text-right"><p>1.048</p></td>
+<td class="text-right"><p>7.625</p></td>
+<td class="text-right"><p>38.224</p></td>
 </tr>
 <tr class="row-even"><td><p>reference</p></td>
 <td><p>EN</p></td>
 <td class="text-right"><p>1088</p></td>
 <td class="text-right"><p>0</p></td>
-<td class="text-right"><p>1.07%</p></td>
-<td class="text-right"><p>0.2308</p></td>
-<td class="text-right"><p>1.031</p></td>
-<td class="text-right"><p>7.742</p></td>
-<td class="text-right"><p>35.021</p></td>
+<td class="text-right"><p>1.15%</p></td>
+<td class="text-right"><p>0.2380</p></td>
+<td class="text-right"><p>1.061</p></td>
+<td class="text-right"><p>7.523</p></td>
+<td class="text-right"><p>33.989</p></td>
 </tr>
 <tr class="row-odd"><td><p>reference</p></td>
 <td><p>ZH</p></td>
 <td class="text-right"><p>2020</p></td>
 <td class="text-right"><p>0</p></td>
-<td class="text-right"><p>0.71%</p></td>
-<td class="text-right"><p>0.1966</p></td>
-<td class="text-right"><p>1.125</p></td>
-<td class="text-right"><p>7.103</p></td>
-<td class="text-right"><p>40.737</p></td>
+<td class="text-right"><p>0.76%</p></td>
+<td class="text-right"><p>0.2009</p></td>
+<td class="text-right"><p>1.148</p></td>
+<td class="text-right"><p>6.963</p></td>
+<td class="text-right"><p>39.871</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>All 12,432 requests completed successfully. Streaming returned its first audio payload in
-0.61-0.75 seconds, while non-streaming retained higher complete-response throughput.
-The worst corpus WER was 1.09%.</p>
+<p>All 12,432 requests completed successfully. Streaming returned its first audio payload in 0.46-0.59 seconds, while non-streaming retained higher complete-response throughput. The worst corpus WER was 1.15%.</p>
 <p>Streaming playback continuity:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
@@ -939,8 +933,8 @@ The worst corpus WER was 1.09%.</p>
 </tr>
 <tr class="row-even"><td><p>reference</p></td>
 <td><p>EN</p></td>
-<td class="text-right"><p>1071</p></td>
-<td class="text-right"><p>17</p></td>
+<td class="text-right"><p>1073</p></td>
+<td class="text-right"><p>15</p></td>
 <td class="text-right"><p>0.0000</p></td>
 <td class="text-right"><p>0.0000</p></td>
 <td class="text-right"><p>100.00%</p></td>
@@ -961,7 +955,7 @@ The worst corpus WER was 1.09%.</p>
 </table>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">N/A</span></code> means that a request returned one PCM payload, so it had no inter-payload seam to score.
-All 11,641 later seams had zero measured playback underrun.</p>
+All 11,587 later seams had zero measured playback underrun.</p>
 </section>
 </section>
 <section id="known-limitations">

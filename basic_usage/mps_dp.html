@@ -490,6 +490,7 @@
             </div>
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#native-runtime-support-mps">Native runtime support (<code class="docutils literal notranslate"><span class="pre">--mps</span></code>)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deploy">Deploy</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-weights-across-replicas-opt-in-default-off">Shared weights across replicas (opt-in, default off)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-we-found-this">How We Found This</a></li>
@@ -520,6 +521,87 @@
 <p>A common data-parallel deployment assigns one GPU to each replica. When a tuned replica still leaves substantial GPU headroom, colocating multiple replicas on the same GPU can improve per-GPU throughput.</p>
 <p>Same-GPU data parallelism runs several complete serving replicas on one GPU and lets <a class="reference external" href="https://docs.nvidia.com/deploy/mps/index.html">CUDA MPS</a> share the GPU between them. This is a conditional and ongoing optimization. We are excited to share it and call for the community to join the exploration.</p>
 <p><img alt="Multiple host chains plus CUDA MPS filling the idle GPU" src="../_images/same-gpu-dp-mps.svg" /></p>
+<section id="native-runtime-support-mps">
+<h2>Native runtime support (<code class="docutils literal notranslate"><span class="pre">--mps</span></code>)<a class="headerlink" href="#native-runtime-support-mps" title="Link to this heading">#</a></h2>
+<p>The runtime can manage MPS itself for the processes of <strong>one pipeline</strong>. When a
+pipeline colocates two or more single-GPU stage processes on one GPU (for
+example a frontend process next to the generation process, or process-level
+replicas), pass <code class="docutils literal notranslate"><span class="pre">--mps</span> <span class="pre">auto</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>&lt;model&gt;<span class="w"> </span>--mps<span class="w"> </span>auto
+</pre></div>
+</div>
+<p>Modes (<code class="docutils literal notranslate"><span class="pre">--mps</span></code> on the CLI or <code class="docutils literal notranslate"><span class="pre">mps:</span></code> in the pipeline config; default <code class="docutils literal notranslate"><span class="pre">off</span></code>):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">off</span></code>: MPS is never touched.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">auto</span></code>: MPS is enabled on every GPU that hosts two or more single-GPU,
+non-TP CUDA processes of this pipeline. GPUs with one process and TP groups
+run without MPS.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">on</span></code>: a single eligible process is enough, and an MPS-incapable platform is
+a hard error instead of a warning. Use <code class="docutils literal notranslate"><span class="pre">on</span></code> for same-GPU data parallelism:
+every <code class="docutils literal notranslate"><span class="pre">serve</span> <span class="pre">--mps</span> <span class="pre">on</span></code> on one GPU joins the same daemon.</p></li>
+</ul>
+<p>Both <code class="docutils literal notranslate"><span class="pre">auto</span></code> and <code class="docutils literal notranslate"><span class="pre">on</span></code> reject startup before acquiring MPS state when one process’s
+resolved placement spans more than one physical GPU; use <code class="docutils literal notranslate"><span class="pre">mps=off</span></code> for that
+placement. Factory CUDA devices use the narrowed worker’s local namespace:
+<code class="docutils literal notranslate"><span class="pre">cuda:0</span></code> is compatible with any single-GPU placement, while a nonzero <code class="docutils literal notranslate"><span class="pre">cuda:N</span></code>
+is excluded because narrowing a worker to one UUID makes its only valid CUDA
+ordinal <code class="docutils literal notranslate"><span class="pre">cuda:0</span></code>.
+Pipeline-edge transport remains the responsibility of the existing router and
+relay layers; it does not participate in MPS eligibility.</p>
+<p>The daemon is shared per physical GPU (keyed by device UUID): MPS merges
+kernels only for clients of one server, so the first serve creates the
+daemon, later serves join it, and the last one to leave drains the clients
+and quits it. Logical GPU ordinals are resolved once against the parent
+process’s CUDA visibility and then grouped by physical UUID; <code class="docutils literal notranslate"><span class="pre">auto</span></code> counts the
+combined client processes in each physical group. Pipeline or stage
+environment defaults must not override <code class="docutils literal notranslate"><span class="pre">CUDA_VISIBLE_DEVICES</span></code> or
+<code class="docutils literal notranslate"><span class="pre">CUDA_DEVICE_ORDER</span></code> while native MPS is enabled; set them on the parent command
+instead, or use <code class="docutils literal notranslate"><span class="pre">mps=off</span></code>. Same-GPU DP is therefore just N serve commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>&lt;model&gt;<span class="w"> </span>--mps<span class="w"> </span>on<span class="w"> </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.35<span class="w"> </span>--port<span class="w"> </span><span class="m">8807</span>
+sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>&lt;model&gt;<span class="w"> </span>--mps<span class="w"> </span>on<span class="w"> </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.35<span class="w"> </span>--port<span class="w"> </span><span class="m">8808</span>
+</pre></div>
+</div>
+<p>Start replicas one after another and give each an explicit memory budget
+(<code class="docutils literal notranslate"><span class="pre">--mem-fraction-static</span></code> or the stage-qualified
+<code class="docutils literal notranslate"><span class="pre">--&lt;engine-stage&gt;.engine.max_total_tokens</span></code>), for the same KV-sizing
+reasons described under the script recipe below. Route traffic with the
+<a class="reference internal" href="omni_router.html"><span class="std std-doc">Omni Router</span></a>.</p>
+<p>The runtime owns the full lifecycle. Every managed process is verified against
+the daemon’s client list before serving starts, because a process that misses
+the pipe directory silently falls back to time slicing. A watchdog fails the
+pipeline if daemon identity or control access is lost mid-serving. Shutdown
+re-evaluates the current client list, drains this serve’s clients, and quits the
+daemon only when no other serve still owns it.</p>
+<p>If a managed worker does not exit before the shutdown timeout, the runtime
+terminates that directly owned child process and reaps it before the launcher
+exits, even when that directly owned worker is also an MPS client. It sends no
+additional signal based on an MPS snapshot or client PID, and never
+automatically signals the daemon, an unknown descendant, or a GPU-wide process
+set. Process ownership and shared MPS state are handled independently: if
+daemon identity, client ownership, or control state cannot be proved after the
+workers are gone, the owner file is marked <code class="docutils literal notranslate"><span class="pre">retained</span></code>, its lock is released,
+and the state directory is preserved. The current command then exits with a
+detailed non-zero error instead of keeping a CLI owner alive.</p>
+<p>Dirty state is never repaired automatically. A join requires the native
+<code class="docutils literal notranslate"><span class="pre">nvidia-cuda-mps-control.pid</span></code> identity, a responsive control socket, and every
+published owner lease to still be held. After a hard kill (SIGKILL, OOM kill,
+node crash), even an idle daemon or one dead co-owner makes the next start
+preserve the state and fail with owner/client details and safe cleanup guidance.
+An unlocked or retained owner blocks every later start until an operator has
+inspected and cleaned the state. Existing healthy co-owners keep serving, but
+new owners cannot join and no process retries cleanup automatically. Clean up
+and start again. A normal shutdown leaves nothing behind.</p>
+<p>Operator notes: state lives under <code class="docutils literal notranslate"><span class="pre">/tmp/sglang-omni-mps-&lt;user&gt;/&lt;gpu-uuid&gt;/</span></code>
+(<code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_MPS_STATE_ROOT</span></code> overrides it). Serves that are meant to share
+one GPU must use the same state root, or they cannot discover each other’s
+daemon and will run separate MPS servers that time-slice against each other.
+The state root is created with mode <code class="docutils literal notranslate"><span class="pre">0700</span></code>; an existing root must already be a
+non-symlink directory owned by the current user with that mode. Native MPS
+rejects <code class="docutils literal notranslate"><span class="pre">CUDA_MPS_PIPE_DIRECTORY</span></code> in the parent, pipeline, or stage environment
+instead of overwriting or joining an external daemon. It likewise rejects
+<code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_WEIGHT_SHARE</span></code> in those locations: CUDA IPC weight sharing remains
+the one deployment shape that still uses <code class="docutils literal notranslate"><span class="pre">examples/mps_dp/launch.sh</span></code> below.</p>
+</section>
 <section id="deploy">
 <h2>Deploy<a class="headerlink" href="#deploy" title="Link to this heading">#</a></h2>
 <p>The steps below are one continuous flow. We provide <code class="docutils literal notranslate"><span class="pre">examples/mps_dp/launch.sh</span></code> to manage the private MPS daemon and serving replicas for one run. It records replica processes, ports, and logs, starts replicas sequentially, verifies their KV capacity and MPS attachment, and tears down only the run it recorded. Detailed instructions are as follows:</p>
@@ -954,6 +1036,7 @@ nsys<span class="w"> </span>profile<span class="w"> </span>--gpu-metrics-devices
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#native-runtime-support-mps">Native runtime support (<code class="docutils literal notranslate"><span class="pre">--mps</span></code>)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deploy">Deploy</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-weights-across-replicas-opt-in-default-off">Shared weights across replicas (opt-in, default off)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-we-found-this">How We Found This</a></li>

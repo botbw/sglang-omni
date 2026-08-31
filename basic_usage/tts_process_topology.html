@@ -571,6 +571,7 @@ through a process-local queue, and Qwen3-TTS keeps prepared requests in
 process-local module state). Splitting such an edge fails at serving time
 rather than at config validation — keep those stages in one process as the
 shipped configs do.</p>
+<p>Ming-Omni-TTS carries preprocessing fields in <code class="docutils literal notranslate"><span class="pre">StagePayload.data</span></code> and serializes the reference encoder’s <code class="docutils literal notranslate"><span class="pre">spk_emb</span></code> and <code class="docutils literal notranslate"><span class="pre">prompt_latent</span></code> tensors with the <code class="docutils literal notranslate"><span class="pre">typed_tensor</span></code> wire codec. Both <code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">-&gt;</span> <span class="pre">reference_encode</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_encode</span> <span class="pre">-&gt;</span> <span class="pre">tts_engine</span></code> can therefore cross process boundaries.</p>
 </section>
 <section id="resource-and-performance-trade-offs">
 <h2>Resource and Performance Trade-offs<a class="headerlink" href="#resource-and-performance-trade-offs" title="Link to this heading">#</a></h2>
