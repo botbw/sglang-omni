@@ -504,7 +504,10 @@
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#language-hint">Language Hint</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming">Streaming</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming">Streaming</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#first-audio-chunk-ramp">First-audio chunk ramp</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generation-parameters">Generation Parameters</a></li>
@@ -770,6 +773,33 @@ codec frames for the first vocoder chunk so concurrent streams stay continuous.
 Pass a smaller value only when trading continuity for lower time-to-first-audio.
 Utterances that finish in fewer than <code class="docutils literal notranslate"><span class="pre">8</span></code> generated codec frames never reach the
 first chunk, so their audio arrives complete in a single final flush.</p>
+<section id="first-audio-chunk-ramp">
+<h4>First-audio chunk ramp<a class="headerlink" href="#first-audio-chunk-ramp" title="Link to this heading">#</a></h4>
+<p>For latency-sensitive deployments the whole early chunk schedule can be
+configured server-side with <code class="docutils literal notranslate"><span class="pre">stream_chunk_ramp</span></code> on the vocoder stage: entry
+<code class="docutils literal notranslate"><span class="pre">i</span></code> sizes streaming decode chunk <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">+</span> <span class="pre">1</span></code> in codec frames, and past the ramp
+the steady stride takes over, so <code class="docutils literal notranslate"><span class="pre">[2,</span> <span class="pre">4,</span> <span class="pre">8]</span></code> yields a
+<code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">-&gt;</span> <span class="pre">4</span> <span class="pre">-&gt;</span> <span class="pre">8</span> <span class="pre">-&gt;</span> <span class="pre">8</span> <span class="pre">-&gt;</span> <span class="pre">...</span></code> schedule. Set it through a pipeline config file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">config_cls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Qwen3TTSPipelineConfig</span>
+<span class="nt">model_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Qwen/Qwen3-TTS-12Hz-0.6B-Base</span>
+<span class="nt">stages</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">vocoder</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">factory</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">stream_chunk_ramp</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">4</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">8</span><span class="p p-Indicator">]</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sglang_omni.cli<span class="w"> </span>serve<span class="w"> </span>--config<span class="w"> </span>qwen3_tts_ramp.yaml
+</pre></div>
+</div>
+<p>Smaller early chunks lower time-to-first-audio but start playback with less
+buffered audio, so the continuity cost grows with concurrency: keep
+<code class="docutils literal notranslate"><span class="pre">[2,</span> <span class="pre">4,</span> <span class="pre">8]</span></code> to low concurrency, prefer <code class="docutils literal notranslate"><span class="pre">[4,</span> <span class="pre">8]</span></code> up to moderate concurrency,
+and keep the default schedule for saturated serving. The ramp is mutually
+exclusive with the legacy <code class="docutils literal notranslate"><span class="pre">initial_chunk_frames</span></code> /
+<code class="docutils literal notranslate"><span class="pre">stream_initial_followup_stride</span></code> options, its first entry must not exceed the
+steady stride, and a per-request <code class="docutils literal notranslate"><span class="pre">initial_codec_chunk_frames</span></code> still overrides
+only the first chunk.</p>
+</section>
 </section>
 </section>
 <section id="generation-parameters">
@@ -987,7 +1017,10 @@ checkpoint is less prone.</p></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#language-hint">Language Hint</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming">Streaming</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming">Streaming</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#first-audio-chunk-ramp">First-audio chunk ramp</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generation-parameters">Generation Parameters</a></li>
