@@ -57,11 +57,11 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Benchmark Relay" href="../benchmarks/relay.html" />
-    <link rel="prev" title="Omni Router Usage" href="omni_router.html" />
+    <link rel="prev" title="SGLang-Omni Rust Router" href="omni_router.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.3" />
-    <meta name="docbuild:last-update" content="Aug 31, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 01, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -238,7 +238,7 @@
 <li class="toctree-l1"><a class="reference internal" href="tts.html">TTS Model Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tts_process_topology.html">TTS Process Topology</a></li>
 <li class="toctree-l1"><a class="reference internal" href="process_topology_migration.html">Process Topology Migration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="omni_router.html">Omni Router Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="omni_router.html">SGLang-Omni Rust Router</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Same-GPU Data Parallelism with CUDA MPS</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Benchmarks</span></p>
@@ -646,7 +646,7 @@ numactl<span class="w"> </span>-H<span class="w"> </span><span class="p">|</span
 <ol class="arabic simple" start="5">
 <li><p><strong>Route traffic.</strong></p></li>
 </ol>
-<p>For easy deployment, you can register each replica endpoint with the <a class="reference internal" href="omni_router.html"><span class="std std-doc">Omni Router</span></a>. Keep the router’s <code class="docutils literal notranslate"><span class="pre">--max-connections</span></code> at least as large as the total offered concurrency. The case study did not benchmark router scheduling policies, so confirm that the selected policy keeps every replica driven and meets your workload’s latency and throughput requirements.</p>
+<p>For easy deployment, you can register each replica endpoint with the <a class="reference internal" href="python_router.html"><span class="std std-doc">Python Router</span></a>. Keep the router’s <code class="docutils literal notranslate"><span class="pre">--max-connections</span></code> at least as large as the total offered concurrency. The case study did not benchmark router scheduling policies, so confirm that the selected policy keeps every replica driven and meets your workload’s latency and throughput requirements.</p>
 <ol class="arabic simple" start="6">
 <li><p><strong>Tear down safely.</strong></p></li>
 </ol>
@@ -1007,7 +1007,7 @@ nsys<span class="w"> </span>profile<span class="w"> </span>--gpu-metrics-devices
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Omni Router Usage</p>
+        <p class="prev-next-title">SGLang-Omni Rust Router</p>
       </div>
     </a>
     <a class="right-next"
@@ -1082,7 +1082,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Aug 31, 2026.
+  Last updated on Sep 01, 2026.
   <br/>
 </p>
   </div>

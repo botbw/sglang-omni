@@ -151,7 +151,7 @@ MPS should be verified carefully. Four things are easy to conflate: environment 
 
 5. **Route traffic.**
 
-For easy deployment, you can register each replica endpoint with the [Omni Router](omni_router.md). Keep the router's `--max-connections` at least as large as the total offered concurrency. The case study did not benchmark router scheduling policies, so confirm that the selected policy keeps every replica driven and meets your workload's latency and throughput requirements.
+For easy deployment, you can register each replica endpoint with the [Python Router](python_router.md). Keep the router's `--max-connections` at least as large as the total offered concurrency. The case study did not benchmark router scheduling policies, so confirm that the selected policy keeps every replica driven and meets your workload's latency and throughput requirements.
 
 6. **Tear down safely.**
 
