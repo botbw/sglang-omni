@@ -684,8 +684,34 @@ on the submitted TED-LIUM evaluation; it remains a conservative recovery heurist
 windows and can reset that history during fallback, while SGLang-Omni currently passes the previous server chunk’s decoded text. The current
 TED-LIUM evaluation did not show an accuracy or throughput advantage from enabling this implementation, so it remains disabled by default.
 Changing the default or implementing token-level parity should be evaluated in a separate PR.</p>
-<p>The behavior follows these values, which Whisper
-declares in code (<code class="docutils literal notranslate"><span class="pre">WhisperASRPipelineConfig.audio_chunking</span></code>). They are fixed model defaults in this release:</p>
+<p>The behavior follows two kinds of values.</p>
+<p>The scheduling policy is yours to tune, with dotted flags or the matching
+YAML keys:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--audio_chunking.max_audio_clip_s</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">30</span></code></p></td>
+<td><p>Longest clip we send to the engine in one request, and therefore the chunk length. Unlike Qwen3-ASR you can only lower it: 30s is the hard edge of the model’s mel window.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--audio_chunking.max_concurrent_chunks</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">8</span></code></p></td>
+<td><p>Per-request concurrency cap used while chunks are independent. When previous-text conditioning is enabled, one request’s Whisper chunks decode in order while chunks from different requests can still batch together.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--audio_chunking.max_total_audio_s</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">3600</span></code></p></td>
+<td><p>Upper limit on the whole upload; you get HTTP 400 above it. This is a memory guard: we keep the decoded waveform in memory while its chunks run.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The model properties are ClassVars on <code class="docutils literal notranslate"><span class="pre">WhisperASRPipelineConfig</span></code>; no
+configuration path reaches them:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
@@ -694,21 +720,13 @@ declares in code (<code class="docutils literal notranslate"><span class="pre">W
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_audio_clip_s</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">30</span></code></p></td>
-<td><p>Longest clip we send to the engine in one request, and therefore the chunk length. Unlike Qwen3-ASR this is not a scheduling choice: 30s is the hard edge of the model’s mel window.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">allow_audio_chunking</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">true</span></code></p></td>
+<td><p>Whisper transcribes an isolated chunk correctly, so chunking is on.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_native_clip_s</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">30</span></code></p></td>
-<td><p>Same as the chunk length. Streaming cannot chunk, so <code class="docutils literal notranslate"><span class="pre">stream=true</span></code> takes audio up to 30s and gets HTTP 400 above that.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_total_audio_s</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">3600</span></code></p></td>
-<td><p>Upper limit on the whole upload; you get HTTP 400 above it. This is a memory guard: we keep the decoded waveform in memory while its chunks run.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_concurrent_chunks</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">8</span></code></p></td>
-<td><p>Per-request concurrency cap used while chunks are independent. When previous-text conditioning is enabled, one request’s Whisper chunks decode in order while chunks from different requests can still batch together.</p></td>
+<td><p>The mel-window edge. Streaming cannot chunk, so <code class="docutils literal notranslate"><span class="pre">stream=true</span></code> takes audio up to 30s and gets HTTP 400 above that.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">min_tail_s</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>

@@ -492,7 +492,11 @@
             <nav aria-label="Page">
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-a-docker-recommended">🐳 Option A: Docker (recommended)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-b-manual-install">🛠️ Option B: Manual install</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-b-macos-apple-silicon-installer">🍎 Option B: macOS Apple Silicon installer</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#run-from-a-hosted-installer">Run from a hosted installer</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-c-manual-install">🛠️ Option C: Manual install</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-from-source">Install from source</a></li>
 </ul>
 </li>
@@ -510,9 +514,11 @@
   <section class="tex2jax_ignore mathjax_ignore" id="installation">
 <h1>🚀 Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
 <p>Current stable release: <strong>v0.1.3</strong> on <a class="reference external" href="https://pypi.org/project/sglang-omni/">PyPI</a>.</p>
-<p>Two install paths. Docker is recommended — UCX, flash-attn, sglang, and CUDA are prebuilt.</p>
+<p>Choose the path for your platform. Docker is recommended for NVIDIA CUDA —
+UCX, flash-attn, SGLang, and CUDA are prebuilt. Apple Silicon has a dedicated
+source installer below.</p>
 <blockquote>
-<div><p><strong>Intel GPU (XPU)?</strong> This page targets <strong>NVIDIA CUDA</strong>. For Intel Arc GPUs, see <a class="reference internal" href="installation_xpu.html"><span class="std std-doc">Installation — Intel XPU</span></a>, which uses <a class="reference download internal" download="" href="../_downloads/e6282636738987ea324fd398b24bcb06/pyproject_xpu.toml"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">pyproject_xpu.toml</span></code></span></a> + the PyTorch XPU wheel index instead of the CUDA-only pins below.</p>
+<div><p><strong>Intel GPU (XPU)?</strong> For Intel Arc GPUs, see <a class="reference internal" href="installation_xpu.html"><span class="std std-doc">Installation — Intel XPU</span></a>, which uses <a class="reference download internal" download="" href="../_downloads/e6282636738987ea324fd398b24bcb06/pyproject_xpu.toml"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">pyproject_xpu.toml</span></code></span></a> + the PyTorch XPU wheel index instead of the CUDA-only pins below.</p>
 </div></blockquote>
 <blockquote>
 <div><p><strong>Ascend NPU?</strong> See <a class="reference internal" href="installation_npu.html"><span class="std std-doc">Installation — Ascend NPU</span></a> for the supported software stack, prerequisites, and installation helper.</p>
@@ -548,9 +554,67 @@ uv<span class="w"> </span>venv<span class="w"> </span>.venv<span class="w"> </sp
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--prerelease<span class="o">=</span>allow<span class="w"> </span><span class="s2">"sglang-omni==0.1.3"</span>
 </pre></div>
 </div>
+<p><a id="macos-apple-silicon"></a></p>
 </section>
-<section id="option-b-manual-install">
-<h2>🛠️ Option B: Manual install<a class="headerlink" href="#option-b-manual-install" title="Link to this heading">#</a></h2>
+<section id="option-b-macos-apple-silicon-installer">
+<h2>🍎 Option B: macOS Apple Silicon installer<a class="headerlink" href="#option-b-macos-apple-silicon-installer" title="Link to this heading">#</a></h2>
+<p>From a checkout of this branch, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./install.sh
+<span class="nb">source</span><span class="w"> </span>.venv-apple/bin/activate
+</pre></div>
+</div>
+<p>The script is idempotent and creates (or reuses) <code class="docutils literal notranslate"><span class="pre">.venv-apple</span></code>, installs the
+Homebrew formulae <code class="docutils literal notranslate"><span class="pre">ffmpeg&#64;7</span></code> and <code class="docutils literal notranslate"><span class="pre">uv</span></code> (and <code class="docutils literal notranslate"><span class="pre">git</span></code> only when a working git is not
+already available), installs SGLang <code class="docutils literal notranslate"><span class="pre">v0.5.18</span></code> from source with its <code class="docutils literal notranslate"><span class="pre">all_mps</span></code>
+extra, and installs this checkout with <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span></code>. SGLang’s optional Rust
+extensions are not needed by this Apple Silicon path and are skipped.
+<code class="docutils literal notranslate"><span class="pre">ffmpeg&#64;7</span></code> is intentional: <code class="docutils literal notranslate"><span class="pre">torchcodec==0.11.1</span></code> does not support the current
+unversioned FFmpeg 9 formula. At runtime, expose its libraries:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DYLD_LIBRARY_PATH</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>ffmpeg@7<span class="k">)</span><span class="s2">/lib</span><span class="si">${</span><span class="nv">DYLD_LIBRARY_PATH</span><span class="p">:+:</span><span class="nv">$DYLD_LIBRARY_PATH</span><span class="si">}</span><span class="s2">"</span>
+</pre></div>
+</div>
+<p>Homebrew must be installed before running the script. If <code class="docutils literal notranslate"><span class="pre">brew</span></code> is missing, the
+script prints an error and exits; install it yourself from
+<a class="reference external" href="https://brew.sh">brew.sh</a>, then rerun. The installer never invokes <code class="docutils literal notranslate"><span class="pre">sudo</span></code> or
+Homebrew’s bootstrapper. Use <code class="docutils literal notranslate"><span class="pre">--non-interactive</span></code> (or <code class="docutils literal notranslate"><span class="pre">NONINTERACTIVE=1</span></code>) to
+disable Homebrew auto-update in CI, <code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_VENV=/path/to/venv</span></code> to choose a virtualenv, and
+<code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_EXTRAS=audar-tts,fun-cosyvoice3</span></code> to enable optional extras.
+The persistent SGLang source checkout defaults to
+<code class="docutils literal notranslate"><span class="pre">~/.cache/sglang-omni/sglang-v0.5.18</span></code> and can be changed with
+<code class="docutils literal notranslate"><span class="pre">SGLANG_SOURCE_DIR</span></code>. Slow or proxied networks can override the installer’s uv
+defaults with <code class="docutils literal notranslate"><span class="pre">UV_HTTP_TIMEOUT</span></code> and <code class="docutils literal notranslate"><span class="pre">UV_HTTP_RETRIES</span></code>.</p>
+<p>This path currently supports macOS <code class="docutils literal notranslate"><span class="pre">arm64</span></code> only and is intended for the
+Apple-Silicon Qwen3-ASR MLX/Torch-MPS paths. Other platforms should use the
+Docker, manual, or Intel XPU instructions below. Common failures are a missing
+Homebrew/uv on <code class="docutils literal notranslate"><span class="pre">PATH</span></code>, an unavailable Python 3.12 toolchain, or forgetting the
+<code class="docutils literal notranslate"><span class="pre">DYLD_LIBRARY_PATH</span></code> export when starting an audio server.</p>
+<section id="run-from-a-hosted-installer">
+<h3>Run from a hosted installer<a class="headerlink" href="#run-from-a-hosted-installer" title="Link to this heading">#</a></h3>
+<p>The script also supports a downloaded or <code class="docutils literal notranslate"><span class="pre">curl</span> <span class="pre">|</span> <span class="pre">bash</span></code> invocation: when it is
+not inside an sglang-omni checkout, it clones the repository specified by
+<code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_REPO</span></code> and <code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_REF</span></code> into the cache and installs that
+checkout. Prefer downloading, reviewing, and then running a pinned script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-fsSLo<span class="w"> </span>/tmp/sglang-omni-install.sh<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>https://raw.githubusercontent.com/sgl-project/sglang-omni/&lt;commit&gt;/install.sh
+less<span class="w"> </span>/tmp/sglang-omni-install.sh
+chmod<span class="w"> </span>+x<span class="w"> </span>/tmp/sglang-omni-install.sh
+<span class="nv">SGLANG_OMNI_REF</span><span class="o">=</span>&lt;commit&gt;<span class="w"> </span>/tmp/sglang-omni-install.sh
+</pre></div>
+</div>
+<p>Piping a remote script directly to Bash executes code without a review step;
+use it only when that trade-off is acceptable:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-fsSL<span class="w"> </span>https://raw.githubusercontent.com/sgl-project/sglang-omni/&lt;commit&gt;/install.sh<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span><span class="nv">SGLANG_OMNI_REF</span><span class="o">=</span>&lt;commit&gt;<span class="w"> </span>bash
+</pre></div>
+</div>
+<p>For a fork or an internal mirror, set <code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_REPO</span></code> and
+<code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_REF</span></code> explicitly. The hosted mode stores the project checkout at
+<code class="docutils literal notranslate"><span class="pre">~/.cache/sglang-omni/sglang-omni-&lt;ref&gt;</span></code> by default; override it with
+<code class="docutils literal notranslate"><span class="pre">SGLANG_OMNI_PROJECT_DIR</span></code>.</p>
+</section>
+</section>
+<section id="option-c-manual-install">
+<h2>🛠️ Option C: Manual install<a class="headerlink" href="#option-c-manual-install" title="Link to this heading">#</a></h2>
 <p>Build prerequisites first:</p>
 <ul class="simple">
 <li><p><strong>UCX 1.20.x</strong> with CUDA + verbs — <a class="reference external" href="https://github.com/openucx/ucx">upstream</a>, or reuse flags in <a class="reference download internal" download="" href="../_downloads/9c6d2dd30e172995ff9466799d6f77ed/Dockerfile"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">docker/Dockerfile</span></code></span></a>.</p></li>
@@ -634,7 +698,11 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-a-docker-recommended">🐳 Option A: Docker (recommended)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-b-manual-install">🛠️ Option B: Manual install</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-b-macos-apple-silicon-installer">🍎 Option B: macOS Apple Silicon installer</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#run-from-a-hosted-installer">Run from a hosted installer</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#option-c-manual-install">🛠️ Option C: Manual install</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#install-from-source">Install from source</a></li>
 </ul>
 </li>
