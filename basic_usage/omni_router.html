@@ -567,6 +567,7 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l1"><a class="reference internal" href="../get_started/installation.html">🚀 Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../get_started/installation_npu.html">Installation — Ascend NPU</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../get_started/installation_xpu.html">🚀 Installation — Intel XPU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/installation_cpu.html">🚀 Installation — Intel CPU</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Cookbook</span></p>
 <ul class="nav bd-sidenav">
@@ -899,14 +900,13 @@ health-aware selection, and backpressured streaming.</p>
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p>OpenAI-compatible HTTP and WebSocket routes for Omni, TTS, and ASR workers.</p></li>
-<li><p>Static worker manifests with explicit model, modality, media, and capacity
-contracts.</p></li>
+<li><p>Static worker manifests with explicit model, modality, and media contracts.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">round_robin</span></code> and <code class="docutils literal notranslate"><span class="pre">least_requests</span></code> routing over compatible healthy replicas.</p></li>
 <li><p>Direct request streaming for homogeneous worker cohorts and bounded
 classification when routing depends on the request body.</p></li>
 <li><p>Pooled upstream HTTP/1.1 connections with request-ID propagation and direct
 response backpressure.</p></li>
-<li><p>Status-based health checks, exact admission and worker-capacity accounting,
+<li><p>Status-based health checks, exact admission and active-request accounting,
 Prometheus metrics, diagnostics, and graceful shutdown.</p></li>
 </ul>
 <pre  class="mermaid">
@@ -991,7 +991,7 @@ binary is written to <code class="docutils literal notranslate"><span class="pre
 </table>
 </div>
 <p>The examples define two workers at <code class="docutils literal notranslate"><span class="pre">127.0.0.1:8000</span></code> and
-<code class="docutils literal notranslate"><span class="pre">127.0.0.1:8001</span></code>. Set the worker URLs, model IDs, capacities, and service
+<code class="docutils literal notranslate"><span class="pre">127.0.0.1:8001</span></code>. Set the worker URLs, model IDs, and service
 profiles to match the processes you are running.</p>
 <p>Validate the configuration before starting the router:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">./target/release/sgl-omni-router \</span>
@@ -1044,7 +1044,7 @@ workers, or changing process limits.</p>
 <td><p>Global and per-service in-flight limits</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">health</span></code></p></td>
-<td><p>Probe interval, timeout, thresholds, and concurrency</p></td>
+<td><p>Probe interval, timeout, and transition thresholds</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">http_generation</span></code></p></td>
 <td><p>Chat request limits, trust domain, upstream timeouts, and pool settings</p></td>
@@ -1056,20 +1056,20 @@ workers, or changing process limits.</p>
 <td><p>Speech and realtime routes with setup, connection, and close bounds</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">workers</span></code></p></td>
-<td><p>Worker identity, endpoint, health path, exact capacity, and service profiles</p></td>
+<td><p>Worker identity, endpoint, health path, and service profiles</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p>Each worker has a stable ID, base URL, trust domain, optional default model,
-health path, exact capacity table, and one or more correlated service profiles.
+health path and one or more correlated service profiles.
 A profile row describes a combination the worker supports; the router never
 combines independent fields from different rows.</p>
-<p>DNS worker authorities must declare <code class="docutils literal notranslate"><span class="pre">resolved_ip</span></code>. The router connects to the
-pinned address while preserving the configured authority for HTTP <code class="docutils literal notranslate"><span class="pre">Host</span></code> and
-TLS SNI. Worker membership remains static for the process lifetime.</p>
-<p>Configuration limits are deployment budgets. Set admission, worker capacity,
-classification concurrency, connection-pool limits, and timeouts from the
+<p>DNS worker authorities are resolved when an upstream connection is opened, so
+health probes and new data connections follow DNS changes. Worker membership
+remains static for the process lifetime.</p>
+<p>Configuration limits are deployment budgets. Set admission, classification
+concurrency, connection-pool limits, and timeouts from the
 expected workload and worker topology.</p>
 </section>
 <section id="supported-apis">
@@ -1142,9 +1142,10 @@ expected workload and worker topology.</p>
 </table>
 </div>
 <p>Generation requests use HTTP/1.1, JSON content type, no query string, and one
-valid <code class="docutils literal notranslate"><span class="pre">Content-Length</span></code>. Ambiguous framing, transfer encoding, trailers,
-expectations, content encoding, and oversized uploads are rejected before
-dispatch.</p>
+valid <code class="docutils literal notranslate"><span class="pre">Content-Length</span></code>. A single <code class="docutils literal notranslate"><span class="pre">Expect:</span> <span class="pre">100-continue</span></code> is handled by the
+client connection and is not forwarded upstream. Ambiguous framing, transfer
+encoding, trailers, other expectations, content encoding, and oversized
+uploads are rejected before dispatch.</p>
 <p>A canonical <code class="docutils literal notranslate"><span class="pre">x-request-id</span></code> identifies each request. A valid caller value is
 preserved; otherwise the router generates one. The same value is sent to the
 worker and returned to the client.</p>
@@ -1162,30 +1163,35 @@ read the body once, and classify the model, content forms, media placement,
 input and output modalities, response format, and stream mode. Classification
 runs under one shared concurrency limit. The original bytes are forwarded
 without reconstructing JSON or multipart content.</p>
-<p>Classification completes before worker-capacity reservation, so classification
-does not occupy a worker slot or upstream connection.</p>
+<p>Classification completes before worker selection, so classification does not
+occupy an upstream connection.</p>
 </section>
 <section id="worker-selection">
 <h3>Worker selection<a class="headerlink" href="#worker-selection" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">round_robin</span></code> rotates across compatible healthy replicas. <code class="docutils literal notranslate"><span class="pre">least_requests</span></code>
-compares exact in-flight occupancy for the required worker-capacity class and
-rotates equal ties. Selection reserves worker capacity before dispatch and
-performs no network or body work while holding the policy lock.</p>
+compares active requests and rotates equal ties. Selection increments the
+chosen worker’s load before dispatch and performs no network or body work while
+holding the policy lock.</p>
 <p>Routing policy is workload-specific. Use full-corpus measurements at the target
 concurrency to choose between the supported policies.</p>
 </section>
 <section id="admission-and-backpressure">
 <h3>Admission and backpressure<a class="headerlink" href="#admission-and-backpressure" title="Link to this heading">#</a></h3>
 <p>Global and per-service admission are fail-fast. One request owns its admission
-and worker-capacity leases until response EOF, upstream error, or downstream
-cancellation.</p>
+and worker-load guard until response EOF, upstream error, or downstream
+cancellation. The worker remains responsible for its execution and queue
+capacity.</p>
 <p>The router sends one upstream request through a shared HTTP/1.1 connection
 pool. Redirects, ambient proxies, retries, and automatic decompression are
 disabled. Request and response bodies use direct backpressure without a body
 pump, application queue, or extra relay task.</p>
 <p>The request deadline covers upload, connection establishment, and upstream
-response headers. After headers are committed, a stream ends on upstream EOF
-or error, downstream disconnect, or process drain.</p>
+response headers. A final worker response received before the upload completes
+is rejected as an upstream protocol error and is not committed downstream.
+After response headers are committed, the response has no total wall-clock
+limit.</p>
+<p>Responses still end normally on upstream EOF or error, downstream disconnect,
+or process drain.</p>
 </section>
 </section>
 <section id="media-and-realtime-sessions">
@@ -1210,27 +1216,27 @@ worker-local voice data.</p>
 </section>
 <section id="health-and-readiness">
 <h2>Health and Readiness<a class="headerlink" href="#health-and-readiness" title="Link to this heading">#</a></h2>
-<p>Workers start with unknown health. Status-only probes apply the configured
-consecutive success and failure thresholds under a shared probe limit.
+<p>Workers start with unknown health. Each worker has one serial probe loop that
+applies the configured consecutive success and failure thresholds.
 Transport and upstream protocol failures can request an immediate coalesced
-probe. Application responses and capacity exhaustion do not directly change
-worker health.</p>
+probe. Application responses do not directly change worker health.</p>
 <p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ready</span></code> returns <code class="docutils literal notranslate"><span class="pre">200</span></code> while the process is serving and every enabled
 generation, media, and WebSocket service has a compatible healthy worker.
 Readiness also requires the configured managed-voice owner to be healthy and
-compatible. Current capacity occupancy does not change readiness.</p>
+compatible. Current worker load does not change readiness.</p>
 </section>
 <section id="operations">
 <h2>Operations<a class="headerlink" href="#operations" title="Link to this heading">#</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">/v1/models</span></code> returns a sorted, deduplicated inventory built from worker defaults
 and correlated profile model IDs. <code class="docutils literal notranslate"><span class="pre">/metrics</span></code> exposes Prometheus lifecycle,
-readiness, health, admission, and worker-capacity gauges. <code class="docutils literal notranslate"><span class="pre">/diagnostics</span></code> returns
+readiness, health, admission, and worker-load gauges. <code class="docutils literal notranslate"><span class="pre">/diagnostics</span></code> returns
 bounded deterministic JSON for lifecycle, readiness, admission, and configured
 workers.</p>
 <p>Operations responses snapshot router-local state and never contact workers.
-In-flight values come from the semaphores that enforce capacity; the router
-does not maintain duplicate load counters. Metric labels use fixed vocabularies
-instead of worker IDs, model IDs, request IDs, paths, or client input.</p>
+Admission values come from the semaphores that enforce router limits. Worker
+load comes from the same counters used by <code class="docutils literal notranslate"><span class="pre">least_requests</span></code>. Metric labels use
+fixed vocabularies instead of worker IDs, model IDs, request IDs, paths, or
+client input.</p>
 <p>Structured logging covers lifecycle events, health transitions, and exceptional
 conditions. <code class="docutils literal notranslate"><span class="pre">logging.filter</span></code> accepts a tracing filter expression, and
 <code class="docutils literal notranslate"><span class="pre">logging.format</span></code> accepts <code class="docutils literal notranslate"><span class="pre">json</span></code> or <code class="docutils literal notranslate"><span class="pre">compact</span></code>.</p>
@@ -1244,9 +1250,10 @@ HTTP upgrade until the socket closes. Accepted sockets enable <code class="docut
 head. It does not limit request bodies, active handlers, responses, streams, or
 upgraded transports. Connection-level accept errors retry immediately; other
 accept errors are logged and retried after one second.</p>
-<p>On Unix, startup raises the <code class="docutils literal notranslate"><span class="pre">RLIMIT_NOFILE</span></code> soft limit toward the
-operator-controlled hard limit and verifies room for accepted sockets plus the
-listener.</p>
+<p>On Unix, startup attempts to raise the <code class="docutils literal notranslate"><span class="pre">RLIMIT_NOFILE</span></code> soft limit to <code class="docutils literal notranslate"><span class="pre">65,535</span></code>.
+If the process hard limit prevents that, the router logs a warning and continues.
+Set the process file limit for the deployment’s configured connection and
+admission concurrency.</p>
 <p>The first <code class="docutils literal notranslate"><span class="pre">SIGINT</span></code> or <code class="docutils literal notranslate"><span class="pre">SIGTERM</span></code> closes admission, stops health work, drops the
 listener, and drains owned tasks. A distinct second signal or the drain
 deadline aborts and joins remaining work and exits with failure.</p>
