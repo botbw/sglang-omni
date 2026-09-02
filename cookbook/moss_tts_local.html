@@ -580,6 +580,9 @@ download the model (public, no token required):</p>
 </pre></div>
 </div>
 <p>A matching config file is available at <code class="docutils literal notranslate"><span class="pre">examples/configs/moss_tts_local.yaml</span></code>.</p>
+<p>Speech input admission follows the text backbone’s context metadata rather than
+the generic 4,096-character precheck. Requests that exceed the effective model
+context are rejected with an OpenAI-compatible HTTP 400 error.</p>
 </section>
 <section id="synthesizing-speech">
 <h2>Synthesizing Speech<a class="headerlink" href="#synthesizing-speech" title="Link to this heading">#</a></h2>
