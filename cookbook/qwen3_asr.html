@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.4" />
-    <meta name="docbuild:last-update" content="Sep 01, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 02, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -525,7 +525,11 @@
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">#</a></h2>
 <p>Install <code class="docutils literal notranslate"><span class="pre">sglang-omni</span></code> by following <a class="reference internal" href="../get_started/installation.html"><span class="std std-doc">Installation</span></a>, then download the model:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL_REVISION</span><span class="o">=</span>7278e1e70fe206f11671096ffdd38061171dd6e5
-<span class="nv">MODEL_PATH</span><span class="o">=</span><span class="k">$(</span>hf<span class="w"> </span>download<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span>--revision<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">MODEL_REVISION</span><span class="si">}</span><span class="s2">"</span><span class="k">)</span>
+<span class="nv">MODEL_PATH</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>
+<span class="w">  </span>hf<span class="w"> </span>download<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--revision<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">MODEL_REVISION</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--quiet
+<span class="k">)</span><span class="s2">"</span>
 </pre></div>
 </div>
 <section id="apple-silicon-mlx">
@@ -1120,7 +1124,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 01, 2026.
+  Last updated on Sep 02, 2026.
   <br/>
 </p>
   </div>

@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.4" />
-    <meta name="docbuild:last-update" content="Sep 01, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 02, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -751,7 +751,11 @@ configuration path reaches them:</p>
 </div>
 <p>To reproduce the async-decode comparison below, resolve the pinned checkpoint and start each mode separately on the same GPU:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL_REVISION</span><span class="o">=</span>06f233fe06e710322aca913c1bc4249a0d71fce1
-<span class="nv">MODEL_PATH</span><span class="o">=</span><span class="k">$(</span>hf<span class="w"> </span>download<span class="w"> </span>openai/whisper-large-v3<span class="w"> </span>--revision<span class="w"> </span><span class="s2">"</span><span class="nv">$MODEL_REVISION</span><span class="s2">"</span><span class="k">)</span>
+<span class="nv">MODEL_PATH</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>
+<span class="w">  </span>hf<span class="w"> </span>download<span class="w"> </span>openai/whisper-large-v3<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--revision<span class="w"> </span><span class="s2">"</span><span class="nv">$MODEL_REVISION</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--quiet
+<span class="k">)</span><span class="s2">"</span>
 
 <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span><span class="s2">"</span><span class="nv">$MODEL_PATH</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
@@ -1100,7 +1104,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 01, 2026.
+  Last updated on Sep 02, 2026.
   <br/>
 </p>
   </div>

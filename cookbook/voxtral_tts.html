@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.4" />
-    <meta name="docbuild:last-update" content="Sep 01, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 02, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -579,7 +579,8 @@ one with the <code class="docutils literal notranslate"><span class="pre">voice<
 </div>
 <p>The available voices ship inside the checkpoint as <code class="docutils literal notranslate"><span class="pre">voice_embedding/*.pt</span></code> files. List them
 from your downloaded snapshot:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ls<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>hf<span class="w"> </span>download<span class="w"> </span>mistralai/Voxtral-4B-TTS-2603<span class="k">)</span><span class="s2">/voice_embedding"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">MODEL_PATH</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>hf<span class="w"> </span>download<span class="w"> </span>mistralai/Voxtral-4B-TTS-2603<span class="w"> </span>--quiet<span class="k">)</span><span class="s2">"</span>
+ls<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">MODEL_PATH</span><span class="si">}</span><span class="s2">/voice_embedding"</span>
 </pre></div>
 </div>
 <section id="python">
@@ -824,7 +825,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 01, 2026.
+  Last updated on Sep 02, 2026.
   <br/>
 </p>
   </div>
