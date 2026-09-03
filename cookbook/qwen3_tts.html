@@ -496,6 +496,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-inference">Deterministic Inference</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-admission-policy">Overload / admission policy</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prefill-admission-coalescing">Prefill Admission Coalescing</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthesizing-speech">Synthesizing Speech</a><ul class="pst-show_toc_level nav section-nav flex-column">
@@ -664,6 +665,52 @@ on successes only; artifacts land in <code class="docutils literal notranslate">
 <p>A closed-loop <code class="docutils literal notranslate"><span class="pre">--concurrencies</span> <span class="pre">16,32,48,64</span></code> sweep is still available for
 comparing healthy vs past-ceiling points, but it does not hold overshoot. Each
 concurrency writes inspectable artifacts under <code class="docutils literal notranslate"><span class="pre">&lt;output-dir&gt;/c&lt;N&gt;/</span></code>.</p>
+</section>
+<section id="prefill-admission-coalescing">
+<h3>Prefill Admission Coalescing<a class="headerlink" href="#prefill-admission-coalescing" title="Link to this heading">#</a></h3>
+<p>Under concurrent load, the <code class="docutils literal notranslate"><span class="pre">tts_engine</span></code> stage can coalesce prefill admission:
+instead of admitting each prepared request into its own prefill batch, the
+scheduler can briefly hold admission so that multiple ready requests are
+prefilled together.</p>
+<p>A prefill step has a largely fixed scheduler cost, so fuller batches can reduce
+prefill overhead. The end-to-end benefit depends on whether that saving
+outweighs the extra admission delay and any resulting reduction in decode
+occupancy.</p>
+<p>Coalescing is <strong>off by default</strong> and opt-in through the <code class="docutils literal notranslate"><span class="pre">tts_engine</span></code> factory
+configuration:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-TTS-12Hz-1.7B-Base<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_tts_1_7b.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tts_engine.factory.prefill_coalesce_requests<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tts_engine.factory.prefill_coalesce_wait_ms<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p>or per-stage in YAML:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">stages</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">tts_engine</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">factory</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">prefill_coalesce_requests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">      </span><span class="nt">prefill_coalesce_wait_ms</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30.0</span>
+</pre></div>
+</div>
+<p>The gate engages only when <code class="docutils literal notranslate"><span class="pre">prefill_coalesce_requests</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code>. Once engaged,
+admission is released as soon as any of the following holds:</p>
+<ul class="simple">
+<li><p>decode is idle, so a ready request can start immediately;</p></li>
+<li><p>the waiting queue reaches <code class="docutils literal notranslate"><span class="pre">prefill_coalesce_requests</span></code>;</p></li>
+<li><p>the oldest waiting request has waited <code class="docutils literal notranslate"><span class="pre">prefill_coalesce_wait_ms</span></code>.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">prefill_coalesce_wait_ms</span></code> is therefore an upper bound on the added admission
+wait. Admission may be released earlier if the target queue size is reached.</p>
+<p>The values above are an example for the Qwen3-TTS workload and are not intended
+as universal defaults. Match both <code class="docutils literal notranslate"><span class="pre">prefill_coalesce_requests</span></code> and
+<code class="docutils literal notranslate"><span class="pre">prefill_coalesce_wait_ms</span></code> to the workload you actually serve. Coalescing is
+most useful when natural prefill batches are small and a short hold can increase
+batching without materially reducing decode occupancy. If the wait is too long,
+the reduced decode occupancy can offset the prefill savings.</p>
+<p>Leave coalescing disabled for latency-sensitive traffic or workloads where the
+added wait does not produce enough additional batching.</p>
 </section>
 </section>
 <section id="synthesizing-speech">
@@ -1009,6 +1056,7 @@ checkpoint is less prone.</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-inference">Deterministic Inference</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-admission-policy">Overload / admission policy</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prefill-admission-coalescing">Prefill Admission Coalescing</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthesizing-speech">Synthesizing Speech</a><ul class="pst-show_toc_level nav section-nav flex-column">

@@ -1038,7 +1038,7 @@ workers, or changing process limits.</p>
 <td><p>Structured log format and tracing filter</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">router</span></code></p></td>
-<td><p>Routing policy, classification concurrency, and optional voice owner</p></td>
+<td><p>Routing policy and optional voice owner</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">admission</span></code></p></td>
 <td><p>Global and per-service in-flight limits</p></td>
@@ -1068,9 +1068,8 @@ combines independent fields from different rows.</p>
 <p>DNS worker authorities are resolved when an upstream connection is opened, so
 health probes and new data connections follow DNS changes. Worker membership
 remains static for the process lifetime.</p>
-<p>Configuration limits are deployment budgets. Set admission, classification
-concurrency, connection-pool limits, and timeouts from the
-expected workload and worker topology.</p>
+<p>Configuration limits are deployment budgets. Set admission, connection-pool
+limits, and timeouts from the expected workload and worker topology.</p>
 </section>
 <section id="supported-apis">
 <h2>Supported APIs<a class="headerlink" href="#supported-apis" title="Link to this heading">#</a></h2>
@@ -1161,10 +1160,19 @@ body as a backpressured stream.</p>
 <p>Requests that require body-owned routing facts reserve aggregate byte capacity,
 read the body once, and classify the model, content forms, media placement,
 input and output modalities, response format, and stream mode. Classification
-runs under one shared concurrency limit. The original bytes are forwarded
-without reconstructing JSON or multipart content.</p>
-<p>Classification completes before worker selection, so classification does not
-occupy an upstream connection.</p>
+runs on Tokio’s blocking pool with execution limited to the available CPU
+parallelism, while the aggregate buffered-byte budget bounds concurrent
+classifier memory. The original bytes are forwarded without reconstructing
+JSON or multipart content.</p>
+<p>The direct path is bounded by <code class="docutils literal notranslate"><span class="pre">streamed_request_max_bytes</span></code>. The classified path
+is bounded by <code class="docutils literal notranslate"><span class="pre">buffered_request_max_bytes</span></code> per request and
+<code class="docutils literal notranslate"><span class="pre">buffered_request_total_bytes</span></code> across concurrent requests. Their defaults are
+512 MiB, 8 MiB, and 256 MiB respectively. Requests without an explicit model
+return <code class="docutils literal notranslate"><span class="pre">ambiguous_model</span></code> when compatible workers do not share one default.
+Classified JSON follows the standard JSON number grammar; non-standard <code class="docutils literal notranslate"><span class="pre">NaN</span></code>
+and <code class="docutils literal notranslate"><span class="pre">Infinity</span></code> tokens are rejected.</p>
+<p>Classification completes before worker selection, so classification
+does not occupy an upstream connection.</p>
 </section>
 <section id="worker-selection">
 <h3>Worker selection<a class="headerlink" href="#worker-selection" title="Link to this heading">#</a></h3>

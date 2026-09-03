@@ -145,6 +145,61 @@ A closed-loop `--concurrencies 16,32,48,64` sweep is still available for
 comparing healthy vs past-ceiling points, but it does not hold overshoot. Each
 concurrency writes inspectable artifacts under `<output-dir>/c<N>/`.
 
+### Prefill Admission Coalescing
+
+Under concurrent load, the `tts_engine` stage can coalesce prefill admission:
+instead of admitting each prepared request into its own prefill batch, the
+scheduler can briefly hold admission so that multiple ready requests are
+prefilled together.
+
+A prefill step has a largely fixed scheduler cost, so fuller batches can reduce
+prefill overhead. The end-to-end benefit depends on whether that saving
+outweighs the extra admission delay and any resulting reduction in decode
+occupancy.
+
+Coalescing is **off by default** and opt-in through the `tts_engine` factory
+configuration:
+
+```bash
+sgl-omni serve \
+  --model-path Qwen/Qwen3-TTS-12Hz-1.7B-Base \
+  --config examples/configs/qwen3_tts_1_7b.yaml \
+  --tts_engine.factory.prefill_coalesce_requests 2 \
+  --tts_engine.factory.prefill_coalesce_wait_ms 30 \
+  --port 8000
+```
+
+or per-stage in YAML:
+
+```yaml
+stages:
+  tts_engine:
+    factory:
+      prefill_coalesce_requests: 2
+      prefill_coalesce_wait_ms: 30.0
+```
+
+The gate engages only when `prefill_coalesce_requests >= 2`. Once engaged,
+admission is released as soon as any of the following holds:
+
+- decode is idle, so a ready request can start immediately;
+- the waiting queue reaches `prefill_coalesce_requests`;
+- the oldest waiting request has waited `prefill_coalesce_wait_ms`.
+
+`prefill_coalesce_wait_ms` is therefore an upper bound on the added admission
+wait. Admission may be released earlier if the target queue size is reached.
+
+The values above are an example for the Qwen3-TTS workload and are not intended
+as universal defaults. Match both `prefill_coalesce_requests` and
+`prefill_coalesce_wait_ms` to the workload you actually serve. Coalescing is
+most useful when natural prefill batches are small and a short hold can increase
+batching without materially reducing decode occupancy. If the wait is too long,
+the reduced decode occupancy can offset the prefill savings.
+
+Leave coalescing disabled for latency-sensitive traffic or workloads where the
+added wait does not produce enough additional batching.
+
+
 ## Synthesizing Speech
 
 ### Text-only Requests
