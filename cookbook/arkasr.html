@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.4" />
-    <meta name="docbuild:last-update" content="Sep 03, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 04, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -498,6 +498,7 @@
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stream-transcription">Stream Transcription</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#response-formats">Response Formats</a></li>
 </ul>
@@ -630,6 +631,28 @@ target request distribution and latency requirements.</p>
 </pre></div>
 </div>
 </section>
+<section id="stream-transcription">
+<h2>Stream Transcription<a class="headerlink" href="#stream-transcription" title="Link to this heading">#</a></h2>
+<p>Set the multipart <code class="docutils literal notranslate"><span class="pre">stream</span></code> field to <code class="docutils literal notranslate"><span class="pre">true</span></code> and keep <code class="docutils literal notranslate"><span class="pre">response_format</span></code> as
+<code class="docutils literal notranslate"><span class="pre">json</span></code> or <code class="docutils literal notranslate"><span class="pre">text</span></code> to receive Server-Sent Events (SSE):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-N<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/transcriptions<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">model</span><span class="o">=</span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">file</span><span class="o">=</span>@tests/data/query_to_cars.wav<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">language</span><span class="o">=</span>en<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">response_format</span><span class="o">=</span>json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-F<span class="w"> </span><span class="nv">stream</span><span class="o">=</span><span class="nb">true</span>
+</pre></div>
+</div>
+<p>The response contains zero or more <code class="docutils literal notranslate"><span class="pre">transcript.text.delta</span></code> events, followed
+by one <code class="docutils literal notranslate"><span class="pre">transcript.text.done</span></code> event with the complete post-processed
+transcript, then <code class="docutils literal notranslate"><span class="pre">data:</span> <span class="pre">[DONE]</span></code>. Streaming primarily reduces time to first
+text; it does not change the final transcript.</p>
+<p>Treat <code class="docutils literal notranslate"><span class="pre">transcript.text.done</span></code> as the authoritative transcript: it is the same
+post-processed string as the non-stream <code class="docutils literal notranslate"><span class="pre">text</span></code> field. Incremental
+<code class="docutils literal notranslate"><span class="pre">transcript.text.delta</span></code> events are a live preview. Concatenating them may
+differ from <code class="docutils literal notranslate"><span class="pre">done</span></code> by leading or trailing whitespace (the final adapter
+<code class="docutils literal notranslate"><span class="pre">.strip()</span></code>s the full decode). Persist <code class="docutils literal notranslate"><span class="pre">done.text</span></code>, not <code class="docutils literal notranslate"><span class="pre">&quot;&quot;.join(deltas)</span></code>.</p>
+</section>
 <section id="request-parameters">
 <h2>Request Parameters<a class="headerlink" href="#request-parameters" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -661,7 +684,12 @@ target request distribution and latency requirements.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">json</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">json</span></code>, <code class="docutils literal notranslate"><span class="pre">verbose_json</span></code>, or <code class="docutils literal notranslate"><span class="pre">text</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stream</span></code></p></td>
+<td><p>boolean</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">false</span></code></p></td>
+<td><p>Emit SSE text deltas. Streaming accepts only <code class="docutils literal notranslate"><span class="pre">json</span></code> or <code class="docutils literal notranslate"><span class="pre">text</span></code> response formats</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
 <td><p>float</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">0</span></code> (greedy)</p></td>
 <td><p>Sampling temperature. When unset or <code class="docutils literal notranslate"><span class="pre">0</span></code>, SGLang’s sampling normalization selects greedy decoding (<code class="docutils literal notranslate"><span class="pre">top_k=1</span></code>); no non-zero temperature is substituted.</p></td>
@@ -826,12 +854,26 @@ pre-LM encoder service. To profile eager encoder execution:</p>
 SeedTTS reference audio through <code class="docutils literal notranslate"><span class="pre">/v1/audio/transcriptions</span></code>. Pass
 <code class="docutils literal notranslate"><span class="pre">--model-path</span> <span class="pre">AutoArk-AI/ARK-ASR-3B</span></code>; the shared request and metric logic lives in
 <code class="docutils literal notranslate"><span class="pre">benchmarks.tasks.asr</span></code>.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download the test set once:</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.dataset.prepare<span class="w"> </span>--dataset<span class="w"> </span>seedtts
+
+<span class="c1"># Launch ARK-ASR:</span>
+sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
 
 <span class="c1"># Sweep the full SeedTTS EN set (1088 clips) at 1..64 concurrency, 3 repeats:</span>
 python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--model-path<span class="w"> </span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--concurrencies<span class="w"> </span><span class="m">1</span>,2,4,8,16,32,64<span class="w"> </span>--repeats<span class="w"> </span><span class="m">3</span><span class="w"> </span>--warmup
+
+<span class="c1"># Quick smoke on a 20-sample subset:</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--model-path<span class="w"> </span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-samples<span class="w"> </span><span class="m">20</span><span class="w"> </span>--concurrencies<span class="w"> </span><span class="m">2</span><span class="w"> </span>--repeats<span class="w"> </span><span class="m">1</span>
+
+<span class="c1"># Measure text TTFT and inter-chunk latency through the SSE endpoint:</span>
+python<span class="w"> </span>-m<span class="w"> </span>benchmarks.eval.benchmark_asr_seedtts<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--model-path<span class="w"> </span>AutoArk-AI/ARK-ASR-3B<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-samples<span class="w"> </span><span class="m">20</span><span class="w"> </span>--concurrencies<span class="w"> </span><span class="m">2</span><span class="w"> </span>--repeats<span class="w"> </span><span class="m">1</span><span class="w"> </span>--stream
 </pre></div>
 </div>
 <p>The script reports corpus WER, throughput, and latency per concurrency level.
@@ -902,6 +944,7 @@ ARK-ASR currently ignores it (the transcription instruction is fixed).</p></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#transcribe-audio">Transcribe Audio</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stream-transcription">Stream Transcription</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#request-parameters">Request Parameters</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#response-formats">Response Formats</a></li>
 </ul>
@@ -949,7 +992,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 03, 2026.
+  Last updated on Sep 04, 2026.
   <br/>
 </p>
   </div>

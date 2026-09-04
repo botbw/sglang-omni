@@ -306,12 +306,14 @@ Streaming returns `audio/pcm` 16-bit mono PCM bytes with sample-rate metadata in
 the response headers. See the [Higgs TTS cookbook](../cookbook/higgs_tts.md#streaming)
 for a full Python raw PCM consumer.
 
-Base/reference-cloning checkpoints use true incremental codec and vocoder
-streaming for both this HTTP endpoint and `/v1/audio/speech/stream` WebSocket
-sessions with `stream_audio=true`. CustomVoice and VoiceDesign remain
-non-streaming.
+All three task types (Base/reference-cloning, CustomVoice and VoiceDesign) use
+true incremental codec and vocoder streaming, for both this HTTP endpoint and
+`/v1/audio/speech/stream` WebSocket sessions with `stream_audio=true`. Pass
+`"stream_codec_output": false` on a request, or launch with
+`--preprocessing.factory.stream_codec_output false`, to restore whole-utterance
+decoding.
 
-When `initial_codec_chunk_frames` is omitted, Qwen3-TTS Base defaults to `8`
+When `initial_codec_chunk_frames` is omitted, Qwen3-TTS defaults to `8`
 codec frames for the first vocoder chunk so concurrent streams stay continuous.
 Pass a smaller value only when trading continuity for lower time-to-first-audio.
 Utterances that finish in fewer than `8` generated codec frames never reach the
@@ -364,7 +366,8 @@ only the first chunk.
 | `max_new_tokens` | `2048` | Maximum number of generated codec tokens |
 | `seed` | `null` | Random seed for reproducibility |
 | `stream` | `false` | Stream raw PCM audio chunks |
-| `initial_codec_chunk_frames` | `8` (model default when omitted) | First Base streaming vocoder chunk size in codec frames. Smaller values lower TTFA but underrun more easily; `0` uses the steady stride from the start |
+| `initial_codec_chunk_frames` | `8` (model default when omitted) | First streaming vocoder chunk size in codec frames. Smaller values lower TTFA but underrun more easily; `0` uses the steady stride from the start |
+| `stream_codec_output` | `true` | Forward codec frames to the vocoder as they are generated. Set `false` to restore whole-utterance decoding for CustomVoice/VoiceDesign |
 
 ## Model Variants
 
