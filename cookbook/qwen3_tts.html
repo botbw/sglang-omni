@@ -497,6 +497,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-inference">Deterministic Inference</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-admission-policy">Overload / admission policy</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prefill-admission-coalescing">Prefill Admission Coalescing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#process-topology">Process topology</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthesizing-speech">Synthesizing Speech</a><ul class="pst-show_toc_level nav section-nav flex-column">
@@ -711,6 +712,34 @@ batching without materially reducing decode occupancy. If the wait is too long,
 the reduced decode occupancy can offset the prefill savings.</p>
 <p>Leave coalescing disabled for latency-sensitive traffic or workloads where the
 added wait does not produce enough additional batching.</p>
+</section>
+<section id="process-topology">
+<h3>Process topology<a class="headerlink" href="#process-topology" title="Link to this heading">#</a></h3>
+<p>By default all three stages share one process. Per-request reference
+preprocessing (speech-tokenizer encode, speaker embedding, prompt embedding)
+then competes with the AR scheduler and the vocoder for the same interpreter,
+which caps single-replica throughput once concurrency passes ~32. Moving the
+preprocessing stage to its own process removes that contention: the stage
+loads a prompt-only frontend (embedding tables, text projection, predictor
+codec embeddings, speaker encoder) plus the speech tokenizer, together about
+2.2 GB of GPU memory for the extra process on a 1.7B checkpoint, and ships the
+prepared prompt tensors to the engine through the payload. Every GPU stage must
+then declare a memory fraction, and the engine’s static fraction has to agree
+with the one it declares:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-TTS-12Hz-1.7B-Base<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--preprocessing.process<span class="w"> </span>tts_frontend<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--preprocessing.gpu<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--preprocessing.gpu_memory_fraction<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tts_engine.gpu_memory_fraction<span class="w"> </span><span class="m">0</span>.75<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tts_engine.engine.mem_fraction_static<span class="w"> </span><span class="m">0</span>.75<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--vocoder.gpu_memory_fraction<span class="w"> </span><span class="m">0</span>.12
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--vocoder.process</span> <span class="pre">vocoder</span></code> composes with it (lower <code class="docutils literal notranslate"><span class="pre">tts_engine</span></code> to 0.72 and
+give the vocoder 0.15). Six SeedTTS samples at a fixed seed produced identical
+PCM in both layouts; the extra process costs its CUDA context plus the frontend
+weights.</p>
 </section>
 </section>
 <section id="synthesizing-speech">
@@ -1063,6 +1092,7 @@ checkpoint is less prone.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-inference">Deterministic Inference</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-admission-policy">Overload / admission policy</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prefill-admission-coalescing">Prefill Admission Coalescing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#process-topology">Process topology</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#synthesizing-speech">Synthesizing Speech</a><ul class="pst-show_toc_level nav section-nav flex-column">

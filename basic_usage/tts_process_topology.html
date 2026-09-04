@@ -525,6 +525,11 @@ config.</p>
 <span class="w">    </span><span class="nt">process</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pipeline</span>
 </pre></div>
 </div>
+<p>MOSS-TTS delay ships the isolated layout as its default, with declared GPU
+memory fractions 0.10 / 0.72 / 0.18 for <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code>, <code class="docutils literal notranslate"><span class="pre">tts_engine</span></code> and
+<code class="docutils literal notranslate"><span class="pre">vocoder</span></code>. <code class="docutils literal notranslate"><span class="pre">config_cls:</span> <span class="pre">MossTTSSingleProcessPipelineConfig</span></code> selects the
+single-process variant, which the bounded 24 GB and 32 GB configurations and
+the MPS DP2 recipe pin because their measured budgets describe that layout.</p>
 <section id="changing-placement-at-launch">
 <h2>Changing Placement at Launch<a class="headerlink" href="#changing-placement-at-launch" title="Link to this heading">#</a></h2>
 <p>The same field is set from the command line with the dotted spelling, without
@@ -569,10 +574,15 @@ stages whose fractions are missing.</p></li>
 <p>Not every handoff tolerates a process boundary: some stages exchange state
 through process-local registries a second process cannot read (for example,
 MOSS-TTS pipelines hand prepared requests from preprocessing to the AR engine
-through a process-local queue, and Qwen3-TTS keeps prepared requests in
-process-local module state). Splitting such an edge fails at serving time
-rather than at config validation — keep those stages in one process as the
-shipped configs do.</p>
+through a process-local queue). A model declares those edges through
+<code class="docutils literal notranslate"><span class="pre">PipelineConfig.process_local_edges</span></code>, and splitting one is refused during
+topology compilation, before any worker starts.</p>
+<p>Qwen3-TTS keeps prepared requests in process-local module state only while
+<code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">tts_engine</span></code> share a process; placed in its own process the
+preprocessing stage loads a prompt frontend and ships the prepared prompt
+tensors through <code class="docutils literal notranslate"><span class="pre">tensor_cpu</span></code> payload fields, so that edge can cross too. The
+<code class="docutils literal notranslate"><span class="pre">tensor_cpu</span></code> codec keeps each tensor’s own dtype and lets the relay carry it
+outside the control plane, which <code class="docutils literal notranslate"><span class="pre">typed_tensor</span></code> would not do.</p>
 <p>Ming-Omni-TTS carries preprocessing fields in <code class="docutils literal notranslate"><span class="pre">StagePayload.data</span></code> and serializes the reference encoder’s <code class="docutils literal notranslate"><span class="pre">spk_emb</span></code> and <code class="docutils literal notranslate"><span class="pre">prompt_latent</span></code> tensors with the <code class="docutils literal notranslate"><span class="pre">typed_tensor</span></code> wire codec. Both <code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">-&gt;</span> <span class="pre">reference_encode</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_encode</span> <span class="pre">-&gt;</span> <span class="pre">tts_engine</span></code> can therefore cross process boundaries.</p>
 </section>
 <section id="resource-and-performance-trade-offs">

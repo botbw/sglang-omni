@@ -567,7 +567,12 @@ download the model (public, no token required):</p>
 </section>
 <section id="server-configuration">
 <h2>Server Configuration<a class="headerlink" href="#server-configuration" title="Link to this heading">#</a></h2>
-<p>The pipeline is <code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">→</span> <span class="pre">tts_engine</span> <span class="pre">→</span> <span class="pre">vocoder</span></code>.</p>
+<p>The pipeline is <code class="docutils literal notranslate"><span class="pre">preprocessing</span> <span class="pre">→</span> <span class="pre">tts_engine</span> <span class="pre">→</span> <span class="pre">vocoder</span></code>. By default the vocoder
+runs in its own process (GPU memory fractions 0.10 / 0.72 / 0.18 for the three
+stages): its Python decode loop no longer shares the interpreter with the AR
+scheduler, which on H200 lifts single-replica throughput by about 70% at every
+concurrency cap. <code class="docutils literal notranslate"><span class="pre">config_cls:</span> <span class="pre">MossTTSSingleProcessPipelineConfig</span></code> restores the
+single-process layout; the bounded 24 GB and 32 GB configurations keep it.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>OpenMOSS-Team/MOSS-TTS-v1.5<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--config<span class="w"> </span>examples/configs/moss_tts.yaml<span class="w"> </span><span class="se">\</span>
