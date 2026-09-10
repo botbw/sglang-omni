@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.4" />
-    <meta name="docbuild:last-update" content="Sep 09, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 10, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -231,6 +231,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/qwen3_omni.html">Qwen3-Omni</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/ming_omni.html">Ming-Omni</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../cookbook/llada2_uni.html">LLaDA2.0-Uni</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cookbook/fun_cosyvoice3.html">Fun-CosyVoice3</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cookbook/auk.html">AuK</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">General Usage</span></p>
 <ul class="current nav bd-sidenav">
@@ -586,7 +588,7 @@ for details.</p>
 <td><p>Text-only synthesis or one local reference clip with its transcript; streaming; the provided config uses TP1</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="../cookbook/fun_cosyvoice3.html"><span class="std std-doc">Fun-CosyVoice3</span></a></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">examples/configs/fun_cosyvoice3_0_5b.yaml</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--model-path</span></code> only</p></td>
 <td><p>Requires one reference audio clip via <code class="docutils literal notranslate"><span class="pre">ref_audio</span></code> or <code class="docutils literal notranslate"><span class="pre">references</span></code>. Supports zero-shot cloning, cross-lingual, instruct mode, causal streaming, and buffered speed control</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../cookbook/moss_tts.html"><span class="std std-doc">MOSS-TTS</span></a></p></td>
@@ -608,6 +610,10 @@ for details.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="../cookbook/zonos2.html"><span class="std std-doc">ZONOS2</span></a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">--model-path</span> <span class="pre">Zyphra/zonos2</span></code></p></td>
 <td><p>MoE TTS, 9 DAC codebooks, voice cloning; needs Descript DAC extras (see cookbook)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../cookbook/auk.html"><span class="std std-doc">AuK</span></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">--model-path</span></code> only</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tencent/AuK</span></code> and <code class="docutils literal notranslate"><span class="pre">tencent/AuK-Flash</span></code>. Instruction-driven generation and editing at 24 kHz. Reference audio is optional; speech requires <code class="docutils literal notranslate"><span class="pre">stage_params.auk_engine.gen_seconds</span></code>. Downloads the separate Qwen2.5-Omni-3B encoder. Serial, non-streaming engine</p></td>
 </tr>
 </tbody>
 </table>
@@ -721,7 +727,6 @@ MeanFlow-only for now. <code class="docutils literal notranslate"><span class="p
 <p>For Fun-CosyVoice3:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-CosyVoice3-0.5B-2512<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--config<span class="w"> </span>examples/configs/fun_cosyvoice3_0_5b.yaml<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--allowed-media-domain<span class="w"> </span>huggingface.co<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--allowed-media-domain<span class="w"> </span>cas-bridge.xethub.hf.co<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--allowed-media-domain<span class="w"> </span>us.aws.cdn.hf.co<span class="w"> </span><span class="se">\</span>
@@ -1439,7 +1444,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 09, 2026.
+  Last updated on Sep 10, 2026.
   <br/>
 </p>
   </div>
