@@ -500,6 +500,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-generation">Speech Generation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-editing">Speech Editing</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sampling">Sampling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dit-q-k-fusion">DiT Q/K fusion</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seedtts-evaluation">SeedTTS Evaluation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upstream-parity">Upstream Parity</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attribution">Attribution</a></li>
@@ -617,6 +618,20 @@
 <p><code class="docutils literal notranslate"><span class="pre">seed</span></code> initializes separate request-local generators for target noise and reference VAE posterior sampling, without changing the process RNG. Sampling is reproducible for fixed inputs; different batch shapes or compute backends can still produce numerical differences. Multiple structured references are rejected.</p>
 <p>Conditioning and DiT sampling use dynamic batching, with default maximum batch sizes of 8 and 16. VAE decoding groups equal-length latents (up to 4 requests) to preserve boundary behavior. The stages can overlap on separate CUDA streams and share VAE weights within the same process/device. Conditioning loads the Qwen encoder, the VAE and the two hidden-state fusion parameters; only the sampling stage loads the DiT. Set <code class="docutils literal notranslate"><span class="pre">--conditioning.factory.max_batch_size</span></code>, <code class="docutils literal notranslate"><span class="pre">--auk_engine.factory.max_batch_size</span></code>, or <code class="docutils literal notranslate"><span class="pre">--decode.factory.max_batch_size</span></code> to tune them. Audio is returned after decoding completes; incremental audio streaming is not implemented.</p>
 </section>
+<section id="dit-q-k-fusion">
+<h2>DiT Q/K fusion<a class="headerlink" href="#dit-q-k-fusion" title="Link to this heading">#</a></h2>
+<p>On CUDA, the DiT uses a Triton kernel that fuses per-head RMSNorm with
+interleaved rotary embedding. Disable it to use the native PyTorch path:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>sglang_omni.cli<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>tencent/AuK<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--auk_engine.factory.enable_dit_fused_qk_norm_rope<span class="w"> </span><span class="nb">false</span>
+</pre></div>
+</div>
+<p>The kernel derives the head dimension and output dtype from the model. It
+leaves the conditioner, VAE, and sampling recipe unchanged. Non-CUDA devices
+and AuK-Flash use the native path. The first request may include Triton JIT
+compilation; the 32-step AuK checkpoint has been validated on H100 with FP32
+weights under BF16 autocast and with native BF16 weights.</p>
+</section>
 <section id="seedtts-evaluation">
 <h2>SeedTTS Evaluation<a class="headerlink" href="#seedtts-evaluation" title="Link to this heading">#</a></h2>
 <p>The standard benchmark detects <code class="docutils literal notranslate"><span class="pre">tencent/AuK</span></code> and <code class="docutils literal notranslate"><span class="pre">tencent/AuK-Flash</span></code> and starts the server from <code class="docutils literal notranslate"><span class="pre">--model-path</span></code>. It defaults to the full English dataset, concurrency 1, one warmup, and seed 1234. It estimates duration from the reference audio and transcript, then automatically starts and stops the TTS and ASR servers:</p>
@@ -702,6 +717,7 @@ python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> <
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-generation">Speech Generation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#speech-editing">Speech Editing</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sampling">Sampling</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dit-q-k-fusion">DiT Q/K fusion</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seedtts-evaluation">SeedTTS Evaluation</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#upstream-parity">Upstream Parity</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attribution">Attribution</a></li>
