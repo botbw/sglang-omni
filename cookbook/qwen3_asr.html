@@ -652,6 +652,16 @@ same request target or deadline.</p>
 requests, and sets <code class="docutils literal notranslate"><span class="pre">mem_fraction_static</span></code> to <code class="docutils literal notranslate"><span class="pre">0.65</span></code>. Its bounds are specific to
 the validated RTX 4090 layout; use the default configuration or a separately
 qualified profile on other GPU architectures.</p>
+<p>For a single 32 GB RTX 5090, use:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_asr_rtx5090.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p>This profile uses BF16, allows up to 16 running requests, and sets
+<code class="docutils literal notranslate"><span class="pre">mem_fraction_static=0.65</span></code>. See the
+<a class="reference external" href="https://github.com/sgl-project/sglang-omni/issues/1212">RTX 5090 benchmark report</a>
+for results measured on an earlier release.</p>
 <p>For example, force synchronous decode when comparing modes:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-ASR-1.7B<span class="w"> </span><span class="se">\</span>
