@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.5" />
-    <meta name="docbuild:last-update" content="Sep 14, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 15, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -771,11 +771,24 @@ YAML keys:</p>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--audio_chunking.max_total_audio_s</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">3600</span></code></p></td>
-<td><p>Upper limit on the whole upload; you get HTTP 400 above it. This is a memory guard: we keep the decoded waveform in memory while its chunks run.</p></td>
+<td><p>Upper limit on one upload; you get HTTP 400 above it. It bounds a single decoded waveform, not the total across uploads; that is the next knob’s job.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--audio_chunking.max_concurrent_long_audio_requests</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">max_running_requests</span> <span class="pre">//</span> <span class="pre">(2</span> <span class="pre">×</span> <span class="pre">max_concurrent_chunks)</span></code>, at least 1; <code class="docutils literal notranslate"><span class="pre">4</span></code> with the stock defaults</p></td>
+<td><p>How many long uploads the server admits at once. A long upload past the cap gets HTTP 503 instead of queueing; short uploads are never gated. The slot is taken before the upload is decoded and returned when its chunks are done.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<p>The last knob is the aggregate guard: decoded waveforms held at once are at
+most <code class="docutils literal notranslate"><span class="pre">max_concurrent_long_audio_requests</span> <span class="pre">×</span> <span class="pre">max_total_audio_s</span> <span class="pre">×</span> <span class="pre">16000</span> <span class="pre">×</span> <span class="pre">4</span></code>
+bytes (decoding itself has transient peaks above that), and long audio holds
+at most
+<code class="docutils literal notranslate"><span class="pre">max_concurrent_long_audio_requests</span> <span class="pre">×</span> <span class="pre">max_concurrent_chunks</span></code> engine slots at
+once. The default keeps that product at half of
+<code class="docutils literal notranslate"><span class="pre">--asr.engine.max_running_requests</span></code>; an explicit value whose product reaches
+<code class="docutils literal notranslate"><span class="pre">max_running_requests</span></code> logs a warning at startup, since short requests would
+then queue behind long audio whenever it is saturated.</p>
 <p>The model properties are ClassVars on <code class="docutils literal notranslate"><span class="pre">WhisperASRPipelineConfig</span></code>; no
 configuration path reaches them:</p>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -1171,7 +1184,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 14, 2026.
+  Last updated on Sep 15, 2026.
   <br/>
 </p>
   </div>
