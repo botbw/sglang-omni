@@ -528,8 +528,11 @@ token / first code chunk, hops, terminal response) — used to reconstruct
 a single request’s end-to-end timeline and to aggregate stage / hop costs
 across a batch;</p></li>
 <li><p>a <strong>torch profiler</strong> that produces a Chrome trace of kernel-level CPU /
-CUDA activity — used to drill into a specific window once the event
-recorder has identified where the time is going.</p></li>
+device activity — used to drill into a specific window once the event
+recorder has identified where the time is going. Activities are <code class="docutils literal notranslate"><span class="pre">CPU</span></code> plus
+whatever device activity this torch build reports via
+<code class="docutils literal notranslate"><span class="pre">torch.profiler.supported_activities()</span></code> — <code class="docutils literal notranslate"><span class="pre">CUDA</span></code> on NVIDIA / ROCm, <code class="docutils literal notranslate"><span class="pre">XPU</span></code> on
+Intel.</p></li>
 </ul>
 <p>Most diagnostics use the event recorder. The torch profiler is opt-in for
 deeper kernel investigation.</p>
@@ -804,7 +807,7 @@ trace stays small enough to load in <code class="docutils literal notranslate"><
 <td><p>Record input tensor shapes per op</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SGLANG_TORCH_PROFILER_PROFILE_MEMORY=1</span></code></p></td>
-<td><p>Track every CUDA caching-allocator alloc / free</p></td>
+<td><p>Record tensor memory allocation / free events</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SGLANG_TORCH_PROFILER_WITH_STACK=1</span></code></p></td>
 <td><p>Record the Python (and C++) call stack per op</p></td>

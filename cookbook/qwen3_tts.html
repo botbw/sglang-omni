@@ -498,6 +498,7 @@
                 <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ascend-npu-baseline">Ascend NPU baseline</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-inference">Deterministic Inference</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-admission-policy">Overload / admission policy</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breakable-prefill-cuda-graphs">Breakable prefill CUDA graphs</a></li>
@@ -607,6 +608,28 @@ sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\<
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
+<section id="ascend-npu-baseline">
+<h3>Ascend NPU baseline<a class="headerlink" href="#ascend-npu-baseline" title="Link to this heading">#</a></h3>
+<p>The NPU configurations use SGLang’s <code class="docutils literal notranslate"><span class="pre">ascend</span></code> attention backend for the Talker
+and PyTorch SDPA for both Speech Tokenizer instances. Talker graph capture
+(<code class="docutils literal notranslate"><span class="pre">cuda_graph</span></code>), private Talker compile, and asynchronous vocoder decode stay
+disabled. The 0.6B Base
+configuration has been validated with 16 concurrent requests; the other
+configurations retain a conservative single-request baseline.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 0.6B Base</span>
+sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model-path<span class="w"> </span>Qwen/Qwen3-TTS-12Hz-0.6B-Base<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--config<span class="w"> </span>examples/configs/qwen3_tts_0_6b_npu.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">qwen3_tts_1_7b_npu.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">qwen3_tts_0_6b_customvoice_npu.yaml</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">qwen3_tts_1_7b_voicedesign_npu.yaml</span></code> for the other supported checkpoints.
+The 0.6B and 1.7B files intentionally have separate <code class="docutils literal notranslate"><span class="pre">mem_fraction_static</span></code>
+starting values. Calibrate configurations that retain the single-request
+baseline on the target NPU before increasing <code class="docutils literal notranslate"><span class="pre">max_running_requests</span></code> or any
+vocoder batch limit.</p>
+</section>
 <section id="deterministic-inference">
 <h3>Deterministic Inference<a class="headerlink" href="#deterministic-inference" title="Link to this heading">#</a></h3>
 <p>Dynamic batching can change Qwen3-TTS codec and waveform outputs even when the
@@ -618,7 +641,8 @@ checkpoints provide an opt-in deterministic mode:</p>
 <p>When enabled, the same prompt, reference audio, and seed produce byte-identical
 PCM across runtime batch sizes. This mode reduces throughput because it
 serializes reference preprocessing and vocoder decoding and disables both the
-initial and follow-up vocoder CUDA Graphs, so it is disabled by default.</p>
+initial and follow-up vocoder graph-capture paths (<code class="docutils literal notranslate"><span class="pre">initial_cuda_graph</span></code> and
+<code class="docutils literal notranslate"><span class="pre">followup_cuda_graph</span></code>), so it is disabled by default.</p>
 </section>
 <section id="overload-admission-policy">
 <h3>Overload / admission policy<a class="headerlink" href="#overload-admission-policy" title="Link to this heading">#</a></h3>
@@ -1302,6 +1326,7 @@ checkpoint is less prone.</p></li>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prerequisites">Prerequisites</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#server-configuration">Server Configuration</a><ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ascend-npu-baseline">Ascend NPU baseline</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deterministic-inference">Deterministic Inference</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#overload-admission-policy">Overload / admission policy</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breakable-prefill-cuda-graphs">Breakable prefill CUDA graphs</a></li>
