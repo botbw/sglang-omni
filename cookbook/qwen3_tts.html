@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.6" />
-    <meta name="docbuild:last-update" content="Sep 18, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 19, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -229,6 +229,7 @@
 <li class="toctree-l1"><a class="reference internal" href="moss_transcribe_diarize.html">MOSS-Transcribe-Diarize</a></li>
 <li class="toctree-l1"><a class="reference internal" href="whisper_asr.html">Whisper ASR</a></li>
 <li class="toctree-l1"><a class="reference internal" href="qwen3_omni.html">Qwen3-Omni</a></li>
+<li class="toctree-l1"><a class="reference internal" href="minicpm_o.html">MiniCPM-o Reference Audio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ming_omni.html">Ming-Omni</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nemotron_voicechat.html">NemotronLabs VoiceChat</a></li>
 <li class="toctree-l1"><a class="reference internal" href="llada2_uni.html">LLaDA2.0-Uni</a></li>
@@ -674,8 +675,8 @@ defaults to 4 request-build workers with pending depth 16.</p>
 </section>
 <section id="breakable-prefill-cuda-graphs">
 <h3>Breakable prefill CUDA graphs<a class="headerlink" href="#breakable-prefill-cuda-graphs" title="Link to this heading">#</a></h3>
-<p>Non-Base checkpoints (CustomVoice, VoiceDesign) default to the breakable
-prefill CUDA-graph backend with a token ladder up to 512:</p>
+<p>Every Qwen3-TTS checkpoint (Base, CustomVoice, VoiceDesign) defaults to the
+breakable prefill CUDA-graph backend with a token ladder up to 512:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Knob</p></th>
@@ -686,7 +687,7 @@ prefill CUDA-graph backend with a token ladder up to 512:</p>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--tts_engine.engine.cuda_graph_backend_prefill</span></code></p></td>
 <td><p>Prefill graph backend (<code class="docutils literal notranslate"><span class="pre">breakable</span></code> or <code class="docutils literal notranslate"><span class="pre">disabled</span></code>)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">breakable</span></code> on CustomVoice, unset elsewhere</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">breakable</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--tts_engine.engine.cuda_graph_bs_prefill</span></code></p></td>
 <td><p>Prefill token-count ladder to capture</p></td>
@@ -706,10 +707,6 @@ misses. Measured over 3203 prefills at 10 and 20 RPS, 1301 of them (40.6%)
 are exactly one token, and they are the only shapes that fall back: 2 and
 3 already replay inside bucket 4. Adding the single <code class="docutils literal notranslate"><span class="pre">1</span></code> bucket takes the
 fallback rate to zero.</p>
-<p>Only CustomVoice takes this default, selected by the checkpoint’s
-<code class="docutils literal notranslate"><span class="pre">tts_model_type</span></code>. Base prefills also carry reference audio, so their shape
-distribution differs, and VoiceDesign has not been measured; both keep the
-eager path.</p>
 <p>Opt out with <code class="docutils literal notranslate"><span class="pre">--tts_engine.engine.cuda_graph_backend_prefill</span> <span class="pre">disabled</span></code>. The
 default costs extra graph capture during startup. Raising
 <code class="docutils literal notranslate"><span class="pre">cuda_graph_max_bs_prefill</span></code> on its own regrows the default ladder to the
@@ -1390,7 +1387,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 18, 2026.
+  Last updated on Sep 19, 2026.
   <br/>
 </p>
   </div>
