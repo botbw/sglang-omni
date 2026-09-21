@@ -500,6 +500,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#system-overview">System Overview</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#directory-layout">Directory Layout</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-directory-convention">Model Directory Convention</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#naming-and-lint-checks">Naming and lint checks</a></li>
 </ul>
             </nav>
         </div>
@@ -590,6 +591,38 @@ modalities.</p>
 <code class="docutils literal notranslate"><span class="pre">Stage</span></code>, <code class="docutils literal notranslate"><span class="pre">Coordinator</span></code>, schedulers, model-runner bases, relay, runtime prep, and
 runners.</p>
 </section>
+<section id="naming-and-lint-checks">
+<h2>Naming and lint checks<a class="headerlink" href="#naming-and-lint-checks" title="Link to this heading">#</a></h2>
+<p>Use public names for classes, functions, and methods defined in <code class="docutils literal notranslate"><span class="pre">sglang_omni/</span></code>.
+The leading-underscore lint hook checks these definitions in every Python file
+under that directory, including new model packages. It ignores vendor copies,
+dunder names such as <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, a lone <code class="docutils literal notranslate"><span class="pre">_</span></code>, and definitions inside functions.
+It does not check every underscore in variables or attribute references.</p>
+<p>Keep third-party API names exactly as the dependency provides them. For example,
+this Transformers reference needs no lint exemption:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hf_modeling</span><span class="o">.</span><span class="n">_get_feat_extract_output_lengths</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When a local definition must preserve a name required by an external interface,
+put <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">noqa:</span> <span class="pre">leading-underscore</span></code> on its <code class="docutils literal notranslate"><span class="pre">def</span></code> or <code class="docutils literal notranslate"><span class="pre">class</span></code> line and explain why:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ExternalAdapter</span><span class="p">(</span><span class="n">ExternalBase</span><span class="p">):</span>
+    <span class="c1"># ExternalBase calls this hook by its exact name.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_required_external_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: leading-underscore</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span>
+</pre></div>
+</div>
+<p>The exemption keeps the definition out of lint violations and automatic renames.
+Its references retain the same name. A comment such as
+<code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">skip</span> <span class="pre">leading-underscore</span> <span class="pre">class</span> <span class="pre">and</span> <span class="pre">function</span> <span class="pre">names</span></code> is not an exemption.</p>
+<p>The pre-commit hook runs <code class="docutils literal notranslate"><span class="pre">scripts/check_leading_underscore.py</span> <span class="pre">--fix</span></code>, which renames
+violating definitions and supported references within the same file. It does not
+update callers in other files. Review the diff, preserve third-party API names,
+and update any affected cross-file callers explicitly. To check without editing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>scripts/check_leading_underscore.py
+</pre></div>
+</div>
+<p>Run <code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">run</span> <span class="pre">--all-files</span></code> before submitting a change.</p>
+</section>
 </section>
 
 
@@ -642,6 +675,7 @@ runners.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#system-overview">System Overview</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#directory-layout">Directory Layout</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-directory-convention">Model Directory Convention</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#naming-and-lint-checks">Naming and lint checks</a></li>
 </ul>
   </nav></div>
 

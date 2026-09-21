@@ -539,10 +539,12 @@ That host sync blocks CUDA-graph capture and the async-decode lookahead
 </section>
 <section id="approach">
 <h2>Approach<a class="headerlink" href="#approach" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">sglang_omni/models/moss_tts_local/radix_hash.py</span></code> computes the generated-row key
-entirely in int64 torch ops – a fixed-coefficient polynomial (Horner) hash:</p>
+<p><code class="docutils literal notranslate"><span class="pre">sglang_omni/models/moss_tts_local/radix_hash.py</span></code> fuses token-row construction
+and radix hashing into one Triton kernel on CUDA. The hash algorithm is
+unchanged; inputs unsupported by the Triton path use the original int64 Torch
+implementation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>                       <span class="c1"># C = 13, static</span>
+<span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>                       <span class="c1"># C is fixed by the model configuration</span>
     <span class="n">acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">acc</span> <span class="o">*</span> <span class="n">BASE</span> <span class="o">+</span> <span class="n">row</span><span class="p">[:,</span> <span class="n">channel</span><span class="p">])</span> <span class="o">%</span> <span class="n">MOD</span>
 <span class="n">key</span> <span class="o">=</span> <span class="n">acc</span> <span class="o">%</span> <span class="n">HASH_SPACE</span>                          <span class="c1"># continuing frames</span>
 <span class="n">key</span> <span class="o">=</span> <span class="n">audio_end_id</span>                              <span class="c1"># EOS rows (torch.where)</span>
@@ -555,18 +557,17 @@ Continuing keys fold strictly below it; EOS rows keep the raw <code class="docut
 (in the band) so <code class="docutils literal notranslate"><span class="pre">Req._check_vocab_boundary_finish</span></code> still fires eos.</p></li>
 </ul>
 <p>The prompt path is <strong>unchanged</strong>: <code class="docutils literal notranslate"><span class="pre">build_row_cache_key_ids</span></code> (blake2b) stays for
-prompt preprocessing. Only <code class="docutils literal notranslate"><span class="pre">model_runner._row_radix_token_ids</span></code>’s generated-row
-path is swapped to the GPU hash. This boundary is deliberate – the prompt hash
+prompt preprocessing. Generated rows now use <code class="docutils literal notranslate"><span class="pre">build_rows_and_radix_token_ids</span></code>
+to fuse row construction and GPU hashing. This boundary is deliberate – the prompt hash
 is not on the decode hot path and never enters a capture region.</p>
 </section>
 <section id="capture-safety-argument">
 <h2>Capture-safety argument<a class="headerlink" href="#capture-safety-argument" title="Link to this heading">#</a></h2>
-<p>The hash uses only elementwise int64 ops (<code class="docutils literal notranslate"><span class="pre">mul</span></code>, <code class="docutils literal notranslate"><span class="pre">add</span></code>, <code class="docutils literal notranslate"><span class="pre">remainder</span></code>,
-<code class="docutils literal notranslate"><span class="pre">where</span></code>) over a <strong>static</strong> channel count, on the input tensor’s device. There is
-no <code class="docutils literal notranslate"><span class="pre">.cpu()</span></code>, <code class="docutils literal notranslate"><span class="pre">.item()</span></code>, <code class="docutils literal notranslate"><span class="pre">.tolist()</span></code>, numpy round-trip, data-dependent control
-flow, or dynamic shape. The Python <code class="docutils literal notranslate"><span class="pre">for</span></code> over <code class="docutils literal notranslate"><span class="pre">range(13)</span></code> unrolls into a fixed
-op sequence at trace/capture time. Therefore the function introduces no host
-sync and is CUDA-graph capturable / async-decode safe.</p>
+<p>The Triton kernels compute the hash entirely on device, without host readback
+or synchronization. In serving, hashing runs after frame decoding, whether
+frame decoding uses CUDA graph replay or eager execution. Hashing itself is
+not currently captured. Tests verify capture and replay after explicit kernel
+warmup. The Torch fallback remains capture-safe on CUDA.</p>
 <section id="no-int64-overflow">
 <h3>No int64 overflow<a class="headerlink" href="#no-int64-overflow" title="Link to this heading">#</a></h3>
 <p>With <code class="docutils literal notranslate"><span class="pre">acc</span> <span class="pre">&lt;</span> <span class="pre">MOD</span></code> and each channel value reduced <code class="docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">MOD</span></code> (both <code class="docutils literal notranslate"><span class="pre">&lt;</span> <span class="pre">2**31</span></code>) and
