@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
-    <script src="../_static/documentation_options.js?v=8f8a7fc7"></script>
+    <script src="../_static/documentation_options.js?v=3476fdda"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,8 +60,8 @@
     <link rel="prev" title="🚀 Installation — Ascend NPU" href="installation_npu.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.6" />
-    <meta name="docbuild:last-update" content="Sep 27, 2026"/>
+  <meta name="docsearch:version" content="0.1.7" />
+    <meta name="docbuild:last-update" content="Sep 28, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -513,6 +513,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-asr-speech-to-text-single-xpu">Qwen3-ASR (speech-to-text, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-tts-text-to-speech-single-xpu">Qwen3-TTS (text-to-speech, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-omni-30b-a3b-moe-multi-xpu-tensor-parallel">Qwen3-Omni (30B-A3B MoE, multi-XPU tensor parallel)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#minimax-music-3-text-to-music-two-xpus">MiniMax Music 3 (text-to-music, two XPUs)</a></li>
 </ul>
 </li>
 </ul>
@@ -538,7 +539,7 @@ XPU wheel index.</p>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> resolves the CUDA <a class="reference download internal" download="" href="../_downloads/079962c730e6e61f3f9971f670e9cf70/pyproject.toml"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code></span></a>, whose torch
 family and CUDA-only wheels would replace the <code class="docutils literal notranslate"><span class="pre">+xpu</span></code> stack.
 <a class="reference download internal" download="" href="../_downloads/e6282636738987ea324fd398b24bcb06/pyproject_xpu.toml"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">pyproject_xpu.toml</span></code></span></a> encodes the XPU replacements.</p>
-<p>Core deps cover the supported models (Qwen3-ASR / TTS / Omni and MiniCPM-o) plus the API server;
+<p>Core deps cover the supported models (Qwen3-ASR / TTS / Omni / MiniMax Music 3 and MiniCPM-o) plus the API server;
 <code class="docutils literal notranslate"><span class="pre">[eval]</span></code> adds SeedTTS/WER tooling and <code class="docutils literal notranslate"><span class="pre">[all]</span></code> aliases it. Other model families
 (S2-Pro, Ming-Omni, Voxtral-TTS) are CUDA-only and are not offered here.</p>
 <blockquote>
@@ -691,14 +692,32 @@ curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>
 <span class="s1">       "messages":[{"role":"user","content":"What is Intel XPU?"}],"max_tokens":64}'</span>
 </pre></div>
 </div>
+</section>
+<section id="minimax-music-3-text-to-music-two-xpus">
+<h3>MiniMax Music 3 (text-to-music, two XPUs)<a class="headerlink" href="#minimax-music-3-text-to-music-two-xpus" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># server</span>
+sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>MiniMaxAI/MiniMax-Music3<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span><span class="w"> </span>--mem-fraction-static<span class="w"> </span><span class="m">0</span>.7
+<span class="c1"># client request - Genre, instrumentation, tempo, and a production note</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{</span>
+<span class="s1">    "model": "MiniMaxAI/MiniMax-Music3",</span>
+<span class="s1">    "input": "[Chorus]\nWe are the fire that never dies\nBurning bright against the sky",</span>
+<span class="s1">    "instructions": "An energetic arena rock anthem with distorted electric guitars, punchy live drums and a soaring male vocal at 130 BPM, wide stereo image, lightly compressed",</span>
+<span class="s1">    "seed": 7,</span>
+<span class="s1">    "max_new_tokens": 750</span>
+<span class="s1">  }'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>rock_1.wav
+</pre></div>
+</div>
 <p>Health check for any of the above: <code class="docutils literal notranslate"><span class="pre">curl</span> <span class="pre">http://localhost:8000/v1/models</span></code>.</p>
 <blockquote>
 <div><p><strong>Expected on XPU:</strong> <code class="docutils literal notranslate"><span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">import</span> <span class="pre">mooncake</span></code> / <code class="docutils literal notranslate"><span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">import</span> <span class="pre">nixl</span></code> warnings are harmless
 — those CUDA-only transfer backends are omitted; tensors move through the <code class="docutils literal notranslate"><span class="pre">shm</span></code> relay instead.</p>
 </div></blockquote>
 <blockquote>
-<div><p>✅ Support status: <strong>Qwen3-ASR, Qwen3-TTS, Qwen3-Omni, and MiniCPM-o all serve end-to-end on Intel XPU</strong>
-(ASR, TTS, and MiniCPM-o single-card; Qwen3-Omni thinker across 8 cards with tensor parallelism).</p>
+<div><p>✅ Support status: <strong>Qwen3-ASR, Qwen3-TTS, Qwen3-Omni, MiniMax Music 3 and MiniCPM-o all serve end-to-end on Intel XPU</strong>
+(ASR, TTS, and MiniCPM-o single-card; MiniMax Music 3 needs two cards; Qwen3-Omni thinker across 8 cards with tensor parallelism).</p>
 </div></blockquote>
 </section>
 </section>
@@ -764,6 +783,7 @@ curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-asr-speech-to-text-single-xpu">Qwen3-ASR (speech-to-text, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-tts-text-to-speech-single-xpu">Qwen3-TTS (text-to-speech, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-omni-30b-a3b-moe-multi-xpu-tensor-parallel">Qwen3-Omni (30B-A3B MoE, multi-XPU tensor parallel)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#minimax-music-3-text-to-music-two-xpus">MiniMax Music 3 (text-to-music, two XPUs)</a></li>
 </ul>
 </li>
 </ul>
@@ -799,7 +819,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 27, 2026.
+  Last updated on Sep 28, 2026.
   <br/>
 </p>
   </div>
