@@ -530,10 +530,6 @@ read or download the file on the client before sending it.</p>
 features. Audio supplied in chat messages remains understanding input and is not
 automatically used as the speaker reference. Without an explicit reference,
 Token2wav uses the checkpoint’s <code class="docutils literal notranslate"><span class="pre">assets/HT_ref_audio.wav</span></code> when available.</p>
-<p>The vocoder caches only the most recently used reference by audio content. A
-different reference, including switching back to the default, rebuilds the
-conditioning. Invalid references fail instead of silently using the default.
-Audio output remains non-streaming.</p>
 </section>
 
 
