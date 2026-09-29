@@ -548,25 +548,27 @@ Model support on NPU and optional dependencies must be checked separately.</p>
 <h3>A3 image installation<a class="headerlink" href="#a3-image-installation" title="Link to this heading">#</a></h3>
 <p>Use an ARM64 Linux host with Docker and Ascend A3 devices.</p>
 <p><strong>1. Pull the image</strong></p>
-<p>Pull the image matching your hardware from
-<a class="reference external" href="https://hub.docker.com/r/lmsysorg/sglang-omni/tags">Docker Hub</a>:</p>
+<p>Pull the image matching your hardware from Huawei Cloud SWR:</p>
 <ul class="simple">
 <li><p><strong>Release:</strong> use <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;-cann9.0.0-a3</span></code> for deployments, replacing
-<code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code> with a published version tag from Docker Hub.</p></li>
+<code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;</span></code> with a published version tag.</p></li>
 <li><p><strong>Development:</strong> use <code class="docutils literal notranslate"><span class="pre">main-cann9.0.0-a3</span></code> for the latest published development
 build. Scheduled or manual publications update this rolling tag.</p></li>
 </ul>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Release (replace v&lt;version&gt; with a published version):</span>
-<span class="c1"># IMAGE=lmsysorg/sglang-omni:v&lt;version&gt;-cann9.0.0-a3</span>
+<span class="c1"># IMAGE=swr.cn-southwest-2.myhuaweicloud.com/base_image/dockerhub/lmsysorg/sglang-omni:v&lt;version&gt;-cann9.0.0-a3</span>
 
 <span class="c1"># Development (A3):</span>
-<span class="nv">IMAGE</span><span class="o">=</span>lmsysorg/sglang-omni:main-cann9.0.0-a3
+<span class="nv">IMAGE</span><span class="o">=</span>swr.cn-southwest-2.myhuaweicloud.com/base_image/dockerhub/lmsysorg/sglang-omni:main-cann9.0.0-a3
 
 docker<span class="w"> </span>pull<span class="w"> </span><span class="s2">"</span><span class="nv">$IMAGE</span><span class="s2">"</span>
 </pre></div>
 </div>
 <p>For reproducible deployments, set <code class="docutils literal notranslate"><span class="pre">IMAGE</span></code> to
-<code class="docutils literal notranslate"><span class="pre">lmsysorg/sglang-omni&#64;sha256:&lt;digest&gt;</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">swr.cn-southwest-2.myhuaweicloud.com/base_image/dockerhub/lmsysorg/sglang-omni&#64;sha256:&lt;digest&gt;</span></code>.</p>
+<p>If authentication is required, run
+<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">login</span> <span class="pre">swr.cn-southwest-2.myhuaweicloud.com</span></code> with credentials supplied
+by the registry administrator before pulling.</p>
 <p><strong>2. Start the container</strong></p>
 <p>Download your model weights into a host directory and mount it into the
 container. The example exposes device 0; adjust device IDs and driver paths
@@ -601,16 +603,16 @@ relative to the visible devices (<code class="docutils literal notranslate"><spa
 <p>Use <code class="docutils literal notranslate"><span class="pre">v&lt;version&gt;-cann9.0.0-910b</span></code> for a release, or
 <code class="docutils literal notranslate"><span class="pre">main-cann9.0.0-910b</span></code> for the latest published development build.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Release (replace v&lt;version&gt; with a published version):</span>
-<span class="c1"># IMAGE=lmsysorg/sglang-omni:v&lt;version&gt;-cann9.0.0-910b</span>
+<span class="c1"># IMAGE=swr.cn-southwest-2.myhuaweicloud.com/base_image/dockerhub/lmsysorg/sglang-omni:v&lt;version&gt;-cann9.0.0-910b</span>
 
 <span class="c1"># Development (A2 / 910B):</span>
-<span class="nv">IMAGE</span><span class="o">=</span>lmsysorg/sglang-omni:main-cann9.0.0-910b
+<span class="nv">IMAGE</span><span class="o">=</span>swr.cn-southwest-2.myhuaweicloud.com/base_image/dockerhub/lmsysorg/sglang-omni:main-cann9.0.0-910b
 
 docker<span class="w"> </span>pull<span class="w"> </span><span class="s2">"</span><span class="nv">$IMAGE</span><span class="s2">"</span>
 </pre></div>
 </div>
 <p>For reproducible deployments, set <code class="docutils literal notranslate"><span class="pre">IMAGE</span></code> to
-<code class="docutils literal notranslate"><span class="pre">lmsysorg/sglang-omni&#64;sha256:&lt;digest&gt;</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">swr.cn-southwest-2.myhuaweicloud.com/base_image/dockerhub/lmsysorg/sglang-omni&#64;sha256:&lt;digest&gt;</span></code>.</p>
 <p><strong>2. Start the container</strong></p>
 <p>Set <code class="docutils literal notranslate"><span class="pre">MODEL_DIR</span></code> to your model directory. The example exposes device 0;
 adjust device IDs and driver paths for your host. Use <code class="docutils literal notranslate"><span class="pre">--privileged</span></code> only
