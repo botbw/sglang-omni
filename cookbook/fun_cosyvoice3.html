@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.7" />
-    <meta name="docbuild:last-update" content="Sep 29, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 30, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -854,23 +854,23 @@ flow_merge_pad_budget_percent = 25
 </section>
 <section id="vocoder-configuration">
 <h3>Vocoder Configuration<a class="headerlink" href="#vocoder-configuration" title="Link to this heading">#</a></h3>
-<p>Vocoder configuration controls batching, precision, and acceleration. The scheduler accepts <code class="docutils literal notranslate"><span class="pre">max_batch_size</span></code> (16) and <code class="docutils literal notranslate"><span class="pre">max_batch_wait_ms</span></code> (30) to tune batch assembly. Flow uses <code class="docutils literal notranslate"><span class="pre">dtype</span></code> (bfloat16) for autocast, while HiFT uses <code class="docutils literal notranslate"><span class="pre">hift_dtype</span></code> (float32), independent of Flow; bfloat16 shows no speedup on H200 and reduces fidelity. Buffered Flow CUDA Graphs and DiT <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> are on by default. <code class="docutils literal notranslate"><span class="pre">enable_flow_estimator_trt</span></code> stays opt-in and is mutually exclusive with DiT compile.</p>
+<p>Vocoder configuration controls batching, precision, and acceleration. The scheduler accepts <code class="docutils literal notranslate"><span class="pre">max_batch_size</span></code> (16) and <code class="docutils literal notranslate"><span class="pre">max_batch_wait_ms</span></code> (30) to tune batch assembly. Flow uses <code class="docutils literal notranslate"><span class="pre">dtype</span></code> (bfloat16) for autocast, while HiFT uses <code class="docutils literal notranslate"><span class="pre">hift_dtype</span></code> (float32), independent of Flow; bfloat16 shows no speedup on H200 and reduces fidelity. Buffered Flow CUDA Graphs and DiT <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> are on by default. <code class="docutils literal notranslate"><span class="pre">enable_flow_estimator_trt</span></code> stays opt-in; enabling it turns the DiT compile default off, and enabling both explicitly is rejected.</p>
 <p>The TTS engine stage accepts <code class="docutils literal notranslate"><span class="pre">onnx_intra_op_threads</span></code> (16) for the speech tokenizer and speaker encoder ONNX sessions. Preprocessing takes <code class="docutils literal notranslate"><span class="pre">max_concurrency</span></code> (8) to limit concurrent reference conditioning requests.</p>
 </section>
 <section id="torch-compile-for-the-dit-backbone">
 <h3>torch.compile for the DiT backbone<a class="headerlink" href="#torch-compile-for-the-dit-backbone" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> is on by default. It reduces DiT kernel-launch overhead for supported TTS execution paths, including streaming PackedDiT. The compiled path uses symbolic dynamic shapes (<code class="docutils literal notranslate"><span class="pre">dynamic=True</span></code>) to support varying utterance lengths. Existing CUDA Graph behavior is unchanged. Pass <code class="docutils literal notranslate"><span class="pre">enable_dit_torch_compile=false</span></code> to run the DiT eager.</p>
+<p><code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> is on by default. It reduces DiT kernel-launch overhead for supported TTS execution paths, including streaming PackedDiT. Startup warmup covers varying batch sizes and mel lengths before serving. Existing CUDA Graph behavior is unchanged. Pass <code class="docutils literal notranslate"><span class="pre">enable_dit_torch_compile=false</span></code> to run the DiT eager.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--model-path<span class="w"> </span>FunAudioLLM/Fun-CosyVoice3-0.5B-2512<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--vocoder.factory.enable_dit_torch_compile<span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--port<span class="w"> </span><span class="m">8000</span>
 </pre></div>
 </div>
-<p>Do not enable it together with TensorRT.</p>
+<p>Enabling TensorRT turns this default off.</p>
 </section>
 <section id="tensorrt-for-the-dit-backbone">
 <h3>TensorRT for the DiT backbone<a class="headerlink" href="#tensorrt-for-the-dit-backbone" title="Link to this heading">#</a></h3>
-<p>TensorRT accelerates the DiT by building a cached <code class="docutils literal notranslate"><span class="pre">.plan</span></code> engine from the bundled ONNX. The CFG batch is frozen at 2 with dynamic mel dimensions; larger request batches are handled by chunking cond/uncond pairs. TensorRT and torch.compile are mutually exclusive.</p>
+<p>TensorRT accelerates the DiT by building a cached <code class="docutils literal notranslate"><span class="pre">.plan</span></code> engine from the bundled ONNX. The CFG batch is frozen at 2 with dynamic mel dimensions; larger request batches are handled by chunking cond/uncond pairs. Enabling it turns the DiT torch.compile default off; enabling both explicitly is rejected.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>tensorrt
 </pre></div>
 </div>
@@ -1232,7 +1232,7 @@ in sync if you change the hop):</p>
 <li><p><strong>Reference conditioning cache.</strong> Local files, data URLs, and byte payloads are cached by audio content and encoder configuration. Mutable HTTP URLs are intentionally encoded on every request instead of being cached by URL alone.</p></li>
 <li><p><strong>Speed control.</strong> Applied once, on the decoded waveform, by the shared <code class="docutils literal notranslate"><span class="pre">/v1/audio/speech</span></code> response-encoding path.</p></li>
 <li><p><strong>Voice conversion.</strong> Voice conversion is outside the current zero-shot TTS scope.</p></li>
-<li><p><strong>Streaming decode.</strong> Causal Flow + HiFT emit PCM after each hop (hop grows 25 → 50 → 100 by default). Quality can differ slightly from the buffered whole-utterance path. Opt-in TensorRT (<code class="docutils literal notranslate"><span class="pre">enable_flow_estimator_trt</span></code>) also accelerates streaming hops; do not enable it together with <code class="docutils literal notranslate"><span class="pre">enable_dit_torch_compile</span></code>. TRT freezes DiT attention, so streaming+TRT is not bit-exact with PyTorch streaming. Keep the Module TRT wrapper when streaming: CosyVoice’s raw TRT enqueue is incompatible with packed hop-batch CFG shapes.</p></li>
+<li><p><strong>Streaming decode.</strong> Causal Flow + HiFT emit PCM after each hop (hop grows 25 → 50 → 100 by default). Quality can differ slightly from the buffered whole-utterance path. Opt-in TensorRT (<code class="docutils literal notranslate"><span class="pre">enable_flow_estimator_trt</span></code>) also accelerates streaming hops; it turns the <code class="docutils literal notranslate"><span class="pre">enable_dit_torch_compile</span></code> default off. TRT freezes DiT attention, so streaming+TRT is not bit-exact with PyTorch streaming. Keep the Module TRT wrapper when streaming: CosyVoice’s raw TRT enqueue is incompatible with packed hop-batch CFG shapes.</p></li>
 <li><p><strong>Flow batch scope.</strong> Flow batching supports the CosyVoice PyTorch estimator and the opt-in TensorRT estimator. Buffered HiFT grouping is independent and uses <code class="docutils literal notranslate"><span class="pre">hift_max_padding_waste</span></code>. Streaming coalesces first/follow-up hops across requests (<code class="docutils literal notranslate"><span class="pre">_can_batch_stream_chunks</span></code>, short peer wait) so TTFP stays low under load.</p></li>
 <li><p><strong>cosyvoice dependency.</strong> The <code class="docutils literal notranslate"><span class="pre">cosyvoice</span></code> package has no PyPI release and must be installed from GitHub. Matcha-TTS is a required submodule and must also be importable; only the CosyVoice Flow and HiFT paths are used by the vocoder.</p></li>
 </ul>
@@ -1353,7 +1353,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 29, 2026.
+  Last updated on Sep 30, 2026.
   <br/>
 </p>
   </div>

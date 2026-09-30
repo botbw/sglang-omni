@@ -419,7 +419,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.7" />
-    <meta name="docbuild:last-update" content="Sep 29, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 30, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -881,6 +881,7 @@ window.runMermaid = runMermaid;</script>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#image-text-mmmu">Image-Text (MMMU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#non-streaming-talker">Non-Streaming Talker</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming-talker">Streaming Talker</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seedtts-english-speech-results">SeedTTS English Speech Results</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#audio-equivalence">Audio Equivalence</a></li>
 </ul>
 </li>
@@ -1556,6 +1557,38 @@ window.runMermaid = runMermaid;</script>
 </div>
 <p>At c=1 streaming delivers first audio ~2.2× sooner at a ~38% throughput cost. The crossover is around c≈4; past it, single-stream queuing makes streaming’s first chunk arrive later than the non-streaming full response. Each streaming request emits ~20 chunks at ~19 ms intervals. The streaming measurements are from PR/local-patch evidence, not a release-wide guarantee; cite streaming as a low-concurrency first-audio win rather than a universal throughput win.</p>
 </section>
+<section id="seedtts-english-speech-results">
+<h3>SeedTTS English Speech Results<a class="headerlink" href="#seedtts-english-speech-results" title="Link to this heading">#</a></h3>
+<p>Results for the full 1,088-sample English SeedTTS split on 3× H200 (Thinker TP=2 and a dedicated Talker GPU), at concurrency 4 with voice <code class="docutils literal notranslate"><span class="pre">DB30</span></code>, temperature 0.7, seed 42, and <code class="docutils literal notranslate"><span class="pre">max_new_tokens=256</span></code>. AudioVAE uses FlashAttention-2. WER is corpus WER from Qwen3-ASR-1.7B. Each mode was measured once after four warmup requests.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Mode</p></th>
+<th class="head text-right"><p>Throughput (req/s)</p></th>
+<th class="head text-right"><p>Mean latency (s)</p></th>
+<th class="head text-right"><p>First audio (s)</p></th>
+<th class="head text-right"><p>Audio throughput (audio-s/s)</p></th>
+<th class="head text-right"><p>EN WER</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Non-streaming</p></td>
+<td class="text-right"><p>4.606</p></td>
+<td class="text-right"><p>0.867</p></td>
+<td class="text-right"><p>—</p></td>
+<td class="text-right"><p>29.988</p></td>
+<td class="text-right"><p>1.666%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Streaming</p></td>
+<td class="text-right"><p>1.503</p></td>
+<td class="text-right"><p>2.658</p></td>
+<td class="text-right"><p>2.059</p></td>
+<td class="text-right"><p>9.712</p></td>
+<td class="text-right"><p>1.591%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="audio-equivalence">
 <h3>Audio Equivalence<a class="headerlink" href="#audio-equivalence" title="Link to this heading">#</a></h3>
 <p>A small c=1 audit (single prompt, single voice, n=4 WAVs per mode) checks that the streaming path preserves audio content versus non-streaming on the same backend.</p>
@@ -1660,6 +1693,7 @@ window.runMermaid = runMermaid;</script>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#image-text-mmmu">Image-Text (MMMU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#non-streaming-talker">Non-Streaming Talker</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#streaming-talker">Streaming Talker</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#seedtts-english-speech-results">SeedTTS English Speech Results</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#audio-equivalence">Audio Equivalence</a></li>
 </ul>
 </li>
@@ -1697,7 +1731,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 29, 2026.
+  Last updated on Sep 30, 2026.
   <br/>
 </p>
   </div>

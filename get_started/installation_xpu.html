@@ -61,7 +61,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.1.7" />
-    <meta name="docbuild:last-update" content="Sep 29, 2026"/>
+    <meta name="docbuild:last-update" content="Sep 30, 2026"/>
   
     
     <script src="../_static/searchtools.js"></script>
@@ -513,6 +513,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-asr-speech-to-text-single-xpu">Qwen3-ASR (speech-to-text, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fun-asr-nano-speech-to-text-single-xpu">Fun-ASR-Nano (speech-to-text, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-tts-text-to-speech-single-xpu">Qwen3-TTS (text-to-speech, single XPU)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#zonos2-moe-tts-single-xpu">ZONOS2 (MoE TTS, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-omni-30b-a3b-moe-multi-xpu-tensor-parallel">Qwen3-Omni (30B-A3B MoE, multi-XPU tensor parallel)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#minimax-music-3-text-to-music-two-xpus">MiniMax Music 3 (text-to-music, two XPUs)</a></li>
 </ul>
@@ -542,8 +543,10 @@ family and CUDA-only wheels would replace the <code class="docutils literal notr
 <a class="reference download internal" download="" href="../_downloads/e6282636738987ea324fd398b24bcb06/pyproject_xpu.toml"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">pyproject_xpu.toml</span></code></span></a> encodes the XPU replacements.</p>
 <p>Core deps cover the supported models (Qwen3-ASR / TTS / Omni / MiniMax Music 3, Fun-ASR-Nano and
 MiniCPM-o) plus the API server;
-<code class="docutils literal notranslate"><span class="pre">[eval]</span></code> adds SeedTTS/WER tooling and <code class="docutils literal notranslate"><span class="pre">[all]</span></code> aliases it. Other model families
-(S2-Pro, Ming-Omni, Voxtral-TTS) are CUDA-only and are not offered here.</p>
+<code class="docutils literal notranslate"><span class="pre">[eval]</span></code> adds SeedTTS/WER tooling and <code class="docutils literal notranslate"><span class="pre">[all]</span></code> aliases it. ZONOS2 also serves here,
+but its DAC codec is not a core dep on any platform — see
+<a class="reference internal" href="#zonos2-moe-tts-single-xpu"><span class="std std-ref">ZONOS2</span></a> for the XPU-safe way to add it. Other model
+families (S2-Pro, Ming-Omni, Voxtral-TTS) are CUDA-only and are not offered here.</p>
 <blockquote>
 <div><p><strong><code class="docutils literal notranslate"><span class="pre">--no-build-isolation</span></code> is required</strong> — without it pip emits a legacy in-tree
 <code class="docutils literal notranslate"><span class="pre">egg-info</span></code> instead of a PEP 660 editable install. The installer always passes it.
@@ -690,6 +693,34 @@ curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>
 </pre></div>
 </div>
 </section>
+<section id="zonos2-moe-tts-single-xpu">
+<h3>ZONOS2 (MoE TTS, single XPU)<a class="headerlink" href="#zonos2-moe-tts-single-xpu" title="Link to this heading">#</a></h3>
+<p>ZONOS2 needs the Descript DAC codec. <code class="docutils literal notranslate"><span class="pre">--no-deps</span></code> is required:
+<code class="docutils literal notranslate"><span class="pre">descript-audiotools==0.7.2</span></code> pins <code class="docutils literal notranslate"><span class="pre">protobuf&lt;3.20</span></code>, which would downgrade this
+environment’s <code class="docutils literal notranslate"><span class="pre">protobuf</span></code> to 3.19.6. The other packages on the line are the codec’s
+own dependencies.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">"descript-audiotools==0.7.2"</span><span class="w"> </span><span class="s2">"descript-audio-codec==1.0.0"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>argbind<span class="w"> </span>julius<span class="w"> </span>pyloudnorm<span class="w"> </span>pystoi<span class="w"> </span>torch-stoi<span class="w"> </span>flatten-dict<span class="w"> </span>randomname<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>ffmpy<span class="w"> </span>fire<span class="w"> </span>markdown2<span class="w"> </span>importlib_resources<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>tensorboard<span class="w"> </span>tensorboard-data-server<span class="w"> </span>absl-py<span class="w"> </span>Markdown<span class="w"> </span>Werkzeug
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import dac; print('ok')"</span>
+</pre></div>
+</div>
+<p>Voice cloning transcodes the reference clip with <strong>ffmpeg</strong>, so <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> must be on
+<code class="docutils literal notranslate"><span class="pre">PATH</span></code>. Then serve — <code class="docutils literal notranslate"><span class="pre">params.json</span></code> auto-selects the architecture, so <code class="docutils literal notranslate"><span class="pre">--model-path</span></code>
+is all that is needed:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sgl-omni<span class="w"> </span>serve<span class="w"> </span>--model-path<span class="w"> </span>Zyphra/zonos2<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+<span class="c1"># clone a voice from a reference clip:</span>
+curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8000/v1/audio/speech<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"input":"Hello from Intel XPU.",</span>
+<span class="s1">       "references":[{"audio_path":"/path/to/ref.wav","text":"reference transcript"}]}'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-o<span class="w"> </span>out.wav
+</pre></div>
+</div>
+<p>On XPU, ZONOS2 keeps its MoE experts in bf16 and leaves <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code> off; decode
+graphs stay on by default. All three are applied automatically.</p>
+</section>
 <section id="qwen3-omni-30b-a3b-moe-multi-xpu-tensor-parallel">
 <h3>Qwen3-Omni (30B-A3B MoE, multi-XPU tensor parallel)<a class="headerlink" href="#qwen3-omni-30b-a3b-moe-multi-xpu-tensor-parallel" title="Link to this heading">#</a></h3>
 <p>The 30B MoE does not fit one 24 GB card; shard the thinker across GPUs with tensor parallelism.
@@ -732,9 +763,10 @@ curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </spa
 — those CUDA-only transfer backends are omitted; tensors move through the <code class="docutils literal notranslate"><span class="pre">shm</span></code> relay instead.</p>
 </div></blockquote>
 <blockquote>
-<div><p>✅ Support status: <strong>Qwen3-ASR, Fun-ASR-Nano, Qwen3-TTS, Qwen3-Omni, MiniMax Music 3 and
+<div><p>✅ Support status: <strong>Qwen3-ASR, Fun-ASR-Nano, Qwen3-TTS, ZONOS2, Qwen3-Omni, MiniMax Music 3 and
 MiniCPM-o all serve end-to-end on Intel XPU</strong> (ASR, Fun-ASR, TTS and MiniCPM-o single-card;
-MiniMax Music 3 needs two cards; Qwen3-Omni thinker across 8 cards with tensor parallelism).</p>
+ZONOS2 single-card with decode graphs; MiniMax Music 3 needs two cards; Qwen3-Omni thinker
+across 8 cards with tensor parallelism).</p>
 </div></blockquote>
 </section>
 </section>
@@ -800,6 +832,7 @@ MiniMax Music 3 needs two cards; Qwen3-Omni thinker across 8 cards with tensor p
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-asr-speech-to-text-single-xpu">Qwen3-ASR (speech-to-text, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fun-asr-nano-speech-to-text-single-xpu">Fun-ASR-Nano (speech-to-text, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-tts-text-to-speech-single-xpu">Qwen3-TTS (text-to-speech, single XPU)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#zonos2-moe-tts-single-xpu">ZONOS2 (MoE TTS, single XPU)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#qwen3-omni-30b-a3b-moe-multi-xpu-tensor-parallel">Qwen3-Omni (30B-A3B MoE, multi-XPU tensor parallel)</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#minimax-music-3-text-to-music-two-xpus">MiniMax Music 3 (text-to-music, two XPUs)</a></li>
 </ul>
@@ -837,7 +870,7 @@ By SGLang-Omni Team
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 29, 2026.
+  Last updated on Sep 30, 2026.
   <br/>
 </p>
   </div>
